@@ -1,2 +1,2 @@
 # iBei
-[Java] Inverse Auctioning Project for Distributed Systems course
+[Java] Reverse Auctioning Project for Distributed Systems course

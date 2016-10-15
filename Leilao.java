@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
-public class Leilao{
+public class Leilao implements Serializable{
 	
 	public long artigoId;
 	public long id_leilao;
@@ -9,8 +9,8 @@ public class Leilao{
 	public String descricao;
 	public double precoMax;
 	public Date data_termino;
-	public ArrayList <String >mensagens;
-	public ArrayList<HashMap <String, Double> > licitacoes;//nao sei se e a melhor solucao 
+	public ArrayList<LinkedHashMap <String, String >> mensagens;//key: author, message
+	public ArrayList<LinkedHashMap <String, String >> licitacoes;//key: author, bid
 
 
 	public Leilao(long artigoId, String titulo, String descricao, double precoMax, Date data_termino){
@@ -19,9 +19,9 @@ public class Leilao{
 		this.descricao = descricao;
 		this.precoMax = precoMax;
 		this.data_termino = data_termino;
-		this.mensagens = new ArrayList<String>();
-		this.licitacoes = new ArrayList<HashMap <String, Double>>();
-		this.id_leilao = 356563;//tem de ser um numero aleatorio
+		this.mensagens = new ArrayList<LinkedHashMap <String, String>>();
+		this.licitacoes = new ArrayList<LinkedHashMap <String, String>>();
+		this.id_leilao = 356563;//temos que gerar um numero aleatorio
 
 	}
 
@@ -34,11 +34,12 @@ public class Leilao{
 			System.out.println("Nao foram feitas ainda nenhumas licitacoes");
 		else{
 			System.out.println("Licitacoes: ");
-			for( HashMap<String, Double> data : this.licitacoes){
+			for( LinkedHashMap<String, String> data : this.licitacoes){
 				for (String key : data.keySet()) {
-	                    Double value = data.get(key);
-	                    System.out.println(key + " : " + value);
+	                    String value = data.get(key);
+	                    System.out.print(key + " : " + value+", ");
 	               }
+	             System.out.print("\n");
 			}
 		}
 
@@ -46,8 +47,12 @@ public class Leilao{
 			System.out.println("Nao existem mensagens no mural.");
 		else{
 			System.out.println("Mensagens: ");
-			for(String m : this.mensagens){
-				System.out.println(" "+m);
+			for( LinkedHashMap<String, String> data : this.mensagens){
+				for (String key : data.keySet()) {
+	                    String value = data.get(key);
+	                    System.out.print(key + " : " + value+", ");
+	               }
+	            System.out.print("\n");
 			}
 
 		}

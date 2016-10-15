@@ -15,7 +15,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 		leiloes = new ArrayList <Leilao>();
 	}
 
-	public boolean criar_leilao(HashMap<String, String> data) throws RemoteException{
+	public boolean create_auction(LinkedHashMap<String, String> data) throws RemoteException{
 
 		int code = 	Integer.parseInt(data.get("code"));
 		double amount = Double.parseDouble(data.get("amount"));
@@ -25,15 +25,9 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 			
 			Date date = d1.parse(data.get("deadline"));
 			Leilao l = new Leilao(code,data.get("title"),data.get("description"),amount,date);
-			HashMap<String, Double> lc= new HashMap<String, Double>();
-			
-			lc.put("licitacao1",100.3);
-	      	lc.put("licitacao2",90.9);
-			
-			l.licitacoes.add(lc);
 			
 			leiloes.add(l);
-			//l.printInfo();
+			
 			System.out.println("Auction created!");
 
 			return true;
@@ -47,9 +41,32 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 
 	}
 
-	public boolean consulta_leilao(Leilao leilao){
-		leilao.printInfo();
-		return true;
+	public Leilao detail_auction(LinkedHashMap<String, String> data){
+		long id = 	Long.parseLong(data.get("id"));
+		
+		int i;
+		for(i=0; i<leiloes.size();i++){
+			if(leiloes.get(i).id_leilao == id){
+				leiloes.get(i).printInfo();
+				return leiloes.get(i);
+			}
+		}
+		
+		return null;
+	}
+
+	public ArrayList <Leilao> search_auction(LinkedHashMap<String, String> data){
+
+		ArrayList <Leilao> leiloes_encontrados = new ArrayList <Leilao>();
+		int i;
+		for(Leilao leilao : leiloes){
+			if(leilao.artigoId == Long.parseLong(data.get("code"))){
+				leiloes_encontrados.add(leilao);
+			}
+
+		}
+		return leiloes_encontrados;
+
 	}
 
 	public static void main(String args[]) throws MalformedURLException{

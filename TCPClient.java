@@ -25,27 +25,42 @@ class TCPClient {
     
     BufferedReader inFromServer = null;
     try {
-      // connect to the specified address:port (default is localhost:12345)
+      // connect to the specified address:port (default is localhost:1099)
       if(args.length == 2)
         socket = new Socket(args[0], Integer.parseInt(args[1]));
       else
-        socket = new Socket("localhost", 12345);
+        socket = new Socket("localhost", 1099);
         
       
+      
+      //exemplo de input de cliente
+      LinkedHashMap<String, String> HashMap = new LinkedHashMap<String, String>();
 
-      HashMap<String, String> HashMap = new HashMap<String, String>();
-
+	  //para criar leilao...    
+      /*
       String dString = "22-06-2016 10:37:10";
       DateFormat date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
       
-
-      //exemplo de input de cliente
       HashMap.put("type","create_auction");
       HashMap.put("title","1_leilao");
       HashMap.put("description","tentativa de criar leilao");
       HashMap.put("code","123456789");
       HashMap.put("deadline",dString);
       HashMap.put("amount","110.20");
+*/
+      
+	  //para consultar detalhes de leilao...
+      /*
+      HashMap.put("type","detail_auction");
+      HashMap.put("id","356563");
+      */
+
+      //para pesquisar por codigo...
+      
+      HashMap.put("type","search_auction");
+      HashMap.put("code","123456789");
+      
+
 
 
       // create streams for writing to and reading from the socket
@@ -59,6 +74,7 @@ class TCPClient {
           while(!socket.isClosed()) {
             String readKeyboard = keyboardScanner.nextLine();
             try{
+            	//em cada input do teclado envia a hashmap criada em cima para o TCPServer
                 out.writeObject(HashMap);
               }
             catch(IOException e){}
@@ -70,7 +86,7 @@ class TCPClient {
       // the main thread loops reading from the server and writing to System.out
       while(true){
         
-          HashMap <String, String> reply = (HashMap <String, String>) in.readObject();
+          LinkedHashMap <String, String> reply = (LinkedHashMap <String, String>) in.readObject();
           System.out.println("Received: " + reply);
         
         }

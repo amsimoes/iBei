@@ -56,10 +56,12 @@ class TCPClient {
       */
 
       //para pesquisar por codigo...
-      
+	/*      
       HashMap.put("type","search_auction");
       HashMap.put("code","123456789");
-      
+      */
+      //para ver leiloes em que houve atividade do user
+      HashMap.put("type","my_auctions");
 
 
 

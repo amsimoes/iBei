@@ -57,8 +57,9 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 
 	public ArrayList <Leilao> search_auction(LinkedHashMap<String, String> data){
 
+
+		
 		ArrayList <Leilao> leiloes_encontrados = new ArrayList <Leilao>();
-		int i;
 		for(Leilao leilao : leiloes){
 			if(leilao.artigoId == Long.parseLong(data.get("code"))){
 				leiloes_encontrados.add(leilao);
@@ -68,6 +69,36 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 		return leiloes_encontrados;
 
 	}
+	//falta verificar se e criador de algum leilao
+	public ArrayList <Leilao> my_auctions(LinkedHashMap<String, String> data, String username){
+
+		ArrayList <Leilao> leiloes_encontrados = new ArrayList <Leilao>();
+
+		for(Leilao leilao : leiloes){
+
+			int n = leiloes_encontrados.size();
+			for(LinkedHashMap <String, String> msg1 : leilao.mensagens){
+				if(msg1.get("author").equals(username)){
+					leiloes_encontrados.add(leilao);
+					break;
+				}
+			}
+
+			if(n == leiloes_encontrados.size()){
+				for(LinkedHashMap <String, String> bid1 : leilao.licitacoes){
+					if(bid1.get("author").equals(username)){
+						leiloes_encontrados.add(leilao);
+						break;
+					}
+				}
+			}
+
+	}
+	return leiloes_encontrados;
+}
+	
+
+
 
 	public static void main(String args[]) throws MalformedURLException{
 

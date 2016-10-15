@@ -5,7 +5,7 @@ import java.rmi.registry.Registry;
 import java.io.*;
 import java.util.*;
 public class TCPServer  {
-    public static int numero=0;
+    public static int numero=0;//numero de clientes online
     public static void main(String args[]) {
         
         
@@ -161,6 +161,26 @@ class Connection  extends Thread implements Serializable {
 	           	}
 	           	else{
 	           		reply.put("type","search_auction");
+	           		reply.put("items_count","0");
+	           	}
+	           	out.writeObject(reply);
+       		}
+
+       		else if(data.get("type").equals("my_auctions")){
+       			String username = "daniel";//temos que ir buscar isto ao cliente...
+       			ArrayList <Leilao> leiloes = r.my_auctions(data,username);
+       			int i;
+       			if(leiloes.size() != 0){
+	           		reply.put("type","my_auctions");
+	           		reply.put("items_count", String.valueOf(leiloes.size()));
+	           		for(i=0; i< leiloes.size(); i++){
+	           			reply.put("items_"+String.valueOf(i)+"_id", String.valueOf(leiloes.get(i).id_leilao));
+	           			reply.put("items_"+String.valueOf(i)+"_code", String.valueOf(leiloes.get(i).artigoId));
+	           			reply.put("items_"+String.valueOf(i)+"_title", leiloes.get(i).titulo);
+	           		}
+	           	}
+	           	else{
+	           		reply.put("type","my_auctions");
 	           		reply.put("items_count","0");
 	           	}
 	           	out.writeObject(reply);

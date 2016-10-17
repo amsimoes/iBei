@@ -17,7 +17,7 @@ import java.text.*;
  * @author Alcides Fonseca
  * @version 1.1
  */
-class TCPClient {
+class TCPClient implements Serializable{
   public static void main(String[] args) throws ClassNotFoundException{
     Socket socket;
     ObjectOutputStream  out;
@@ -34,35 +34,6 @@ class TCPClient {
       
       
       //exemplo de input de cliente
-      LinkedHashMap<String, String> HashMap = new LinkedHashMap<String, String>();
-
-	  //para criar leilao...    
-      /*
-      String dString = "22-06-2016 10:37:10";
-      DateFormat date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-      
-      HashMap.put("type","create_auction");
-      HashMap.put("title","1_leilao");
-      HashMap.put("description","tentativa de criar leilao");
-      HashMap.put("code","123456789");
-      HashMap.put("deadline",dString);
-      HashMap.put("amount","110.20");
-*/
-      
-	  //para consultar detalhes de leilao...
-      /*
-      HashMap.put("type","detail_auction");
-      HashMap.put("id","356563");
-      */
-
-      //para pesquisar por codigo...
-	/*      
-      HashMap.put("type","search_auction");
-      HashMap.put("code","123456789");
-      */
-      //para ver leiloes em que houve atividade do user
-      HashMap.put("type","my_auctions");
-
 
 
       // create streams for writing to and reading from the socket
@@ -74,12 +45,23 @@ class TCPClient {
         public void run() {
           Scanner keyboardScanner = new Scanner(System.in);
           while(!socket.isClosed()) {
+            
+            LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();
             String readKeyboard = keyboardScanner.nextLine();
             try{
-            	//em cada input do teclado envia a hashmap criada em cima para o TCPServer
-                out.writeObject(HashMap);
+            	//em cada input do teclado envia a hashmap para o TCPServer
+                String [] aux = readKeyboard.split(",");
+
+                for(String field : aux){
+                    String [] aux1 = field.trim().split(": ");
+                    hashMap.put(aux1[0], aux1[1]);
+                }
+            
+                out.writeObject(hashMap);
+                
+                
               }
-            catch(IOException e){}
+            catch(IOException e){System.out.println(e);}
             
           }
         }
@@ -101,7 +83,7 @@ class TCPClient {
     //} catch(ParseException e){
         
     } finally {
-      try { inFromServer.close(); } catch (Exception e) {}
+      try { inFromServer.close(); } catch (Exception e) {System.out.println(e);}
     }
   }
 }

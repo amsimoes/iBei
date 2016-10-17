@@ -37,8 +37,10 @@ public class TCPServer  {
             
         }catch(IOException e)
         {System.out.println("Listen: " + e.getMessage());}
-        catch(Exception ex)
-        {System.out.println(ex);}
+        catch(Exception ex){
+
+          System.out.println(ex);
+        }
         
         
     }
@@ -47,8 +49,8 @@ public class TCPServer  {
 
 // Thread para tratar da comunicação com um cliente
 class Connection  extends Thread implements Serializable {
-    ObjectInputStream in;
     ObjectOutputStream out;
+    ObjectInputStream in;
     Socket clientSocket;
     int thread_number;
     RMI_Interface r;
@@ -58,8 +60,8 @@ class Connection  extends Thread implements Serializable {
         try{
             clientSocket = socket;
             r=h;
-            in = new ObjectInputStream(clientSocket.getInputStream());
             out = new ObjectOutputStream(clientSocket.getOutputStream());
+            in = new ObjectInputStream(clientSocket.getInputStream());
             this.start();
         }catch(IOException e){System.out.println("Connection:" + e.getMessage());}
     }
@@ -70,9 +72,9 @@ class Connection  extends Thread implements Serializable {
     
         try{
             while(true){
+                //an echo server
                 
                 LinkedHashMap <String, String> data = (LinkedHashMap <String, String>) in.readObject();
-                
                 
                 System.out.println("T["+thread_number + "] Received: ");
                 //list elements
@@ -84,6 +86,7 @@ class Connection  extends Thread implements Serializable {
                 
                 
                 this.getType(data);
+
                 
             }
         }catch(EOFException e){
@@ -98,12 +101,13 @@ class Connection  extends Thread implements Serializable {
     //ve o tipo de operacao e responde ao cliente conforma o tipo de operacao
     public void getType(LinkedHashMap <String, String> data){
         try{
+            String username = "daniel";//temos que ir buscar isto ao cliente...
             LinkedHashMap<String, String> reply = new LinkedHashMap<String, String>();
            	
 
             //se for do tipo criar_leilao...
             if(data.get("type").equals("create_auction")){
-                if(r.create_auction(data)){
+                if(r.create_auction(data,username)){
                     reply.put("type","create_auction");
                     reply.put("ok","true");
                 }
@@ -120,7 +124,7 @@ class Connection  extends Thread implements Serializable {
            		
            		int i;
            		if( leilao != null ){
-					reply.put("type","detail_auction");
+					      reply.put("type","detail_auction");
            			reply.put("title",leilao.titulo);
            			reply.put("description", leilao.descricao);
            			reply.put("deadline",leilao.data_termino.toString());
@@ -167,7 +171,7 @@ class Connection  extends Thread implements Serializable {
        		}
 
        		else if(data.get("type").equals("my_auctions")){
-       			String username = "daniel";//temos que ir buscar isto ao cliente...
+       			
        			ArrayList <Leilao> leiloes = r.my_auctions(data,username);
        			int i;
        			if(leiloes.size() != 0){
@@ -186,12 +190,41 @@ class Connection  extends Thread implements Serializable {
 	           	out.writeObject(reply);
        		}
 
+          else if(data.get("type").equals("bid")){
+              //falta mandar para os restantes licitadores a notificacao
+              if(r.make_bid(data, username)){
+                  reply.put("type","bid");
+                  reply.put("ok","true");   
+              }
+              else{
+                  reply.put("type","bid");
+                  reply.put("ok","false");
+              }
+
+              out.writeObject(reply);
+          }
+
+           else if(data.get("type").equals("message")){
+              //falta mandar para a notificao para os que escreveram no mural e para o criador do leilao
+              if(r.write_message(data, username)){
+                  reply.put("type","message");
+                  reply.put("ok","true");   
+              }
+              else{
+                  reply.put("type","message");
+                  reply.put("ok","false");
+              }
+
+              out.writeObject(reply);
+            
+            }
+           
            else{
-           	System.out.println("operation not found!");
+           	System.out.println("Operation not found!");
            }
         }
         catch(Exception e){
-        	System.out.println(e);
+        	System.out.println("getype:"+e);
         }
 
     }

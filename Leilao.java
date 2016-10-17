@@ -2,7 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 public class Leilao implements Serializable{
-	
+	public String username_criador;
 	public long artigoId;
 	public long id_leilao;
 	public String titulo;
@@ -13,7 +13,8 @@ public class Leilao implements Serializable{
 	public ArrayList<LinkedHashMap <String, String >> licitacoes;//key: author, bid
 
 
-	public Leilao(long artigoId, String titulo, String descricao, double precoMax, Date data_termino){
+	public Leilao(String username, long artigoId, String titulo, String descricao, double precoMax, Date data_termino){
+		this.username_criador = username;
 		this.artigoId = artigoId;
 		this.titulo = titulo;
 		this.descricao = descricao;

@@ -29,7 +29,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 			leiloes.add(l);
 			
 			System.out.println("Auction created!");
-			l.printInfo();
+			
 			return true;
 		}
 
@@ -63,18 +63,24 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 		for(Leilao leilao : leiloes){
 			if(leilao.artigoId == Long.parseLong(data.get("code"))){
 				leiloes_encontrados.add(leilao);
+				leilao.printInfo();
 			}
 
 		}
 		return leiloes_encontrados;
 
 	}
-	//falta verificar se e criador de algum leilao
+	
 	public ArrayList <Leilao> my_auctions(LinkedHashMap<String, String> data, String username){
 
 		ArrayList <Leilao> leiloes_encontrados = new ArrayList <Leilao>();
 
 		for(Leilao leilao : leiloes){
+
+			if(leilao.username_criador.equals(username)){
+				leiloes_encontrados.add(leilao);
+					break;
+			}
 
 			int n = leiloes_encontrados.size();
 			for(LinkedHashMap <String, String> msg1 : leilao.mensagens){
@@ -138,7 +144,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 
 		auc.licitacoes.add(my_bid);
 
-		auc.printInfo();
+		
 
 		return true;
 

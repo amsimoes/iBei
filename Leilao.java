@@ -22,7 +22,8 @@ public class Leilao implements Serializable{
 		this.data_termino = data_termino;
 		this.mensagens = new ArrayList<LinkedHashMap <String, String>>();
 		this.licitacoes = new ArrayList<LinkedHashMap <String, String>>();
-		this.id_leilao = 356563;//temos que gerar um numero aleatorio
+		//random number generator
+		this.id_leilao = new Date().getTime();
 
 	}
 

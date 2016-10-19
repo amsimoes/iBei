@@ -185,9 +185,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 
     }
 
-
-
-
+    
     public static void main(String args[]) throws MalformedURLException{
 
         try {
@@ -195,6 +193,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 
             Registry r = LocateRegistry.createRegistry(7000);
             r.rebind("connection", h);
+
 
             System.out.println("RMI Server ready.");
 

@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.text.*;
+
 /**
  * This class establishes a TCP connection to a specified server, and loops
  * sending/receiving strings to/from the server.
@@ -17,73 +17,43 @@ import java.text.*;
  * @author Alcides Fonseca
  * @version 1.1
  */
-class TCPClient implements Serializable{
-    public static void main(String[] args) throws ClassNotFoundException{
+class TCPClient {
+    public static void main(String[] args) {
         Socket socket;
-        ObjectOutputStream  out;
-        ObjectInputStream in;
-
+        PrintWriter outToServer;
         BufferedReader inFromServer = null;
         try {
-            // connect to the specified address:port (default is localhost:1099)
+            // connect to the specified address:port (default is localhost:12345)
             if(args.length == 2)
                 socket = new Socket(args[0], Integer.parseInt(args[1]));
             else
-                socket = new Socket("localhost", 1099);
-
-
-
-            //exemplo de input de cliente
-
+                socket = new Socket("localhost", 12345);
 
             // create streams for writing to and reading from the socket
-            out = new ObjectOutputStream(socket.getOutputStream());
-            in = new ObjectInputStream(socket.getInputStream());
+            inFromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            outToServer = new PrintWriter(socket.getOutputStream(), true);
 
             // create a thread for reading from the keyboard and writing to the server
             new Thread() {
                 public void run() {
                     Scanner keyboardScanner = new Scanner(System.in);
                     while(!socket.isClosed()) {
-
-                        LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();
                         String readKeyboard = keyboardScanner.nextLine();
-                        try{
-                            //em cada input do teclado envia a hashmap para o TCPServer
-                            String [] aux = readKeyboard.split(",");
-
-                            for(String field : aux){
-                                String [] aux1 = field.trim().split(": ");
-                                hashMap.put(aux1[0], aux1[1]);
-                            }
-
-                            out.writeObject(hashMap);
-
-
-                        }
-                        catch(IOException e){System.out.println(e);}
-
+                        outToServer.println(readKeyboard);
                     }
                 }
             }.start();
 
             // the main thread loops reading from the server and writing to System.out
-            while(true){
-
-                LinkedHashMap <String, String> reply = (LinkedHashMap <String, String>) in.readObject();
-                System.out.println("Received: " + reply);
-
-            }
+            String messageFromServer;
+            while((messageFromServer = inFromServer.readLine()) != null)
+                System.out.println(messageFromServer);
         } catch (IOException e) {
-            if(inFromServer == null){
-                System.out.println("TCP Server is down...");
-                System.exit(0);
-
-            }
-            //} catch(ParseException e){
-
+            if(inFromServer == null)
+                System.out.println("\nUsage: java TCPClient <host> <port>\n");
+            System.out.println(e.getMessage());
         } finally {
-            try { inFromServer.close(); } catch (Exception e) {System.out.println(e);}
+            try { inFromServer.close(); } catch (Exception e) {}
         }
     }
 }

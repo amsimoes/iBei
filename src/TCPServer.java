@@ -49,8 +49,9 @@ public class TCPServer  {
 
 // Thread para tratar da comunicação com um cliente
 class Connection  extends Thread implements Serializable {
-    ObjectOutputStream out;
-    ObjectInputStream in;
+
+    PrintWriter out;
+    BufferedReader in= null;
     Socket clientSocket;
     int thread_number;
     RMI_Interface r;
@@ -60,8 +61,8 @@ class Connection  extends Thread implements Serializable {
         try{
             clientSocket = socket;
             r=h;
-            out = new ObjectOutputStream(clientSocket.getOutputStream());
-            in = new ObjectInputStream(clientSocket.getInputStream());
+            out =  new PrintWriter(socket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.start();
         }catch(IOException e){System.out.println("Connection:" + e.getMessage());}
     }
@@ -69,31 +70,37 @@ class Connection  extends Thread implements Serializable {
 
     public void run() {
 
-
         try{
             while(true){
                 //an echo server
+                LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();
 
-                LinkedHashMap <String, String> data = (LinkedHashMap <String, String>) in.readObject();
+                String data= in.readLine();
+
+                String [] aux = data.split(",");
+
+                for(String field : aux){
+                    String [] aux1 = field.trim().split(": ");
+                    hashMap.put(aux1[0], aux1[1]);
+                }
 
                 System.out.println("T["+thread_number + "] Received: ");
                 //list elements
-                for (String key : data.keySet()) {
+                for (String key : hashMap.keySet()) {
 
-                    String value = data.get(key);
+                    String value = hashMap.get(key);
                     System.out.println(key + " : " + value);
                 }
 
 
-                this.getType(data);
+                this.getType(hashMap);
 
 
             }
         }catch(EOFException e){
             System.out.println("The client["+thread_number+"] ended the connection: EOF:" + e);
             TCPServer.numero--;
-        }catch(ClassNotFoundException e){System.out.println("erro");}
-        catch(IOException e){System.out.println("IO:" + e);
+        }catch(IOException e){System.out.println("IO:" + e);
 
 
         }
@@ -116,7 +123,7 @@ class Connection  extends Thread implements Serializable {
                     reply.put("ok","false");
                 }
 
-                out.writeObject(reply);
+                out.println(reply.toString());
             }
 
             else if(data.get("type").equals("detail_auction")){
@@ -148,7 +155,7 @@ class Connection  extends Thread implements Serializable {
                     reply.put("ok","false");
                 }
 
-                out.writeObject(reply);
+                out.println(reply.toString());
             }
 
             else if(data.get("type").equals("search_auction")){
@@ -167,7 +174,7 @@ class Connection  extends Thread implements Serializable {
                     reply.put("type","search_auction");
                     reply.put("items_count","0");
                 }
-                out.writeObject(reply);
+                out.println(reply.toString());
             }
 
             else if(data.get("type").equals("my_auctions")){
@@ -187,7 +194,7 @@ class Connection  extends Thread implements Serializable {
                     reply.put("type","my_auctions");
                     reply.put("items_count","0");
                 }
-                out.writeObject(reply);
+                out.println(reply.toString());
             }
 
             else if(data.get("type").equals("bid")){
@@ -201,7 +208,7 @@ class Connection  extends Thread implements Serializable {
                     reply.put("ok","false");
                 }
 
-                out.writeObject(reply);
+                out.println(reply.toString());
             }
 
             else if(data.get("type").equals("message")){
@@ -215,7 +222,7 @@ class Connection  extends Thread implements Serializable {
                     reply.put("ok","false");
                 }
 
-                out.writeObject(reply);
+                out.println(reply.toString());
 
             }
 

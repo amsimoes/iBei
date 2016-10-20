@@ -88,14 +88,14 @@ class Connection  extends Thread implements Serializable {
                     String type = hashMap.get("type");
 
                     if (type.equals("register")) {
-                        if(!r.register_client(hashMap)) {   // Registo falhado, utilizador já existe
+                        if(!r.registerClient(hashMap)) {   // Registo falhado, utilizador já existe
                             sendMessage("type", "register", "ok", "false");
                         } else {    // Registo bem sucedido
                             sendMessage("type", "register", "ok", "true");
                         }
                     } else if (type.equals("login")) {
                         // Funcao para verificar se o user existe
-                        if(!r.login_client(hashMap)) {
+                        if(!r.loginClient(hashMap)) {
                             sendMessage("type", "login", "ok", "false");
                         } else {
                             sendMessage("type", "login", "ok", "true");
@@ -200,9 +200,7 @@ class Connection  extends Thread implements Serializable {
                 }
 
                 out.println(reply.toString());
-            }
-
-            else if(data.get("type").equals("search_auction")){
+            } else if(data.get("type").equals("search_auction")){
                 ArrayList <Leilao> leiloes = r.search_auction(data);
                 int i;
                 if(leiloes.size() != 0){
@@ -219,9 +217,7 @@ class Connection  extends Thread implements Serializable {
                     reply.put("items_count","0");
                 }
                 out.println(reply.toString());
-            }
-
-            else if(data.get("type").equals("my_auctions")){
+            } else if(data.get("type").equals("my_auctions")){
 
                 ArrayList <Leilao> leiloes = r.my_auctions(data,username);
                 int i;
@@ -244,8 +240,9 @@ class Connection  extends Thread implements Serializable {
             else if(data.get("type").equals("edit_auction")) {
                 if(!r.edit_auction(data, username)) {
                     sendMessage("type","edit_auction","ok","false");
+                } else {
+                    sendMessage("type","edit_auction","ok","true");
                 }
-                sendMessage("type","edit_auction","ok","true");
             }
 
             else if(data.get("type").equals("bid")){
@@ -258,11 +255,8 @@ class Connection  extends Thread implements Serializable {
                     reply.put("type","bid");
                     reply.put("ok","false");
                 }
-
                 out.println(reply.toString());
-            }
-
-            else if(data.get("type").equals("message")){
+            } else if(data.get("type").equals("message")){
                 //falta mandar para a notificao para os que escreveram no mural e para o criador do leilao
                 if(r.write_message(data, username)){
                     reply.put("type","message");
@@ -272,9 +266,14 @@ class Connection  extends Thread implements Serializable {
                     reply.put("type","message");
                     reply.put("ok","false");
                 }
-
                 out.println(reply.toString());
-
+            } else if(data.get("type").equals("online_users")) {
+                reply = r.listOnlineUsers();
+                out.println(reply.toString());
+            } else if(data.get("type").equals("logout")) {
+                reply = r.logoutClient(username);
+                out.println(reply.toString());
+                logged = false;
             } else {
                 System.out.println("Operation not found!");
             }

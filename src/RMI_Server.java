@@ -21,7 +21,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         loggados = new ArrayList<User>();
     }
 
-    public boolean register_client(LinkedHashMap<String, String> data) throws RemoteException {
+    public boolean registerClient(LinkedHashMap<String, String> data) throws RemoteException {
         try {
             User u = new User(data.get("username"), data.get("password"));
             for (User user : registados) {
@@ -39,7 +39,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         return true;
     }
 
-    public boolean login_client(LinkedHashMap<String, String> data) throws RemoteException {
+    public boolean loginClient(LinkedHashMap<String, String> data) throws RemoteException {
         try {
             User u = new User(data.get("username"), data.get("password"));
             // Verificar se se encontra registado
@@ -57,6 +57,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
                     }
                     //System.out.println("Utilizador não se encontra loggado.");
                     System.out.println("Utilizador "+u.username+" loggado com sucesso!");
+                    loggados.add(u);
+                    this.export_logged();
                     return true;
                 }
             }
@@ -66,6 +68,20 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             System.out.println(e);
             return false;
         }
+    }
+
+    public LinkedHashMap<String, String> logoutClient(String username) throws RemoteException {
+        LinkedHashMap <String, String> reply = new LinkedHashMap<>();
+        reply.put("type", "logout");
+        for(User user : loggados) {
+            if(user.username.equals(username)) {
+                loggados.remove(user);
+                reply.put("ok", "true");
+                return reply;
+            }
+        }
+        reply.put("ok", "false");
+        return reply;
     }
 
     public boolean create_auction(LinkedHashMap<String, String> data, String username) throws RemoteException{
@@ -267,6 +283,17 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         return false;
     }
 
+    public LinkedHashMap<String, String> listOnlineUsers() throws RemoteException {
+        LinkedHashMap <String, String> reply = new LinkedHashMap<>();
+        reply.put("type", "online_users");
+        int users_count = loggados.size();
+        reply.put("users_count", String.valueOf(users_count));
+        for(int i=0;i<loggados.size();i++) {
+            reply.put("users_"+i+"_username", loggados.get(i).username);
+        }
+        return reply;
+    }
+
 
     public void import_auctions(){
         FicheiroDeTexto file = new FicheiroDeTexto();
@@ -276,6 +303,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             DateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm");
             int i;
             String username = file.leLinha();
+            // TODO: Verificar se existem artigos cujos autores não se encontram registados
             while(username != null){
                 long artigoID = Long.parseLong(file.leLinha());
                 long id_leilao = Long.parseLong(file.leLinha());
@@ -382,7 +410,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             e.printStackTrace();
         }
     }
-
     public void import_registed(){
         FicheiroDeTexto file = new FicheiroDeTexto();
         try {
@@ -391,6 +418,34 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             while(read != null) {
                 String[] creds = read.split(";");
                 registados.add(new User(creds[0], creds[1]));
+                read = file.leLinha();
+            }
+            file.fechaLeitura();
+        } catch (IOException | NullPointerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void export_logged(){
+        FicheiroDeTexto file = new FicheiroDeTexto();
+        try {
+            file.abreEscrita("logged.txt");
+            for(User user : loggados) {
+                file.escreveNovaLinha(user.username);
+                System.out.println("login.txt | A Escrever: "+user.username);
+            }
+            file.fechaEscrita();
+        } catch (IOException | NullPointerException e) {
+            e.printStackTrace();
+        }
+    }
+    public void import_logged(){
+        FicheiroDeTexto file = new FicheiroDeTexto();
+        try {
+            file.abreLeitura("logged.txt");
+            String read = file.leLinha();
+            while(read != null) {
+                registados.add(new User(read,""));
                 read = file.leLinha();
             }
             file.fechaLeitura();

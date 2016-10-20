@@ -53,8 +53,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
                             return false;
                         }
                     }
-                    System.out.println("Utilizador não se encontra loggado.");
-                    System.out.println("Utilizador loggado com sucesso!");
+                    //System.out.println("Utilizador não se encontra loggado.");
+                    System.out.println("Utilizador "+u.username+" loggado com sucesso!");
                     return true;
                 }
             }
@@ -154,10 +154,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
     }
     //falta mandar para os restantes licitadores a notificacao	
     public boolean make_bid(LinkedHashMap<String, String> data, String username){
-
-
-        long id = 	Long.parseLong(data.get("id"));
-        double amount = 	Double.parseDouble(data.get("amount"));
+        long id = Long.parseLong(data.get("id"));
+        double amount = Double.parseDouble(data.get("amount"));
         int i;
         for(i=0;i<leiloes.size();i++){
             if(leiloes.get(i).id_leilao == id){
@@ -171,7 +169,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         }
 
         Leilao auc = leiloes.get(i);
-
         if(auc.precoMax <= amount){
             System.out.println("Bid higher than preco Max");
             return false;
@@ -197,11 +194,10 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 
 
         return true;
-
     }
+
     //falta mandar para a notificao para os que escreveram no mural e para o criador do leilao
     public boolean write_message(LinkedHashMap<String, String> data, String username){
-
         long id = Long.parseLong(data.get("id"));
         String text = data.get("text");
 
@@ -232,11 +228,45 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         auc.printInfo();
         this.export_auctions();
         return true;
+    }
 
+    public boolean edit_auction(LinkedHashMap<String, String> data, String username) throws RemoteException {
+        try {
+            long id2edit = Long.parseLong(data.get("id"));
+            for(Leilao it : leiloes) {
+                if(it.id_leilao == id2edit) {
+                    if(!it.username_criador.equals(username)) { // Utilizador tenta editar leilao q nao é autor
+                        System.out.println("Utilizador "+username+" nao e' autor do leilao.");
+                        return false;
+                    }
+                    // Campos alteraveis do leilao: code|title|description|deadline|amount
+                    if (data.containsKey("title")) {
+                        it.titulo.set(0, data.get("title"));
+                    } if (data.containsKey("description")) {
+                        it.descricao.set(0, data.get("description"));
+                    } if (data.containsKey("deadline")) {
+                        DateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+                        try {
+                            it.data_termino = df.parse(data.get("deadline"));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    } if (data.containsKey("amount")) {
+                        double d = Double.parseDouble(data.get("amount"));
+                        it.precoMax = d;
+                    }
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("Erro ao editar campos de leilao.");
+        }
+        return false;
     }
 
 
-    public void import_autions(){
+    public void import_auctions(){
         FicheiroDeTexto file = new FicheiroDeTexto();
         try {
             file.abreLeitura("auctions.txt");
@@ -347,7 +377,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             Registry r = LocateRegistry.createRegistry(7000);
             r.rebind("connection", h);
 
-            h.import_autions();
+            h.import_auctions();
 
             System.out.println("RMI Server ready.");
 
@@ -359,19 +389,12 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
                     try {
                         Thread.sleep(1000);
                         main(args);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (MalformedURLException e) {
+                    } catch (InterruptedException | MalformedURLException e) {
                         e.printStackTrace();
                     }
-
-
                 }
 
             }.start();
-
         }
     }
-
-
 }

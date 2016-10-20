@@ -4,6 +4,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.io.*;
 import java.util.*;
+
 public class TCPServer  {
     public static int numero=0;//numero de clientes online
     public static void main(String args[]) {
@@ -188,8 +189,8 @@ class Connection  extends Thread implements Serializable {
                     reply.put("bids_count",String.valueOf(leilao.licitacoes.size()));
                     //mandar licitacoes
                     for(i=0; i< leilao.licitacoes.size();i++){
-                        reply.put("messages_"+String.valueOf(i)+"_user", leilao.licitacoes.get(i).get("author"));
-                        reply.put("messages_"+String.valueOf(i)+"_text", leilao.licitacoes.get(i).get("bid"));
+                        reply.put("bid_"+String.valueOf(i)+"_author", leilao.licitacoes.get(i).get("author"));
+                        reply.put("bid_"+String.valueOf(i)+"_value", leilao.licitacoes.get(i).get("bid"));
                     }
 
                 }
@@ -238,6 +239,13 @@ class Connection  extends Thread implements Serializable {
                     reply.put("items_count","0");
                 }
                 out.println(reply.toString());
+            }
+
+            else if(data.get("type").equals("edit_auction")) {
+                if(!r.edit_auction(data, username)) {
+                    sendMessage("type","edit_auction","ok","false");
+                }
+                sendMessage("type","edit_auction","ok","true");
             }
 
             else if(data.get("type").equals("bid")){

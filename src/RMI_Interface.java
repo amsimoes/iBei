@@ -2,6 +2,8 @@ import java.util.*;
 import java.rmi.*;
 
 public interface RMI_Interface extends Remote {
+    public boolean register_client(LinkedHashMap<String, String> data) throws RemoteException;
+    public boolean login_client(LinkedHashMap<String, String> data) throws RemoteException;
     public boolean create_auction(LinkedHashMap<String, String> data, String username) throws RemoteException;
     public Leilao detail_auction(LinkedHashMap<String, String> data) throws java.rmi.RemoteException;
     public ArrayList <Leilao> search_auction(LinkedHashMap<String, String> data) throws java.rmi.RemoteException;

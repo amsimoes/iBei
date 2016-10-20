@@ -8,11 +8,61 @@ import java.util.*;
 
 
 public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
-
     ArrayList <Leilao> leiloes;
+    ArrayList <User> registados;
+    ArrayList <User> loggados;
+
     public RMI_Server() throws RemoteException {
         super();
         leiloes = new ArrayList <Leilao>();
+        registados = new ArrayList<User>();
+        loggados = new ArrayList<User>();
+    }
+
+    public boolean register_client(LinkedHashMap<String, String> data) throws RemoteException {
+        try {
+            User u = new User(data.get("username"), data.get("password"));
+            for (User user : registados) {
+                if(user.username.equals(u.username)) {
+                    System.out.println("Nome de utilizador "+u.username+" ja registado.");
+                    return false;
+                }
+            }
+            registados.add(u);
+            System.out.println("Utilizador "+u.username+" registado com sucesso.");
+        } catch(Exception e) {
+            System.out.println(e);
+        }
+        return true;
+    }
+
+    public boolean login_client(LinkedHashMap<String, String> data) throws RemoteException {
+        try {
+            User u = new User(data.get("username"), data.get("password"));
+            // Verificar se se encontra registado
+            for(User user : registados) {
+                if(user.username.equals(u.username)) {  // Encontra-se registado
+                    if(!user.password.equals(u.password)) {
+                        System.out.println("Password errada.");
+                        return false;
+                    }
+                    for (User user2 : loggados) {
+                        if(user2.username.equals(u.username)) {
+                            System.out.println("Utilizador "+u.username+" ja se encontra loggado.");
+                            return false;
+                        }
+                    }
+                    System.out.println("Utilizador não se encontra loggado.");
+                    System.out.println("Utilizador loggado com sucesso!");
+                    return true;
+                }
+            }
+            System.out.println("Utilizador "+u.username+" nao se encontra registado.");
+            return false;
+        } catch (Exception e) {
+            System.out.println(e);
+            return false;
+        }
     }
 
     public boolean create_auction(LinkedHashMap<String, String> data, String username) throws RemoteException{
@@ -22,7 +72,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 
         DateFormat d1 = new SimpleDateFormat("dd-MM-yyyy HH:mm");
         try{
-
             Date date = d1.parse(data.get("deadline"));
             Leilao l = new Leilao(username,code,data.get("title"),data.get("description"),amount,date);
 
@@ -38,7 +87,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         }
 
         return false;
-
     }
 
     public Leilao detail_auction(LinkedHashMap<String, String> data){

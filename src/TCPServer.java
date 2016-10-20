@@ -7,20 +7,14 @@ import java.util.*;
 public class TCPServer  {
     public static int numero=0;//numero de clientes online
     public static void main(String args[]) {
-
-
         if (args.length == 0) {
             System.out.println("insert serverport");
             System.exit(0);
         }
-
         String port = args[0];
 
-
         try{
-
             RMI_Interface h = (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
-
 
             int serverPort = Integer.parseInt(port);
             System.out.println("Listening on Port: "+port);
@@ -41,20 +35,18 @@ public class TCPServer  {
 
             System.out.println(ex);
         }
-
-
     }
-
 }
 
 // Thread para tratar da comunicação com um cliente
 class Connection  extends Thread implements Serializable {
-
     PrintWriter out;
     BufferedReader in= null;
     Socket clientSocket;
     int thread_number;
     RMI_Interface r;
+    boolean logged = false;
+    User u;
 
     public Connection (Socket socket, int numero, RMI_Interface h){
         thread_number = numero;
@@ -66,12 +58,58 @@ class Connection  extends Thread implements Serializable {
             this.start();
         }catch(IOException e){System.out.println("Connection:" + e.getMessage());}
     }
-    //=============================
 
+    public void sendMessage(String... args) {
+        if (args.length % 2 != 0) { // Se o numero de campos não for par
+            System.out.println("Erro ao registar campos de envio da mensagem.");
+            return;
+        }
+        LinkedHashMap<String, String> reply = new LinkedHashMap<String, String>();
+        for(int i=0;i<args.length;i+=2)
+            reply.put(args[i], args[i+1]);
+        out.println(reply.toString());
+    }
+
+    // Corre 1 vez por cada cliente, fica sempre no while()
     public void run() {
-
         try{
-            while(true){
+            while(!logged) {
+                try {
+                    LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();
+
+                    String data= in.readLine();
+
+                    String [] aux = data.split(",");
+                    for(String field : aux){
+                        String [] aux1 = field.trim().split(": ");
+                        hashMap.put(aux1[0], aux1[1]);
+                    }
+                    String type = hashMap.get("type");
+
+                    if (type.equals("register")) {
+                        if(!r.register_client(hashMap)) {   // Registo falhado, utilizador já existe
+                            sendMessage("type", "register", "ok", "false");
+                        } else {    // Registo bem sucedido
+                            sendMessage("type", "register", "ok", "true");
+                        }
+                    } else if (type.equals("login")) {
+                        // Funcao para verificar se o user existe
+                        if(!r.login_client(hashMap)) {
+                            sendMessage("type", "login", "ok", "false");
+                        } else {
+                            sendMessage("type", "login", "ok", "true");
+                            logged = true;
+                            u = new User(hashMap.get("username"), hashMap.get("password"));
+                        }
+                    } else {
+                        sendMessage("type", "status", "logged", "off", "msg", "You must login first!");
+                    }
+                } catch (Exception e) {
+                    LinkedHashMap<String, String> reply = new LinkedHashMap<String, String>();
+                    out.println("You must follow the protocol.");
+                }
+            }
+            while(logged){
                 //an echo server
                 LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();
 
@@ -92,25 +130,19 @@ class Connection  extends Thread implements Serializable {
                     System.out.println(key + " : " + value);
                 }
 
-
                 this.getType(hashMap);
-
-
             }
         }catch(EOFException e){
             System.out.println("The client["+thread_number+"] ended the connection: EOF:" + e);
             TCPServer.numero--;
         }catch(IOException e){System.out.println("IO:" + e);
-
-
         }
     }
     //ve o tipo de operacao e responde ao cliente conforma o tipo de operacao
     public void getType(LinkedHashMap <String, String> data){
         try{
-            String username = "daniel";//temos que ir buscar isto ao cliente...
+            String username = u.username;
             LinkedHashMap<String, String> reply = new LinkedHashMap<String, String>();
-
 
             //se for do tipo criar_leilao...
             if(data.get("type").equals("create_auction")){
@@ -124,9 +156,11 @@ class Connection  extends Thread implements Serializable {
                 }
 
                 out.println(reply.toString());
-            }
-
-            else if(data.get("type").equals("detail_auction")){
+            } else if (data.get("type").equals("login")) {   // JA ESTA LOGGADO... false
+                sendMessage("type", "login", "ok", "false");
+            } else if (data.get("type").equals("register")) {    // JA ESTA REGISTADO... false
+                sendMessage("type", "register", "ok", "false");
+            } else if (data.get("type").equals("detail_auction")) {
                 Leilao leilao = r.detail_auction(data);
 
                 int i;
@@ -224,16 +258,11 @@ class Connection  extends Thread implements Serializable {
 
                 out.println(reply.toString());
 
-            }
-
-            else{
+            } else {
                 System.out.println("Operation not found!");
             }
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             System.out.println("getype:"+e);
         }
-
     }
-
 }

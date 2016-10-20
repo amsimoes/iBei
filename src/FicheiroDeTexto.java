@@ -1,3 +1,4 @@
+
 import java.io.*;
 
 public class FicheiroDeTexto {
@@ -15,7 +16,7 @@ public class FicheiroDeTexto {
     }
 
     public void abreEscrita(String nomeDoFicheiro) throws IOException{
-        fW = new BufferedWriter(new FileWriter(nomeDoFicheiro,true));
+        fW = new BufferedWriter(new FileWriter(nomeDoFicheiro));
     }
 
     public String leLinha() throws IOException{

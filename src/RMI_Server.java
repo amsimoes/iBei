@@ -21,7 +21,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         loggados = new ArrayList<User>();
     }
 
-    public boolean registerClient(LinkedHashMap<String, String> data) throws RemoteException {
+    public boolean register_client(LinkedHashMap<String, String> data) throws RemoteException {
         try {
             User u = new User(data.get("username"), data.get("password"));
             for (User user : registados) {
@@ -39,7 +39,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         return true;
     }
 
-    public boolean loginClient(LinkedHashMap<String, String> data) throws RemoteException {
+    public boolean login_client(LinkedHashMap<String, String> data) throws RemoteException {
         try {
             User u = new User(data.get("username"), data.get("password"));
             // Verificar se se encontra registado
@@ -90,8 +90,17 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         double amount = Double.parseDouble(data.get("amount"));
 
         DateFormat d1 = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+
         try{
             Date date = d1.parse(data.get("deadline"));
+
+            //verificar se existe um leilao ao mesmo tempo, com o mesmo artigo e feito pelo mesmo cliente
+            for(Leilao leilao: leiloes){
+                if(username.equals(leilao.username_criador) && leilao.data_termino.equals(data) && code == leilao.artigoId)
+                    return false;
+
+            }
+
             Leilao l = new Leilao(username,code,data.get("title"),data.get("description"),amount,date);
 
             leiloes.add(l);
@@ -117,15 +126,56 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             if(leiloes.get(i).id_leilao == id){
                 leiloes.get(i).printInfo();
                 return leiloes.get(i);
+
             }
         }
 
         return null;
     }
 
-    public ArrayList <Leilao> search_auction(LinkedHashMap<String, String> data){
+    public LinkedHashMap<String, String> detail_request(LinkedHashMap<String, String> data){
 
+        Leilao leilao = detail_auction(data);
 
+        int i;
+        LinkedHashMap<String, String> reply = new LinkedHashMap<String, String>();
+        if( leilao != null ){
+            reply.put("type","detail_auction");
+            String titulos = "";
+            for(String titulo: leilao.titulo){
+                titulos += titulo+", ";
+            }
+            reply.put("title",titulos.substring(0, titulos.length()-2));
+            String descricoes = "";
+            for(String descricao:leilao.descricao){
+                descricoes += descricao+", ";
+            }
+            reply.put("title",descricoes.substring(0, descricoes.length()-2));
+
+            reply.put("deadline",leilao.data_termino.toString());
+            reply.put("messages_count",String.valueOf(leilao.mensagens.size()));
+            //mandar mensagens
+            for(i=0; i< leilao.mensagens.size();i++){
+                reply.put("messages_"+String.valueOf(i)+"_user", leilao.mensagens.get(i).get("author"));
+                reply.put("messages_"+String.valueOf(i)+"_text", leilao.mensagens.get(i).get("message"));
+            }
+
+            reply.put("bids_count",String.valueOf(leilao.licitacoes.size()));
+            //mandar licitacoes
+            for(i=0; i< leilao.licitacoes.size();i++){
+                reply.put("messages_"+String.valueOf(i)+"_user", leilao.licitacoes.get(i).get("author"));
+                reply.put("messages_"+String.valueOf(i)+"_text", leilao.licitacoes.get(i).get("bid"));
+            }
+
+        }
+        else{
+            reply.put("type","detail_auction");
+            reply.put("ok","false");
+        }
+        return reply;
+    }
+
+    public LinkedHashMap<String, String> search_auction(LinkedHashMap<String, String> data){
 
         ArrayList <Leilao> leiloes_encontrados = new ArrayList <Leilao>();
         for(Leilao leilao : leiloes){
@@ -135,11 +185,27 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             }
 
         }
-        return leiloes_encontrados;
+        LinkedHashMap<String, String> reply = new LinkedHashMap<String, String>();
+        int i;
+        if(leiloes_encontrados.size() != 0){
+            reply.put("type","search_auction");
+            reply.put("items_count", String.valueOf(leiloes_encontrados.size()));
+            for(i=0; i< leiloes_encontrados.size(); i++){
+                reply.put("items_"+String.valueOf(i)+"_id", String.valueOf(leiloes_encontrados.get(i).id_leilao));
+                reply.put("items_"+String.valueOf(i)+"_code", String.valueOf(leiloes_encontrados.get(i).artigoId));
+                reply.put("items_"+String.valueOf(i)+"_title", leiloes_encontrados.get(i).titulo.get(leiloes_encontrados.get(i).titulo.size()-1));//so mostra o titulo mais recente
+            }
+        }
+        else{
+            reply.put("type","search_auction");
+            reply.put("items_count","0");
+        }
+
+        return reply;
 
     }
     //temos que excluir os leiloes que ja acabaram?
-    public ArrayList <Leilao> my_auctions(LinkedHashMap<String, String> data, String username){
+    public LinkedHashMap<String, String> my_auctions(LinkedHashMap<String, String> data, String username){
 
         ArrayList <Leilao> leiloes_encontrados = new ArrayList <Leilao>();
 
@@ -168,7 +234,26 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             }
 
         }
-        return leiloes_encontrados;
+
+        LinkedHashMap<String, String> reply = new LinkedHashMap<String, String>();
+        int i;
+        if(leiloes_encontrados.size() != 0){
+            reply.put("type","my_auctions");
+            reply.put("items_count", String.valueOf(leiloes_encontrados.size()));
+            for(i=0; i< leiloes_encontrados.size(); i++){
+                reply.put("items_"+String.valueOf(i)+"_id", String.valueOf(leiloes_encontrados.get(i).id_leilao));
+                reply.put("items_"+String.valueOf(i)+"_code", String.valueOf(leiloes_encontrados.get(i).artigoId));
+                reply.put("items_"+String.valueOf(i)+"_title", leiloes_encontrados.get(i).titulo.get(leiloes_encontrados.get(i).titulo.size()-1));//so mostra o titulo mais recente
+            }
+        }
+        else{
+            reply.put("type","my_auctions");
+            reply.put("items_count","0");
+        }
+
+
+
+        return reply;
     }
     //falta mandar para os restantes licitadores a notificacao	
     public boolean make_bid(LinkedHashMap<String, String> data, String username){
@@ -357,6 +442,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         }
 
     }
+
     public void export_auctions(){
         FicheiroDeTexto file = new FicheiroDeTexto();
         int i;
@@ -395,6 +481,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     public void export_registed(){
@@ -407,21 +494,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             }
             file.fechaEscrita();
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    public void import_registed(){
-        FicheiroDeTexto file = new FicheiroDeTexto();
-        try {
-            file.abreLeitura("regist.txt");
-            String read = file.leLinha();
-            while(read != null) {
-                String[] creds = read.split(";");
-                registados.add(new User(creds[0], creds[1]));
-                read = file.leLinha();
-            }
-            file.fechaLeitura();
-        } catch (IOException | NullPointerException e) {
             e.printStackTrace();
         }
     }
@@ -454,33 +526,71 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         }
     }
 
-    public static void main(String args[]) throws MalformedURLException {
+    public void import_registed(){
+        FicheiroDeTexto file = new FicheiroDeTexto();
+        try {
+            file.abreLeitura("regist.txt");
+            String read = file.leLinha();
+            while(read != null) {
+                String[] creds = read.split(";");
+                registados.add(new User(creds[0], creds[1]));
+                read = file.leLinha();
+            }
+            file.fechaLeitura();
+        } catch (IOException | NullPointerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void start(){
 
         try {
             RMI_Server h = new RMI_Server();
-
             Registry r = LocateRegistry.createRegistry(7000);
             r.rebind("connection", h);
-
-            h.import_auctions();
             h.import_registed();
-
+            h.import_auctions();
+            h.import_logged();
             System.out.println("RMI Server ready.");
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+        }
+    }
+    public String teste() throws RemoteException{
+        return "teste";
+    }
 
-        } catch (RemoteException re) {
-            //talvez nao seja a melhor soluçao
-            new Thread() {
-                public void run() {
+    public static void verifica(RMI_Interface h){
 
-                    try {
-                        Thread.sleep(1000);
-                        main(args);
-                    } catch (InterruptedException | MalformedURLException e) {
-                        e.printStackTrace();
-                    }
-                }
+        try {
+            String teste = h.teste();
+            System.out.println(teste);
+            try {
+                Thread.sleep(3000);
+                verifica(h);
 
-            }.start();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+
+            }
+        }
+        catch (RemoteException e){
+            start();
+        }
+
+
+    }
+    
+    public static void main(String args[]) {
+
+        try {
+
+            RMI_Interface h= (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
+            verifica(h);
+
+
+        } catch (RemoteException | NotBoundException re) {
+            start();
         }
     }
 }

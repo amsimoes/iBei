@@ -1,12 +1,15 @@
 //java Server_TCP <porto>
 import java.net.*;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.io.*;
 import java.util.*;
-
 public class TCPServer  {
     public static int numero=0;//numero de clientes online
+
+    public static RMI_Interface RMI;
     public static void main(String args[]) {
         if (args.length == 0) {
             System.out.println("insert serverport");
@@ -15,7 +18,7 @@ public class TCPServer  {
         String port = args[0];
 
         try{
-            RMI_Interface h = (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
+            TCPServer.RMI = (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
 
             int serverPort = Integer.parseInt(port);
             System.out.println("Listening on Port: "+port);
@@ -26,7 +29,7 @@ public class TCPServer  {
                 System.out.println("CLIENT_SOCKET (created at accept())="+clientSocket);
 
                 numero ++;
-                new Connection(clientSocket, numero, h);
+                new Connection(clientSocket, numero);
                 System.out.println(numero);
             }
 
@@ -37,6 +40,22 @@ public class TCPServer  {
             System.out.println(ex);
         }
     }
+
+    public static void RMI_reconnection(){
+        try {
+            Thread.sleep(2000);
+            TCPServer.RMI = (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
+
+        } catch (RemoteException e) {
+            TCPServer.RMI_reconnection();
+            e.printStackTrace();
+        } catch (NotBoundException e) {
+            e.printStackTrace();
+            TCPServer.RMI_reconnection();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }
 
 // Thread para tratar da comunicação com um cliente
@@ -45,15 +64,13 @@ class Connection  extends Thread implements Serializable {
     BufferedReader in= null;
     Socket clientSocket;
     int thread_number;
-    RMI_Interface r;
     boolean logged = false;
     User u;
 
-    public Connection (Socket socket, int numero, RMI_Interface h){
+    public Connection (Socket socket, int numero){
         thread_number = numero;
         try{
             clientSocket = socket;
-            r=h;
             out =  new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.start();
@@ -76,52 +93,26 @@ class Connection  extends Thread implements Serializable {
         try{
             while(!logged) {
                 try {
-                    LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();
-
                     String data= in.readLine();
+                    LinkedHashMap<String, String> hashMap = getData(data);
 
-                    String [] aux = data.split(",");
-                    for(String field : aux){
-                        String [] aux1 = field.trim().split(": ");
-                        hashMap.put(aux1[0], aux1[1]);
-                    }
                     String type = hashMap.get("type");
 
                     if (type.equals("register")) {
-                        if(!r.registerClient(hashMap)) {   // Registo falhado, utilizador já existe
-                            sendMessage("type", "register", "ok", "false");
-                        } else {    // Registo bem sucedido
-                            sendMessage("type", "register", "ok", "true");
-                        }
+                        register(hashMap);
                     } else if (type.equals("login")) {
-                        // Funcao para verificar se o user existe
-                        if(!r.loginClient(hashMap)) {
-                            sendMessage("type", "login", "ok", "false");
-                        } else {
-                            sendMessage("type", "login", "ok", "true");
-                            logged = true;
-                            u = new User(hashMap.get("username"), hashMap.get("password"));
-                        }
+                        login(hashMap);
                     } else {
                         sendMessage("type", "status", "logged", "off", "msg", "You must login first!");
                     }
                 } catch (Exception e) {
-                    LinkedHashMap<String, String> reply = new LinkedHashMap<String, String>();
                     out.println("You must follow the protocol.");
                 }
             }
             while(logged){
-                //an echo server
-                LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();
 
                 String data= in.readLine();
-
-                String [] aux = data.split(",");
-
-                for(String field : aux){
-                    String [] aux1 = field.trim().split(": ");
-                    hashMap.put(aux1[0], aux1[1]);
-                }
+                LinkedHashMap<String, String> hashMap = getData(data);
 
                 System.out.println("T["+thread_number + "] Received: ");
                 //list elements
@@ -137,146 +128,219 @@ class Connection  extends Thread implements Serializable {
             System.out.println("The client["+thread_number+"] ended the connection: EOF:" + e);
             TCPServer.numero--;
         }catch(IOException e){System.out.println("IO:" + e);
+
         }
     }
+
+    public LinkedHashMap<String, String> getData(String data){
+        LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();
+        String [] aux = data.split(",");
+
+        for(String field : aux){
+            String [] aux1 = field.trim().split(": ");
+            hashMap.put(aux1[0], aux1[1]);
+        }
+        return hashMap;
+    }
+
+    public void login(LinkedHashMap<String, String> hashMap){
+        // Funcao para verificar se o user existe
+        try {
+            if(!TCPServer.RMI.login_client(hashMap)) {
+                sendMessage("type", "login", "ok", "false");
+            } else {
+                sendMessage("type", "login", "ok", "true");
+                logged = true;
+                u = new User(hashMap.get("username"), hashMap.get("password"));
+            }
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            TCPServer.RMI_reconnection();
+            login(hashMap);
+        }
+    }
+
+    public void register(LinkedHashMap<String, String> data){
+        try {
+            if(!TCPServer.RMI.register_client(data)) {   // Registo falhado, utilizador já existe
+                sendMessage("type", "register", "ok", "false");
+            } else {    // Registo bem sucedido
+                sendMessage("type", "register", "ok", "true");
+            }
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            TCPServer.RMI_reconnection();
+            register(data);
+        }
+    }
+
+    public void create_auction(LinkedHashMap <String, String> data, String username){
+        try {
+            if(TCPServer.RMI.create_auction(data,username)){
+                sendMessage("type", "create_auction", "ok", "true");
+
+            }
+            else{
+                sendMessage("type", "create_auction","ok","false");
+
+            }
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            TCPServer.RMI_reconnection();
+            create_auction(data, username);
+        }
+
+
+    }
+    public void detail_auction(LinkedHashMap<String, String> data){
+        try {
+            LinkedHashMap<String, String> reply = TCPServer.RMI.detail_request(data);
+            out.println(reply.toString());
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            TCPServer.RMI_reconnection();
+            detail_auction(data);
+        }
+
+    }
+
+    public void search_auction(LinkedHashMap<String, String> data) {
+        try {
+            LinkedHashMap<String, String> reply = TCPServer.RMI.search_auction(data);
+            out.println(reply.toString());
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            TCPServer.RMI_reconnection();
+            search_auction(data);
+        }
+    }
+
+    public void my_auctions(LinkedHashMap<String, String> data, String username) {
+        try {
+            LinkedHashMap<String, String> reply = TCPServer.RMI.my_auctions(data,username);
+            out.println(reply.toString());
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            TCPServer.RMI_reconnection();
+            my_auctions(data, username);
+        }
+
+
+    }
+
+    public void make_bid(LinkedHashMap<String, String> data, String username){
+        //falta mandar para os restantes licitadores a notificacao
+        try {
+            if(TCPServer.RMI.make_bid(data, username)){
+                sendMessage("type","bid","ok","true");
+            }
+            else{
+                sendMessage("type","bid","ok","false");
+            }
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            TCPServer.RMI_reconnection();
+            make_bid(data, username);
+        }
+    }
+
+    public void write_message(LinkedHashMap<String, String> data, String username){
+        //falta mandar para a notificao para os que escreveram no mural e para o criador do leilao
+        try {
+            if(TCPServer.RMI.write_message(data, username)){
+                sendMessage("type","message","ok","true");
+            }
+            else{
+                sendMessage("type","message","ok","false");
+            }
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            TCPServer.RMI_reconnection();
+            write_message(data, username);
+        }
+    }
+
+    public void edit_auction(LinkedHashMap<String, String> data, String username){
+        try {
+            if(!TCPServer.RMI.edit_auction(data, username)) {
+                sendMessage("type","edit_auction","ok","false");
+            }
+            else{sendMessage("type","edit_auction","ok","true");}
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            TCPServer.RMI_reconnection();
+            edit_auction(data, username);
+        }
+    }
+    public void OnlineUsers(){
+        LinkedHashMap<String, String> reply = null;
+        try {
+            reply = TCPServer.RMI.listOnlineUsers();
+            out.println(reply.toString());
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            TCPServer.RMI_reconnection();
+            OnlineUsers();
+        }
+    }
+
+    public void Logout(String username){
+        LinkedHashMap<String, String> reply = null;
+        try {
+            reply = TCPServer.RMI.logoutClient(username);
+            out.println(reply.toString());
+            logged = false;
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            TCPServer.RMI_reconnection();
+            Logout(username);
+        }
+    }
+
+
     //ve o tipo de operacao e responde ao cliente conforma o tipo de operacao
     public void getType(LinkedHashMap <String, String> data){
         try{
             String username = u.username;
-            LinkedHashMap<String, String> reply = new LinkedHashMap<String, String>();
-
-            //se for do tipo criar_leilao...
-            if(data.get("type").equals("create_auction")){
-                if(r.create_auction(data,username)){
-                    reply.put("type","create_auction");
-                    reply.put("ok","true");
-                }
-                else{
-                    reply.put("type","create_auction");
-                    reply.put("ok","false");
-                }
-
-                out.println(reply.toString());
-            } else if (data.get("type").equals("login")) {   // JA ESTA LOGGADO... false
-                sendMessage("type", "login", "ok", "false");
-            } else if (data.get("type").equals("register")) {    // JA ESTA REGISTADO... false
-                sendMessage("type", "register", "ok", "false");
-            } else if (data.get("type").equals("detail_auction")) {
-                Leilao leilao = r.detail_auction(data);
-
-                int i;
-                if( leilao != null ){
-                    reply.put("type","detail_auction");
-                    String titulos = "";
-                    for(String titulo: leilao.titulo){
-                        titulos += titulo+", ";
-                    }
-                    reply.put("title",titulos.substring(0, titulos.length()-2));
-                    String descricoes = "";
-                    for(String descricao:leilao.descricao){
-                        descricoes += descricao+", ";
-                    }
-                    reply.put("title",descricoes.substring(0, descricoes.length()-2));
-
-                    reply.put("deadline",leilao.data_termino.toString());
-                    reply.put("messages_count",String.valueOf(leilao.mensagens.size()));
-                    //mandar mensagens
-                    for(i=0; i< leilao.mensagens.size();i++){
-                        reply.put("messages_"+String.valueOf(i)+"_user", leilao.mensagens.get(i).get("author"));
-                        reply.put("messages_"+String.valueOf(i)+"_text", leilao.mensagens.get(i).get("message"));
-                    }
-
-                    reply.put("bids_count",String.valueOf(leilao.licitacoes.size()));
-                    //mandar licitacoes
-                    for(i=0; i< leilao.licitacoes.size();i++){
-                        reply.put("bid_"+String.valueOf(i)+"_author", leilao.licitacoes.get(i).get("author"));
-                        reply.put("bid_"+String.valueOf(i)+"_value", leilao.licitacoes.get(i).get("bid"));
-                    }
-
-                }
-                else{
-                    reply.put("type","detail_auction");
-                    reply.put("ok","false");
+            switch (data.get("type")) {
+                case "create_auction":
+                    create_auction(data, username);
+                    break;
+                case "login":    // JA ESTA LOGGADO... false
+                    sendMessage("type", "login", "ok", "false");
+                    break;
+                case "register":    // JA ESTA REGISTADO... false
+                    sendMessage("type", "register", "ok", "false");
+                    break;
+                case "detail_auction":
+                    detail_auction(data);
+                    break;
+                case "search_auction":
+                    search_auction(data);
+                    break;
+                case "my_auctions":
+                    my_auctions(data, username);
+                    break;
+                case "bid":
+                    make_bid(data, username);
+                    break;
+                case "message":
+                    write_message(data, username);
+                    break;
+                case "edit_auction":
+                    edit_auction(data, username);
+                    break;
+                case "online_users":
+                    OnlineUsers();
+                    break;
+                case "logout":
+                    Logout(username);
+                    break;
+                default:
+                    System.out.println("Operation not found!");
+                    break;
                 }
 
-                out.println(reply.toString());
-            } else if(data.get("type").equals("search_auction")){
-                ArrayList <Leilao> leiloes = r.search_auction(data);
-                int i;
-                if(leiloes.size() != 0){
-                    reply.put("type","search_auction");
-                    reply.put("items_count", String.valueOf(leiloes.size()));
-                    for(i=0; i< leiloes.size(); i++){
-                        reply.put("items_"+String.valueOf(i)+"_id", String.valueOf(leiloes.get(i).id_leilao));
-                        reply.put("items_"+String.valueOf(i)+"_code", String.valueOf(leiloes.get(i).artigoId));
-                        reply.put("items_"+String.valueOf(i)+"_title", leiloes.get(i).titulo.get(leiloes.get(i).titulo.size()-1));//so mostra o titulo mais recente
-                    }
-                }
-                else{
-                    reply.put("type","search_auction");
-                    reply.put("items_count","0");
-                }
-                out.println(reply.toString());
-            } else if(data.get("type").equals("my_auctions")){
-
-                ArrayList <Leilao> leiloes = r.my_auctions(data,username);
-                int i;
-                if(leiloes.size() != 0){
-                    reply.put("type","my_auctions");
-                    reply.put("items_count", String.valueOf(leiloes.size()));
-                    for(i=0; i< leiloes.size(); i++){
-                        reply.put("items_"+String.valueOf(i)+"_id", String.valueOf(leiloes.get(i).id_leilao));
-                        reply.put("items_"+String.valueOf(i)+"_code", String.valueOf(leiloes.get(i).artigoId));
-                        reply.put("items_"+String.valueOf(i)+"_title", leiloes.get(i).titulo.get(leiloes.get(i).titulo.size()-1));//so mostra o titulo mais recente
-                    }
-                }
-                else{
-                    reply.put("type","my_auctions");
-                    reply.put("items_count","0");
-                }
-                out.println(reply.toString());
-            }
-
-            else if(data.get("type").equals("edit_auction")) {
-                if(!r.edit_auction(data, username)) {
-                    sendMessage("type","edit_auction","ok","false");
-                } else {
-                    sendMessage("type","edit_auction","ok","true");
-                }
-            }
-
-            else if(data.get("type").equals("bid")){
-                //falta mandar para os restantes licitadores a notificacao
-                if(r.make_bid(data, username)){
-                    reply.put("type","bid");
-                    reply.put("ok","true");
-                }
-                else{
-                    reply.put("type","bid");
-                    reply.put("ok","false");
-                }
-                out.println(reply.toString());
-            } else if(data.get("type").equals("message")){
-                //falta mandar para a notificao para os que escreveram no mural e para o criador do leilao
-                if(r.write_message(data, username)){
-                    reply.put("type","message");
-                    reply.put("ok","true");
-                }
-                else{
-                    reply.put("type","message");
-                    reply.put("ok","false");
-                }
-                out.println(reply.toString());
-            } else if(data.get("type").equals("online_users")) {
-                reply = r.listOnlineUsers();
-                out.println(reply.toString());
-            } else if(data.get("type").equals("logout")) {
-                reply = r.logoutClient(username);
-                out.println(reply.toString());
-                logged = false;
-            } else {
-                System.out.println("Operation not found!");
-            }
         } catch (Exception e) {
             System.out.println("getype:"+e);
         }

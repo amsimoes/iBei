@@ -166,8 +166,17 @@ class Connection  extends Thread implements Serializable {
                 int i;
                 if( leilao != null ){
                     reply.put("type","detail_auction");
-                    reply.put("title",leilao.titulo);
-                    reply.put("description", leilao.descricao);
+                    String titulos = "";
+                    for(String titulo: leilao.titulo){
+                        titulos += titulo+", ";
+                    }
+                    reply.put("title",titulos.substring(0, titulos.length()-2));
+                    String descricoes = "";
+                    for(String descricao:leilao.descricao){
+                        descricoes += descricao+", ";
+                    }
+                    reply.put("title",descricoes.substring(0, descricoes.length()-2));
+
                     reply.put("deadline",leilao.data_termino.toString());
                     reply.put("messages_count",String.valueOf(leilao.mensagens.size()));
                     //mandar mensagens
@@ -201,7 +210,7 @@ class Connection  extends Thread implements Serializable {
                     for(i=0; i< leiloes.size(); i++){
                         reply.put("items_"+String.valueOf(i)+"_id", String.valueOf(leiloes.get(i).id_leilao));
                         reply.put("items_"+String.valueOf(i)+"_code", String.valueOf(leiloes.get(i).artigoId));
-                        reply.put("items_"+String.valueOf(i)+"_title", leiloes.get(i).titulo);
+                        reply.put("items_"+String.valueOf(i)+"_title", leiloes.get(i).titulo.get(leiloes.get(i).titulo.size()-1));//so mostra o titulo mais recente
                     }
                 }
                 else{
@@ -221,7 +230,7 @@ class Connection  extends Thread implements Serializable {
                     for(i=0; i< leiloes.size(); i++){
                         reply.put("items_"+String.valueOf(i)+"_id", String.valueOf(leiloes.get(i).id_leilao));
                         reply.put("items_"+String.valueOf(i)+"_code", String.valueOf(leiloes.get(i).artigoId));
-                        reply.put("items_"+String.valueOf(i)+"_title", leiloes.get(i).titulo);
+                        reply.put("items_"+String.valueOf(i)+"_title", leiloes.get(i).titulo.get(leiloes.get(i).titulo.size()-1));//so mostra o titulo mais recente
                     }
                 }
                 else{

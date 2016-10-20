@@ -1,0 +1,29 @@
+user1
+123
+100
+1_tentativa, 2_tentativa
+criacao de um leilao
+10.0
+0
+22-06-2017 10:19
+{author=user1, message=a minha primeira msg}
+{author=user2, message=a segunda primeira msg}
+{author=user3, message=a terceira primeira msg}
+{author=user1, bid=a primeira bid}
+{author=user2, bid=a segunda bid}
+
+user2
+1234
+101
+2_tentativa, outra tentativa
+um leilao
+30.0
+0
+22-06-2017 10:19
+{author=user1, message=a minha primeira msg}
+{author=user3, message=a segunda primeira msg}
+{author=user4, bid=a segunda primeira bid}
+{author=user2, bid=a segunda segunda bid}
+{author=user1, bid=a segunda terceira bid}
+
+

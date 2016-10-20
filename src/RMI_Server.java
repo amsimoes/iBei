@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -79,6 +80,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 
             System.out.println("Auction created!");
 
+            this.export_auctions();
             return true;
         }
 
@@ -118,17 +120,13 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         return leiloes_encontrados;
 
     }
-
+    //temos que excluir os leiloes que ja acabaram?
     public ArrayList <Leilao> my_auctions(LinkedHashMap<String, String> data, String username){
 
         ArrayList <Leilao> leiloes_encontrados = new ArrayList <Leilao>();
 
         for(Leilao leilao : leiloes){
 
-            if(leilao.username_criador.equals(username)){
-                leiloes_encontrados.add(leilao);
-                break;
-            }
 
             int n = leiloes_encontrados.size();
             for(LinkedHashMap <String, String> msg1 : leilao.mensagens){
@@ -145,6 +143,10 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
                         break;
                     }
                 }
+            }
+            //melhorar codigo
+            if(n == leiloes_encontrados.size() && leilao.username_criador.equals(username)){
+                leiloes_encontrados.add(leilao);
             }
 
         }
@@ -181,8 +183,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             }
         }
 
-        if(auc.data_termino.before(new Date())){
-            System.out.println("The auction already ended");
+        if(auc.state == 1 || auc.state == 2){
+            System.out.println("The auction already ended or was canceled");
             return false;
         }
 
@@ -191,7 +193,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         my_bid.put("bid", data.get("amount"));
 
         auc.licitacoes.add(my_bid);
-
+        this.export_auctions();
 
 
         return true;
@@ -217,8 +219,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 
         Leilao auc = leiloes.get(i);
 
-        if(auc.data_termino.before(new Date())){
-            System.out.println("The auction already ended");
+        if(auc.state == 1 || auc.state == 2){
+            System.out.println("The auction already ended or was canceled");
             return false;
         }
 
@@ -228,13 +230,116 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 
         auc.mensagens.add(my_msg);
         auc.printInfo();
-
+        this.export_auctions();
         return true;
 
     }
 
+
+    public void import_autions(){
+        FicheiroDeTexto file = new FicheiroDeTexto();
+        try {
+            file.abreLeitura("auctions.txt");
+
+            DateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+            int i;
+            String username = file.leLinha();
+            while(username != null){
+                long artigoID = Long.parseLong(file.leLinha());
+                long id_leilao = Long.parseLong(file.leLinha());
+                String [] titulo = file.leLinha().replaceAll(", ",",").split(",");
+                ArrayList <String> titulos = new  ArrayList<String>(Arrays.asList(titulo));
+                String [] descricao = file.leLinha().replaceAll(", ",",").split(",");
+                ArrayList <String> descricoes =new  ArrayList<String>(Arrays.asList(descricao));
+                double precoMax = Double.parseDouble(file.leLinha());
+                int state = Integer.parseInt(file.leLinha());
+                Date data = df.parse(file.leLinha());
+
+                Leilao leilao = new Leilao(username, artigoID, titulos.get(0), descricoes.get(0), precoMax, data);
+                //talvez nao seja a melhor solucao...
+                for(i=1; i< titulos.size();i++){
+                    leilao.titulo.add(titulos.get(i));
+                }
+                for(i=1; i< descricoes.size();i++){
+                    leilao.descricao.add(descricoes.get(i));
+                }
+                leilao.state = state;
+                leilao.id_leilao = id_leilao;
+                String next = file.leLinha();
+
+                while(next.indexOf("author=") != -1){
+                    LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();
+                    next = next.substring(1,next.length()-1);
+                    String [] aux = next.split(", ");
+
+                    for(String field : aux){
+                        String [] aux1 = field.split("=");
+                        hashMap.put(aux1[0], aux1[1]);
+                    }
+
+                    if(next.indexOf("message=") != -1){
+                        leilao.mensagens.add(hashMap);
+                        }
+
+                    else if(next.indexOf("bid=") != -1){
+                        leilao.licitacoes.add(hashMap);
+                    }
+                    next = file.leLinha();
+                }
+                leiloes.add(leilao);
+                username = file.leLinha();
+            }
+            file.fechaLeitura();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void export_auctions(){
+        FicheiroDeTexto file = new FicheiroDeTexto();
+        int i;
+        try {
+            file.abreEscrita("auctions.txt");
+            for(Leilao leilao: leiloes){
+
+                file.escreveNovaLinha(leilao.username_criador);
+                file.escreveNovaLinha(String.valueOf(leilao.artigoId));
+                file.escreveNovaLinha(String.valueOf(leilao.id_leilao));
+                for(i=0; i< leilao.titulo.size()-1; i++){
+                    file.escreveLinha(leilao.titulo.get(i)+", ");
+                }
+                file.escreveNovaLinha(leilao.titulo.get(leilao.titulo.size()-1));
+
+                for(i=0; i< leilao.descricao.size()-1; i++){
+                    file.escreveLinha(leilao.descricao.get(i)+", ");
+                }
+                file.escreveNovaLinha(leilao.descricao.get(leilao.descricao.size()-1));
+                file.escreveNovaLinha(String.valueOf(leilao.precoMax));
+                file.escreveNovaLinha(String.valueOf(leilao.state));
+
+                DateFormat d1 = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+                file.escreveNovaLinha(d1.format(leilao.data_termino));
+
+                for(LinkedHashMap <String, String> msg: leilao.mensagens){
+                    file.escreveNovaLinha(msg.toString());
+                }
+
+                for(LinkedHashMap <String, String> bid: leilao.licitacoes){
+                    file.escreveNovaLinha(bid.toString());
+                }
+                file.escreveNovaLinha("");
+            }
+            file.fechaEscrita();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
     
-    public static void main(String args[]) throws MalformedURLException{
+    public static void main(String args[]) throws MalformedURLException {
 
         try {
             RMI_Server h = new RMI_Server();
@@ -242,14 +347,30 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             Registry r = LocateRegistry.createRegistry(7000);
             r.rebind("connection", h);
 
+            h.import_autions();
 
             System.out.println("RMI Server ready.");
 
         } catch (RemoteException re) {
-            System.out.println("Exception in RMI_Server.main: " + re);
+            //talvez nao seja a melhor soluçao
+            new Thread() {
+                public void run() {
+
+                    try {
+                        Thread.sleep(1000);
+                        main(args);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
+
+
+                }
+
+            }.start();
 
         }
-
     }
 
 

@@ -10,4 +10,7 @@ public interface RMI_Interface extends Remote {
     public ArrayList <Leilao> my_auctions(LinkedHashMap<String, String> data, String username) throws java.rmi.RemoteException;
     public boolean make_bid(LinkedHashMap<String, String> data, String username) throws java.rmi.RemoteException;
     public boolean write_message(LinkedHashMap<String, String> data, String username) throws java.rmi.RemoteException;
-}
+    public void import_autions() throws java.rmi.RemoteException;
+    public void export_auctions() throws java.rmi.RemoteException;
+
+    }

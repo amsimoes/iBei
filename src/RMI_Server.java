@@ -1,3 +1,4 @@
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
@@ -34,6 +35,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         } catch(Exception e) {
             System.out.println(e);
         }
+        this.export_registed();
         return true;
     }
 
@@ -327,7 +329,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         }
 
     }
-
     public void export_auctions(){
         FicheiroDeTexto file = new FicheiroDeTexto();
         int i;
@@ -366,9 +367,38 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
-    
+
+    public void export_registed(){
+        FicheiroDeTexto file = new FicheiroDeTexto();
+        try {
+            file.abreEscrita("regist.txt");
+            for(User user : registados) {
+                file.escreveNovaLinha(user.username+";"+user.password);
+                System.out.println("regist.txt | A Escrever: "+user.username+" "+user.password);
+            }
+            file.fechaEscrita();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void import_registed(){
+        FicheiroDeTexto file = new FicheiroDeTexto();
+        try {
+            file.abreLeitura("regist.txt");
+            String read = file.leLinha();
+            while(read != null) {
+                String[] creds = read.split(";");
+                registados.add(new User(creds[0], creds[1]));
+                read = file.leLinha();
+            }
+            file.fechaLeitura();
+        } catch (IOException | NullPointerException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String args[]) throws MalformedURLException {
 
         try {
@@ -378,6 +408,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             r.rebind("connection", h);
 
             h.import_auctions();
+            h.import_registed();
 
             System.out.println("RMI Server ready.");
 

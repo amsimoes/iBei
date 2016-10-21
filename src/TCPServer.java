@@ -302,7 +302,7 @@ class Connection  extends Thread implements Serializable {
         }
     }
 
-    public void cancelAuction(String username){
+    public void cancelAuction(String username, ){
         LinkedHashMap<String, String> reply = null;
         try {
             reply = TCPServer.RMI.cancelAuction(username);

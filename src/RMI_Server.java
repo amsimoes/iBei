@@ -609,6 +609,30 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 
 
     }
+
+    //admin
+    public boolean isAdmin(String username){
+        for (User c: loggados){
+            if (c.getUsername().equals(username)){
+                if (c.getAdmin()){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            }
+        }
+    }
+
+    public static boolean cancelAuction (long id){
+        for (Leilao current: leiloes){
+            if (current.getArtigoId()==id){
+                current.setState(1);
+                return true;
+            }
+        }
+        return false;
+    }
     
     public static void main(String args[]) {
 

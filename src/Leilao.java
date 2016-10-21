@@ -67,6 +67,84 @@ public class Leilao implements Serializable{
         }
     }
 
+    public String getUsername_criador() {
+        return username_criador;
+    }
 
+    public long getArtigoId() {
+        return artigoId;
+    }
+
+    public long getId_leilao() {
+        return id_leilao;
+    }
+
+    public ArrayList<String> getTitulo() {
+        return titulo;
+    }
+
+    public ArrayList<String> getDescricao() {
+        return descricao;
+    }
+
+    public double getPrecoMax() {
+        return precoMax;
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public Date getData_termino() {
+        return data_termino;
+    }
+
+    public ArrayList<LinkedHashMap<String, String>> getMensagens() {
+        return mensagens;
+    }
+
+    public ArrayList<LinkedHashMap<String, String>> getLicitacoes() {
+        return licitacoes;
+    }
+
+    public void setUsername_criador(String username_criador) {
+        this.username_criador = username_criador;
+    }
+
+    public void setArtigoId(long artigoId) {
+        this.artigoId = artigoId;
+    }
+
+    public void setId_leilao(long id_leilao) {
+        this.id_leilao = id_leilao;
+    }
+
+    public void setTitulo(ArrayList<String> titulo) {
+        this.titulo = titulo;
+    }
+
+    public void setDescricao(ArrayList<String> descricao) {
+        this.descricao = descricao;
+    }
+
+    public void setPrecoMax(double precoMax) {
+        this.precoMax = precoMax;
+    }
+
+    public void setState(int state) {
+        this.state = state;
+    }
+
+    public void setData_termino(Date data_termino) {
+        this.data_termino = data_termino;
+    }
+
+    public void setMensagens(ArrayList<LinkedHashMap<String, String>> mensagens) {
+        this.mensagens = mensagens;
+    }
+
+    public void setLicitacoes(ArrayList<LinkedHashMap<String, String>> licitacoes) {
+        this.licitacoes = licitacoes;
+    }
 }
 

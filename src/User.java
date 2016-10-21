@@ -1,8 +1,8 @@
 public class User{
     public String username;
     public String password;
-    public Boolean admin=false;
-    public Boolean banned=false;
+    public boolean admin=false;
+    public boolean banned=false;
 
     public User(String username, String password){
         this.username = username;

@@ -15,6 +15,10 @@ public interface RMI_Interface extends Remote {
     public LinkedHashMap<String, String> listOnlineUsers() throws RemoteException;
     public LinkedHashMap<String, String> logoutClient(String username) throws RemoteException;
 
+    //admin
+    public boolean isAdmin(String username);
+    public static boolean cancelAuction ();
+
     //serao precisas?
     public void import_auctions() throws java.rmi.RemoteException;
     public void export_auctions() throws java.rmi.RemoteException;

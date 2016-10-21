@@ -516,6 +516,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         try {
             file.abreLeitura("logged.txt");
             String read = file.leLinha();
+            System.out.println("Linha lida do logged.txt = "+read);
             while(read != null) {
                 loggados.add(new User(read,""));
                 read = file.leLinha();
@@ -557,8 +558,11 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             Registry r = LocateRegistry.createRegistry(7000);
             r.rebind("connection", h);
             h.import_registed();
+            System.out.println(h.registados);
             h.import_auctions();
             h.import_logged();
+            System.out.println(h.loggados);
+
             System.out.println("RMI Server ready.");
 
             //thread para verificar o termino dos leiloes

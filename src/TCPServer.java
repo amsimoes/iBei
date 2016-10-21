@@ -127,6 +127,11 @@ class Connection  extends Thread implements Serializable {
         }catch(EOFException e){
             System.out.println("The client["+thread_number+"] ended the connection: EOF:" + e);
             TCPServer.numero--;
+            try {
+                TCPServer.RMI.logoutClient(u.username);
+            } catch (RemoteException e1) {
+                e1.printStackTrace();
+            }
         }catch(IOException e){System.out.println("IO:" + e);
 
         }

@@ -490,7 +490,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             file.abreEscrita("regist.txt");
             for(User user : registados) {
                 file.escreveNovaLinha(user.username+";"+user.password);
-                System.out.println("regist.txt | A Escrever: "+user.username+" "+user.password);
+                //System.out.println("regist.txt | A Escrever: "+user.username+" "+user.password);
             }
             file.fechaEscrita();
         } catch (IOException e) {
@@ -504,7 +504,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             file.abreEscrita("logged.txt");
             for(User user : loggados) {
                 file.escreveNovaLinha(user.username);
-                System.out.println("login.txt | A Escrever: "+user.username);
+                //System.out.println("login.txt | A Escrever: "+user.username);
             }
             file.fechaEscrita();
         } catch (IOException | NullPointerException e) {
@@ -517,7 +517,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             file.abreLeitura("logged.txt");
             String read = file.leLinha();
             while(read != null) {
-                registados.add(new User(read,""));
+                loggados.add(new User(read,""));
                 read = file.leLinha();
             }
             file.fechaLeitura();
@@ -542,6 +542,14 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         }
     }
 
+    public void verifica_terminoLeiloes(){
+        for(Leilao leilao: leiloes){
+            if(new Date().after(leilao.data_termino)){
+                leilao.state = 2;
+            }
+        }
+    }
+
     public static void start(){
 
         try {
@@ -552,6 +560,23 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             h.import_auctions();
             h.import_logged();
             System.out.println("RMI Server ready.");
+
+            //thread para verificar o termino dos leiloes
+            new Thread() {
+                public void run() {
+                    while (true) {
+
+                        try {
+                            Thread.sleep(1000);
+                            h.verifica_terminoLeiloes();
+
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+
+                        }
+                    }
+                }
+            }.start();
         } catch (RemoteException e) {
             //e.printStackTrace();
         }

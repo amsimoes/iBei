@@ -302,6 +302,38 @@ class Connection  extends Thread implements Serializable {
         }
     }
 
+    public void cancelAuction(String username){
+        LinkedHashMap<String, String> reply = null;
+        try {
+            reply = TCPServer.RMI.cancelAuction(username);
+            out.println(reply.toString());
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            TCPServer.RMI_reconnection();
+            cancelAuction(username);
+    }
+
+    public void banUser(String username, String ban){
+        LinkedHashMap<String, String> reply = null;
+        try {
+            reply = TCPServer.RMI.banUser(username, ban);
+            out.println(reply.toString());
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            TCPServer.RMI_reconnection();
+            banUser(username, ban);
+        }
+
+    public void getStats(String username){
+        LinkedHashMap<String, String> reply = null;
+        try {
+            reply = TCPServer.RMI.getStats(username);
+            out.println(reply.toString());
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            TCPServer.RMI_reconnection();
+            getStats(username);
+        }
 
     //ve o tipo de operacao e responde ao cliente conforma o tipo de operacao
     public void getType(LinkedHashMap <String, String> data){

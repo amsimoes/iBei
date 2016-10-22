@@ -18,6 +18,7 @@ public interface RMI_Interface extends Remote {
     //admin
     public boolean isAdmin(String username);
     public static boolean cancelAuction ();
+    public static boolean banUser (String username);
 
     //serao precisas?
     public void import_auctions() throws java.rmi.RemoteException;

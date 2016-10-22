@@ -612,7 +612,9 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 
     //admin
     public boolean isAdmin(String username){
-        for (User c: loggados){
+    	User c;
+        for (int i=0; i<loggados.size(); i++){
+        	c = loggados.get(i);
             if (c.getUsername().equals(username)){
                 if (c.getAdmin()){
                     return true;
@@ -625,13 +627,32 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
     }
 
     public static boolean cancelAuction (long id){
-        for (Leilao current: leiloes){
+    	Leilao current;
+        for (int i=0; i<leiloes.size(); i++){
+        	current = leiloes.get(i);
             if (current.getArtigoId()==id){
                 current.setState(1);
                 return true;
             }
         }
         return false;
+    }
+
+    public static boolean banUser (String username){
+    	Leilao current;
+    	for (int i=0; i<leiloes.size(); i++){
+        	current = leiloes.get(i);
+            if (current.getUsername()==username){
+                current.setState(1);
+            }
+            else{
+            	LinkedHashMap <String, String> temp;
+            	for (int k=0; k<current.leiloes.size(); k++){
+            		//TODO changes bids
+            	}
+            }
+        }
+
     }
     
     public static void main(String args[]) {

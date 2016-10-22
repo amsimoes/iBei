@@ -313,16 +313,33 @@ class Connection  extends Thread implements Serializable {
             cancelAuction(username);
     }
 
+    //admin
+
+    //TODO change replies
+
+    public void cancelAuction(String username, Long id){
+        LinkedHashMap<String, String> reply = null;
+        try {
+            reply = TCPServer.RMI.cancelAuction(id);
+            out.println(reply.toString());
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            TCPServer.RMI_reconnection();
+            cancelAuction(username, id);
+        }
+    }
+
     public void banUser(String username, String ban){
         LinkedHashMap<String, String> reply = null;
         try {
-            reply = TCPServer.RMI.banUser(username, ban);
+            reply = TCPServer.RMI.banUser(ban);
             out.println(reply.toString());
         } catch (RemoteException e) {
             //e.printStackTrace();
             TCPServer.RMI_reconnection();
             banUser(username, ban);
         }
+    }
 
     public void getStats(String username){
         LinkedHashMap<String, String> reply = null;
@@ -334,6 +351,7 @@ class Connection  extends Thread implements Serializable {
             TCPServer.RMI_reconnection();
             getStats(username);
         }
+    }
 
     //ve o tipo de operacao e responde ao cliente conforma o tipo de operacao
     public void getType(LinkedHashMap <String, String> data){

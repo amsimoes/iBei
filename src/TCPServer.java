@@ -5,11 +5,14 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.io.*;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
+
 public class TCPServer  {
     public static int numero=0;//numero de clientes online
-
     public static RMI_Interface RMI;
+    private static ArrayList<Connection> clients = new ArrayList<Connection>();
+
     public static void main(String args[]) {
         if (args.length == 0) {
             System.out.println("insert serverport");
@@ -27,16 +30,15 @@ public class TCPServer  {
             while(true) {
                 Socket clientSocket = listenSocket.accept(); // BLOQUEANTE
                 System.out.println("CLIENT_SOCKET (created at accept())="+clientSocket);
-
-                numero ++;
-                new Connection(clientSocket, numero);
+                numero++;
+                Connection c = new Connection(clientSocket, numero);
+                clients.add(c);
                 System.out.println(numero);
             }
-
-        }catch(IOException e)
-        {System.out.println("Listen: " + e.getMessage());}
-        catch(Exception ex){
-
+        } catch(IOException e) {
+            System.out.println("Listen: " + e.getMessage());
+        } catch(Exception ex){
+            System.out.println("NULL ???");
             System.out.println(ex);
         }
     }
@@ -45,36 +47,49 @@ public class TCPServer  {
         try {
             Thread.sleep(2000);
             TCPServer.RMI = (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
-
-        } catch (RemoteException e) {
+        } catch (RemoteException | NotBoundException e) {
             TCPServer.RMI_reconnection();
             e.printStackTrace();
-        } catch (NotBoundException e) {
-            e.printStackTrace();
-            TCPServer.RMI_reconnection();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void serverPush(String username, String message, String id) {
+        for(Connection c : clients) {
+            if(!c.getUsername().equals(username)) {
+                c.sendMessage("type","notification_message","id",id,"user",username,"text",message);
+            }
         }
     }
 }
 
 // Thread para tratar da comunicação com um cliente
 class Connection  extends Thread implements Serializable {
-    PrintWriter out;
-    BufferedReader in= null;
-    Socket clientSocket;
-    int thread_number;
-    boolean logged = false;
-    User u;
+    private PrintWriter out;
+    private BufferedReader in= null;
+    private Socket clientSocket;
+    private int thread_number;
+    private boolean logged = false;
+    private User u;
 
-    public Connection (Socket socket, int numero){
+    public Connection (Socket socket, int numero) {
         thread_number = numero;
         try{
             clientSocket = socket;
             out =  new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.start();
-        }catch(IOException e){System.out.println("Connection:" + e.getMessage());}
+        } catch(IOException e){
+            System.out.println("Connection:" + e.getMessage());
+        }
+    }
+
+    public boolean isLogged() {
+        return logged;
+    }
+    public String getUsername() {
+        return u.username;
     }
 
     public void sendMessage(String... args) {
@@ -101,6 +116,7 @@ class Connection  extends Thread implements Serializable {
                     if (type.equals("register")) {
                         register(hashMap);
                     } else if (type.equals("login")) {
+                        System.out.println("LOGGING IN...");
                         login(hashMap);
                     } else {
                         sendMessage("type", "status", "logged", "off", "msg", "You must login first!");
@@ -110,30 +126,30 @@ class Connection  extends Thread implements Serializable {
                 }
             }
             while(logged){
+                    String data= in.readLine();
+                    LinkedHashMap<String, String> hashMap = getData(data);
 
-                String data= in.readLine();
-                LinkedHashMap<String, String> hashMap = getData(data);
+                    System.out.println("T["+thread_number + "] Received: ");
+                    //list elements
+                    for (String key : hashMap.keySet()) {
 
-                System.out.println("T["+thread_number + "] Received: ");
-                //list elements
-                for (String key : hashMap.keySet()) {
+                        String value = hashMap.get(key);
+                        System.out.println(key + " : " + value);
+                    }
 
-                    String value = hashMap.get(key);
-                    System.out.println(key + " : " + value);
-                }
-
-                this.getType(hashMap);
+                    this.getType(hashMap);
             }
-        }catch(EOFException e){
+        } catch(EOFException | NullPointerException e){
             System.out.println("The client["+thread_number+"] ended the connection: EOF:" + e);
             TCPServer.numero--;
             try {
                 TCPServer.RMI.logoutClient(u.username);
+                System.out.println("User "+u.username+" desligado a bruta.");
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }
-        }catch(IOException e){System.out.println("IO:" + e);
-
+        } catch(IOException e) {
+            System.out.println("IO:" + e);
         }
     }
 
@@ -159,9 +175,10 @@ class Connection  extends Thread implements Serializable {
                 u = new User(hashMap.get("username"), hashMap.get("password"));
             }
         } catch (RemoteException e) {
-            //e.printStackTrace();
+            e.printStackTrace();
             TCPServer.RMI_reconnection();
             login(hashMap);
+            sendMessage("type", "login", "ok", "false");
         }
     }
 
@@ -178,7 +195,6 @@ class Connection  extends Thread implements Serializable {
             register(data);
         }
     }
-
     public void create_auction(LinkedHashMap <String, String> data, String username){
         try {
             if(TCPServer.RMI.create_auction(data,username)){
@@ -208,7 +224,6 @@ class Connection  extends Thread implements Serializable {
         }
 
     }
-
     public void search_auction(LinkedHashMap<String, String> data) {
         try {
             LinkedHashMap<String, String> reply = TCPServer.RMI.search_auction(data);
@@ -219,7 +234,6 @@ class Connection  extends Thread implements Serializable {
             search_auction(data);
         }
     }
-
     public void my_auctions(LinkedHashMap<String, String> data, String username) {
         try {
             LinkedHashMap<String, String> reply = TCPServer.RMI.my_auctions(data,username);
@@ -232,7 +246,6 @@ class Connection  extends Thread implements Serializable {
 
 
     }
-
     public void make_bid(LinkedHashMap<String, String> data, String username){
         //falta mandar para os restantes licitadores a notificacao
         try {
@@ -248,12 +261,12 @@ class Connection  extends Thread implements Serializable {
             make_bid(data, username);
         }
     }
-
     public void write_message(LinkedHashMap<String, String> data, String username){
         //falta mandar para a notificao para os que escreveram no mural e para o criador do leilao
         try {
             if(TCPServer.RMI.write_message(data, username)){
                 sendMessage("type","message","ok","true");
+                TCPServer.serverPush(username, data.get("text"), data.get("id"));
             }
             else{
                 sendMessage("type","message","ok","false");
@@ -302,57 +315,8 @@ class Connection  extends Thread implements Serializable {
         }
     }
 
-    public void cancelAuction(String username, ){
-        LinkedHashMap<String, String> reply = null;
-        try {
-            reply = TCPServer.RMI.cancelAuction(username);
-            out.println(reply.toString());
-        } catch (RemoteException e) {
-            //e.printStackTrace();
-            TCPServer.RMI_reconnection();
-            cancelAuction(username);
-    }
-
-    //admin
-    /*
+    // * ADMIN *
     //TODO change replies
-
-    public void cancelAuction(String username, Long id){
-        LinkedHashMap<String, String> reply = null;
-        try {
-            reply = TCPServer.RMI.cancelAuction(id);
-            out.println(reply.toString());
-        } catch (RemoteException e) {
-            //e.printStackTrace();
-            TCPServer.RMI_reconnection();
-            cancelAuction(username, id);
-        }
-    }
-
-    public void banUser(String username, String ban){
-        LinkedHashMap<String, String> reply = null;
-        try {
-            reply = TCPServer.RMI.banUser(ban);
-            out.println(reply.toString());
-        } catch (RemoteException e) {
-            //e.printStackTrace();
-            TCPServer.RMI_reconnection();
-            banUser(username, ban);
-        }
-    }
-
-    public void getStats(String username){
-        LinkedHashMap<String, String> reply = null;
-        try {
-            reply = TCPServer.RMI.getStats(username);
-            out.println(reply.toString());
-        } catch (RemoteException e) {
-            //e.printStackTrace();
-            TCPServer.RMI_reconnection();
-            getStats(username);
-        }
-    }
-    */
 
     //ve o tipo de operacao e responde ao cliente conforma o tipo de operacao
     public void getType(LinkedHashMap <String, String> data){

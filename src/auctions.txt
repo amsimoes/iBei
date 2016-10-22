@@ -26,3 +26,31 @@ um leilao
 {author=user2, bid=a segunda segunda bid}
 {author=user1, bid=a segunda terceira bid}
 
+daniel
+123456789
+1477162379786
+leilao_um
+primeiro
+10.0
+3
+10-07-0006 00:20
+{author=daniel, message=eheheheheh}
+
+homer
+123456781
+1477162409458
+leilao_um
+segundo
+10.0
+3
+10-07-0006 00:20
+
+daniel
+123456789
+1477164369187
+leilao_um
+primeiro
+10.0
+3
+10-07-0006 00:20
+

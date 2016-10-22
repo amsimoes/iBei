@@ -1,5 +1,6 @@
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -10,15 +11,17 @@ import java.util.*;
 
 
 public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
-    ArrayList <Leilao> leiloes;
-    ArrayList <User> registados;
-    ArrayList <User> loggados;
+    private ArrayList <Leilao> leiloes;
+    private ArrayList <User> registados;
+    private static ArrayList <User> loggados;
+    private ArrayList <Connection> conns;
 
     public RMI_Server() throws RemoteException {
         super();
         leiloes = new ArrayList <Leilao>();
         registados = new ArrayList<User>();
         loggados = new ArrayList<User>();
+        conns = new ArrayList<Connection>();
     }
 
     public boolean register_client(LinkedHashMap<String, String> data) throws RemoteException {
@@ -76,6 +79,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         for(User user : loggados) {
             if(user.username.equals(username)) {
                 loggados.remove(user);
+                this.export_logged();
                 reply.put("ok", "true");
                 return reply;
             }
@@ -330,6 +334,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         auc.mensagens.add(my_msg);
         auc.printInfo();
         this.export_auctions();
+
         return true;
     }
 
@@ -511,7 +516,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             e.printStackTrace();
         }
     }
-    public void import_logged(){
+    public static void import_logged(){
         FicheiroDeTexto file = new FicheiroDeTexto();
         try {
             file.abreLeitura("logged.txt");
@@ -546,13 +551,12 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
     public void verifica_terminoLeiloes(){
         for(Leilao leilao: leiloes){
             if(new Date().after(leilao.data_termino)){
-                leilao.state = 2;
+                leilao.state = 3;
             }
         }
     }
 
     public static void start(){
-
         try {
             RMI_Server h = new RMI_Server();
             Registry r = LocateRegistry.createRegistry(7000);
@@ -560,8 +564,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             h.import_registed();
             System.out.println(h.registados);
             h.import_auctions();
-            h.import_logged();
-            System.out.println(h.loggados);
+            //System.out.println(h.loggados);   vazio
 
             System.out.println("RMI Server ready.");
 
@@ -585,86 +588,31 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             //e.printStackTrace();
         }
     }
-    public String teste() throws RemoteException{
-        return "teste";
+
+    public String teste() throws RemoteException {
+        return "A verificar Servidor RMI Primario";
     }
 
-    public static void verifica(RMI_Interface h){
-
+    public static void verifica(RMI_Interface h) {
         try {
             String teste = h.teste();
             System.out.println(teste);
             try {
                 Thread.sleep(3000);
                 verifica(h);
-
             } catch (InterruptedException e) {
                 e.printStackTrace();
-
             }
-        }
-        catch (RemoteException e){
+        } catch (RemoteException e){
             start();
-        }
-
-
-    }
-
-    //admin
-    /*
-    public boolean isAdmin(String username){
-    	User c;
-        for (int i=0; i<loggados.size(); i++){
-        	c = loggados.get(i);
-            if (c.getUsername().equals(username)){
-                if (c.getAdmin()){
-                    return true;
-                }
-                else{
-                    return false;
-                }
-            }
+            import_logged();
         }
     }
-
-    public static boolean cancelAuction (long id){
-    	Leilao current;
-        for (int i=0; i<leiloes.size(); i++){
-        	current = leiloes.get(i);
-            if (current.getArtigoId()==id){
-                current.setState(1);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static boolean banUser (String username){
-    	Leilao current;
-    	for (int i=0; i<leiloes.size(); i++){
-        	current = leiloes.get(i);
-            if (current.getUsername().equal(username)){
-                current.setState(1);
-            }
-            else{
-            	LinkedHashMap <String, String> temp;
-            	for (int k=0; k<current.leiloes.size(); k++){
-            		//TODO changes bids
-            	}
-            }
-        }
-        return true;
-    }
-    */
     
     public static void main(String args[]) {
-
         try {
-
             RMI_Interface h= (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
             verifica(h);
-
-
         } catch (RemoteException | NotBoundException re) {
             start();
         }

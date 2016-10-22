@@ -17,7 +17,7 @@ public interface RMI_Interface extends Remote {
 
     //admin
     public boolean isAdmin(String username);
-    public static boolean cancelAuction ();
+    public static boolean cancelAuction (Long id);
     public static boolean banUser (String username);
 
     //serao precisas?

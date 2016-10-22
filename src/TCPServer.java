@@ -314,7 +314,7 @@ class Connection  extends Thread implements Serializable {
     }
 
     //admin
-
+    /*
     //TODO change replies
 
     public void cancelAuction(String username, Long id){
@@ -352,6 +352,7 @@ class Connection  extends Thread implements Serializable {
             getStats(username);
         }
     }
+    */
 
     //ve o tipo de operacao e responde ao cliente conforma o tipo de operacao
     public void getType(LinkedHashMap <String, String> data){

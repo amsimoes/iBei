@@ -611,6 +611,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
     }
 
     //admin
+    /*
     public boolean isAdmin(String username){
     	User c;
         for (int i=0; i<loggados.size(); i++){
@@ -642,7 +643,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
     	Leilao current;
     	for (int i=0; i<leiloes.size(); i++){
         	current = leiloes.get(i);
-            if (current.getUsername()==username){
+            if (current.getUsername().equal(username)){
                 current.setState(1);
             }
             else{
@@ -652,8 +653,9 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             	}
             }
         }
-
+        return true;
     }
+    */
     
     public static void main(String args[]) {
 

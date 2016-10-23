@@ -1,3 +1,0 @@
-homer;simpson
-lol;lol
-daniel;daniel

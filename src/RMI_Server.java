@@ -1,3 +1,4 @@
+import java.io.EOFException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
@@ -38,7 +39,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         } catch(Exception e) {
             System.out.println(e);
         }
-        this.export_registed();
+        this.exportObjRegisted();
         return true;
     }
 
@@ -61,7 +62,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
                     //System.out.println("Utilizador não se encontra loggado.");
                     System.out.println("Utilizador "+u.username+" loggado com sucesso!");
                     loggados.add(u);
-                    this.export_logged();
+                    //this.export_logged();
+                    this.exportObjLogged();
                     return true;
                 }
             }
@@ -79,7 +81,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         for(User user : loggados) {
             if(user.username.equals(username)) {
                 loggados.remove(user);
-                this.export_logged();
+                //this.export_logged();
+                this.exportObjLogged();
                 reply.put("ok", "true");
                 return reply;
             }
@@ -111,7 +114,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 
             System.out.println("Auction created!");
 
-            this.export_auctions();
+            //this.export_auctions();
+            this.exportObjAuctions();
             return true;
         }
 
@@ -297,7 +301,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         my_bid.put("bid", data.get("amount"));
 
         auc.licitacoes.add(my_bid);
-        this.export_auctions();
+        //this.export_auctions();
+        this.exportObjLogged();
 
 
         return true;
@@ -333,7 +338,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 
         auc.mensagens.add(my_msg);
         auc.printInfo();
-        this.export_auctions();
+        //this.export_auctions();
+        this.exportObjAuctions();
 
         return true;
     }
@@ -384,7 +390,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         return reply;
     }
 
-
+    // FicheirosTexto
     public void import_auctions(){
         FicheiroDeTexto file = new FicheiroDeTexto();
         try {
@@ -447,7 +453,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         }
 
     }
-
     public void export_auctions(){
         FicheiroDeTexto file = new FicheiroDeTexto();
         int i;
@@ -489,20 +494,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
 
     }
 
-    public void export_registed(){
-        FicheiroDeTexto file = new FicheiroDeTexto();
-        try {
-            file.abreEscrita("regist.txt");
-            for(User user : registados) {
-                file.escreveNovaLinha(user.username+";"+user.password);
-                //System.out.println("regist.txt | A Escrever: "+user.username+" "+user.password);
-            }
-            file.fechaEscrita();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void export_logged(){
         FicheiroDeTexto file = new FicheiroDeTexto();
         try {
@@ -532,58 +523,108 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
         }
     }
 
-    public void import_registed(){
-        FicheiroDeTexto file = new FicheiroDeTexto();
+    // FicheirosObjetos
+    public static void importObjLogged() {
+        FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
-            file.abreLeitura("regist.txt");
-            String read = file.leLinha();
-            while(read != null) {
-                String[] creds = read.split(";");
-                registados.add(new User(creds[0], creds[1]));
-                read = file.leLinha();
-            }
+            file.abreLeitura("loggados.ser");
+            loggados = (ArrayList<User>) file.leObjeto();
             file.fechaLeitura();
-        } catch (IOException | NullPointerException e) {
+        } catch (IOException e) {
+            System.out.println("Ficheiro dos loggados vazio.");
+        } catch (ClassNotFoundException e1) {
+            System.out.println("Classe ArrayList/User not found.");
+        }
+    }
+    public void exportObjLogged() {
+        FicheiroDeObjeto file = new FicheiroDeObjeto();
+        try {
+            file.abreEscrita("loggados.ser");
+            file.escreveObjeto(loggados);
+            file.fechaEscrita();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void verifica_terminoLeiloes(){
-        for(Leilao leilao: leiloes){
-            if(new Date().after(leilao.data_termino)){
-                leilao.state = 3;
-            }
+    public void importObjRegisted() {
+        FicheiroDeObjeto file = new FicheiroDeObjeto();
+        try {
+            file.abreLeitura("registados.ser");
+            this.registados = (ArrayList<User>) file.leObjeto();
+            file.fechaLeitura();
+        } catch (IOException e) {
+            //System.out.println("Erro ao importar registados de fobj.");
+            System.out.println("Ficheiro dos registados vazio.");
+            //System.out.println(e);
+        } catch (ClassNotFoundException e1) {
+            System.out.println("Classe ArrayList/User not found.");
         }
     }
+    public void exportObjRegisted() {
+        FicheiroDeObjeto file = new FicheiroDeObjeto();
+        try {
+            file.abreEscrita("registados.ser");
+            file.escreveObjeto(this.registados);
+            file.fechaEscrita();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void importObjAuctions() {
+        FicheiroDeObjeto file = new FicheiroDeObjeto();
+        try {
+            file.abreLeitura("leiloes.ser");
+            this.leiloes = (ArrayList<Leilao>) file.leObjeto();
+            file.fechaLeitura();
+        } catch (IOException e) {
+            System.out.println("Ficheiro dos leiloes vazio.");
+            //e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            System.out.println("Classe ArrayList/Leilao not found.");
+        }
+    }
+    public void exportObjAuctions() {
+        FicheiroDeObjeto file = new FicheiroDeObjeto();
+        try {
+            file.abreEscrita("leiloes.ser");
+            file.escreveObjeto(this.leiloes);
+            file.fechaEscrita();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public static void start(){
         try {
             RMI_Server h = new RMI_Server();
             Registry r = LocateRegistry.createRegistry(7000);
             r.rebind("connection", h);
-            h.import_registed();
+            //h.import_registed();
+            h.importObjRegisted();
             System.out.println(h.registados);
-            h.import_auctions();
+            //h.import_auctions();
+            h.importObjAuctions();
             //System.out.println(h.loggados);   vazio
 
             System.out.println("RMI Server ready.");
 
             //thread para verificar o termino dos leiloes
+            /*
             new Thread() {
                 public void run() {
                     while (true) {
-
                         try {
-                            Thread.sleep(1000);
+                            Thread.sleep(1000); // 1 segundo, nos queremos 1 minuto...
                             h.verifica_terminoLeiloes();
-
                         } catch (InterruptedException e) {
                             e.printStackTrace();
-
                         }
                     }
                 }
-            }.start();
+            }.start();*/
         } catch (RemoteException e) {
             //e.printStackTrace();
         }
@@ -605,7 +646,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface{
             }
         } catch (RemoteException e){
             start();
-            import_logged();
+            //import_logged();
+            importObjLogged();
         }
     }
     

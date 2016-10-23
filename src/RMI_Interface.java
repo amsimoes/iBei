@@ -15,16 +15,9 @@ public interface RMI_Interface extends Remote {
     public LinkedHashMap<String, String> logoutClient(String username) throws RemoteException;
 
 
-    public void import_auctions() throws RemoteException;
-    public void export_auctions() throws RemoteException;
-
-    public void export_logged() throws RemoteException;
-    public void import_registed() throws RemoteException;
-    public void export_registed() throws RemoteException;
-
 
     public LinkedHashMap<String, String> detail_request(LinkedHashMap<String, String> data) throws RemoteException;
     public String teste() throws RemoteException;
-    public void verifica_terminoLeiloes() throws RemoteException;
+
 
     }

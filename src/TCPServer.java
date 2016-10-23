@@ -68,7 +68,7 @@ public class TCPServer  {
 class Connection  extends Thread implements Serializable {
     private PrintWriter out;
     private BufferedReader in= null;
-    private Socket clientSocket;
+    //private Socket clientSocket;
     private int thread_number;
     private boolean logged = false;
     private User u;
@@ -76,7 +76,6 @@ class Connection  extends Thread implements Serializable {
     public Connection (Socket socket, int numero) {
         thread_number = numero;
         try{
-            clientSocket = socket;
             out =  new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.start();
@@ -106,26 +105,27 @@ class Connection  extends Thread implements Serializable {
     // Corre 1 vez por cada cliente, fica sempre no while()
     public void run() {
         try{
-            while(!logged) {
-                try {
-                    String data= in.readLine();
-                    LinkedHashMap<String, String> hashMap = getData(data);
+            while(true) {
+                if(!logged) {
+                    System.out.println("NAO ESTA LOGGADO...");
+                    try {
+                        String data= in.readLine();
+                        LinkedHashMap<String, String> hashMap = getData(data);
 
-                    String type = hashMap.get("type");
+                        String type = hashMap.get("type");
 
-                    if (type.equals("register")) {
-                        register(hashMap);
-                    } else if (type.equals("login")) {
-                        System.out.println("LOGGING IN...");
-                        login(hashMap);
-                    } else {
-                        sendMessage("type", "status", "logged", "off", "msg", "You must login first!");
+                        if (type.equals("register")) {
+                            register(hashMap);
+                        } else if (type.equals("login")) {
+                            System.out.println("LOGGING IN...");
+                            login(hashMap);
+                        } else {
+                            sendMessage("type", "status", "logged", "off", "msg", "You must login first!");
+                        }
+                    } catch (Exception e) {
+                        out.println("You must follow the protocol.");
                     }
-                } catch (Exception e) {
-                    out.println("You must follow the protocol.");
-                }
-            }
-            while(logged){
+                } else {
                     String data= in.readLine();
                     LinkedHashMap<String, String> hashMap = getData(data);
 
@@ -138,6 +138,8 @@ class Connection  extends Thread implements Serializable {
                     }
 
                     this.getType(hashMap);
+                    System.out.println("loggado: "+logged);
+                }
             }
         } catch(EOFException | NullPointerException e){
             System.out.println("The client["+thread_number+"] ended the connection: EOF:" + e);

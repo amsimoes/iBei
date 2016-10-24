@@ -39,8 +39,10 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
             socket.joinGroup(group);
             UDPSender udp = new UDPSender(numero, serverPort);
 
+            HashMap <Integer, Integer> info = new HashMap<Integer, Integer>();
             new Thread(){
                 public void run(){
+
                     try {
                         while(true){
                             udp.setNumero(connections.size());
@@ -48,12 +50,23 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
                             DatagramPacket msgIn = new DatagramPacket(inBuf, inBuf.length);
                             socket.receive(msgIn);
                             String rcv = new String(inBuf, 0, msgIn.getLength());
+                            checkMsg(rcv, info);
                             System.out.println("Received from " + rcv);
-                            Thread.sleep(29000);
                             //enviar para clientes dados
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
+                    }
+                }
+            }.start();
+
+            new Thread(){
+                public void run(){
+                    try {
+                        while (true) {
+                            sendClients(info);
+                            Thread.sleep(60000);
+                        }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -80,6 +93,39 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
             ex.printStackTrace();
         }
     }
+
+
+
+    static public void checkMsg(String str, HashMap<Integer, Integer> info){
+        String [] fields = str.split(":");
+        int i=0;
+        for(i=0; i< fields.length;i++){
+            fields[i] = fields[i].trim();
+        }
+        info.put(Integer.parseInt(fields[0]), Integer.parseInt(fields[1]));
+
+
+    }
+
+    static public void sendClients(HashMap<Integer, Integer> info){
+        int i=0;
+        String text = "type: notification_load, server_list: "+info.size();
+        for (HashMap.Entry<Integer, Integer> entry : info.entrySet()) {
+            Integer key = entry.getKey();
+            Integer value = entry.getValue();
+            text += " server_"+i+"_hostname: localhost, server_"+i+"_port: " + key+", server_"+i+"_load: "+value;
+            i++;
+
+        }
+        for(Connection cnt : connections){
+            System.out.println(cnt.getUsername());
+            cnt.getOut().println(text);
+        }
+    }
+
+
+
+
 
     public static void RMI_reconnection(){
         try {
@@ -124,14 +170,7 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     }
 
 
-/*
-    public static void serverPush(String username, String message, String id) {
-        for(Connection c : clients) {
-            if(!c.getUsername().equals(username)) {
-                c.sendMessage("type","notification_message","id",id,"user",username,"text",message);
-            }
-        }
-    }*/
+
 }
 
 class UDPSender{
@@ -521,5 +560,9 @@ class Connection  extends Thread implements Serializable {
             System.out.println("getType:"+e);
             e.printStackTrace();
         }
+    }
+
+    public PrintWriter getOut() {
+        return out;
     }
 }

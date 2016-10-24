@@ -235,7 +235,7 @@ class Connection  extends Thread implements Serializable {
                     //System.out.println("NAO ESTA LOGGADO...");
                     try {
                         String data= in.readLine();
-                        LinkedHashMap<String, String> hashMap = getData(data);
+                        LinkedHashMap<String, String> hashMap = parseData(data);
 
                         String type = hashMap.get("type");
 
@@ -257,7 +257,7 @@ class Connection  extends Thread implements Serializable {
                     }
                 } else {
                     String data= in.readLine();
-                    LinkedHashMap<String, String> hashMap = getData(data);
+                    LinkedHashMap<String, String> hashMap = parseData(data);
 
                     System.out.println("T["+thread_number + "] Received: ");
                     //list elements
@@ -297,12 +297,12 @@ class Connection  extends Thread implements Serializable {
         return false;
     }
 
-    public LinkedHashMap<String, String> getData(String data){
+    public LinkedHashMap<String, String> parseData(String data){
         LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();    // {type: login, type : login}
         String [] aux = data.split(",");
 
         for(String field : aux){
-            String [] aux1 = field.trim().split(":");
+            String [] aux1 = field.trim().split(":", 2);    // 2, pq hora:minutos
             aux1[0] = aux1[0].trim();
             aux1[1] = aux1[1].trim();
             hashMap.put(aux1[0], aux1[1]);
@@ -348,7 +348,6 @@ class Connection  extends Thread implements Serializable {
         }
     }
     public void create_auction(LinkedHashMap <String, String> data, String username){
-        System.out.println(data);
         try {
             if(TCPServer.RMI.create_auction(data,username)){
                 sendMessage("type", "create_auction", "ok", "true");

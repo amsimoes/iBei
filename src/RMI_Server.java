@@ -93,21 +93,29 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     public boolean create_auction(LinkedHashMap<String, String> data, String username) throws RemoteException {
-        System.out.println(data);
         String code = data.get("code");
-        System.out.println(data.get("amount "));
+
         double amount = Double.parseDouble(data.get("amount"));
 
-
         DateFormat d1 = new SimpleDateFormat("dd-MM-yyyy HH-mm");
+        DateFormat d2 = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+        System.out.println("Deadline: "+data.get("deadline"));
 
         try {
-            Date date = d1.parse(data.get("deadline"));
+            Date date;
+            try {
+                date = d1.parse(data.get("deadline"));
+            } catch (ParseException e) {
+                date = d2.parse(data.get("deadline"));
+            }
 
             //verificar se existe um leilao ao mesmo tempo, com o mesmo artigo e feito pelo mesmo cliente
             for (Leilao leilao : leiloes) {
-                if (username.equals(leilao.username_criador) && leilao.data_termino.equals(data) && code.equals(String.valueOf(leilao.artigoId)))
+                if (username.equals(leilao.username_criador) && leilao.data_termino.equals(date) && code.equals(String.valueOf(leilao.artigoId))) {
+                    System.out.println("[FALHA] Create auction - false.");
                     return false;
+                }
+
             }
 
             Leilao l = new Leilao(username, code, data.get("title"), data.get("description"), amount, date);
@@ -120,7 +128,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             this.exportObjAuctions();
             return true;
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println("[EXCEPTION] Create auction");
+            e.printStackTrace();
         }
 
         return false;
@@ -231,11 +240,12 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                     } if (data.containsKey("description")) {
                         it.descricao.add(data.get("description"));
                     } if (data.containsKey("deadline")) {
-                        DateFormat df = new SimpleDateFormat("dd-MM-yyyy HH-mm");
+                        DateFormat d1 = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+                        DateFormat d2 = new SimpleDateFormat("dd-MM-yyyy HH-mm");
                         try {
-                            it.data_termino = df.parse(data.get("deadline"));
+                            it.data_termino = d1.parse(data.get("deadline"));
                         } catch (ParseException e) {
-                            e.printStackTrace();
+                            it.data_termino = d2.parse(data.get("deadline"));
                         }
                     } if (data.containsKey("amount")) {
                         double d = Double.parseDouble(data.get("amount"));
@@ -471,7 +481,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                     break;
                 }
             }
-            if (criador == false) {
+            if (!criador) {
                 String notification = "type: notification_message, id: " + String.valueOf(leilao.id_leilao) + ", user: " + username + ", text: " + text;
 
                 addNotification(leilao.getUsername_criador(), notification);
@@ -575,6 +585,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             e.printStackTrace();
         }
     }
+
     //adiciona uma notificaçao a lista de notificaçoes do user
     synchronized public void addNotification(String username, String text) throws RemoteException{
         for(User user: registados){
@@ -625,12 +636,11 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             RMI_Server h = new RMI_Server();
             Registry r = LocateRegistry.createRegistry(7000);
             r.rebind("connection", h);
-            //h.import_registed();
             h.importObjRegisted();
-            System.out.println(h.registados);
-            //h.import_auctions();
+            System.out.println("[Base dados] Registados importados: "+h.registados);
             h.importObjAuctions();
-            //System.out.println(h.loggados);   vazio
+            System.out.println("[Base dados] Leiloes importados: "+h.leiloes);
+
 
             System.out.println("RMI Server ready.");
 
@@ -669,8 +679,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             }
         } catch (RemoteException e){
             start();
-            //import_logged();
             importObjLogged();
+            System.out.println("[Base dados] Users loggados importados: "+loggados);
         }
     }
     

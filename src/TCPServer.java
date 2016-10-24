@@ -1,7 +1,6 @@
 //java Server_TCP <porto>
 import java.net.*;
 import java.rmi.NotBoundException;
-import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -42,7 +41,6 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
 
             new Thread(){
                 public void run(){
-                    HashMap <Integer, Integer> info = new HashMap<Integer, Integer>();
                     try {
                         while(true){
                             udp.setNumero(connections.size());
@@ -50,12 +48,13 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
                             DatagramPacket msgIn = new DatagramPacket(inBuf, inBuf.length);
                             socket.receive(msgIn);
                             String rcv = new String(inBuf, 0, msgIn.getLength());
-                            checkMsg(rcv, info);
-                            sendClients(info);
                             System.out.println("Received from " + rcv);
+                            Thread.sleep(29000);
                             //enviar para clientes dados
                         }
                     } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
@@ -79,32 +78,6 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
         } catch(Exception ex){
             System.out.println("NULL ???");
             ex.printStackTrace();
-        }
-    }
-
-    static public void checkMsg(String str, HashMap<Integer, Integer> info){
-        String [] fields = str.split(":");
-        int i=0;
-        for(i=0; i< fields.length;i++){
-            fields[i] = fields[i].trim();
-        }
-        info.put(Integer.parseInt(fields[0]), Integer.parseInt(fields[1]));
-
-
-    }
-
-    static public void sendClients(HashMap<Integer, Integer> info){
-        int i=0;
-        String text = "type: notification_load, server_list: "+info.size();
-        for (HashMap.Entry<Integer, Integer> entry : info.entrySet()) {
-            Integer key = entry.getKey();
-            Integer value = entry.getValue();
-            text += " server_"+i+"_hostname: localhost, server_"+i+"_port: " + key+", server_"+i+"_load: "+value;
-            i++;
-
-        }
-        for(Connection cnt : connections){
-            cnt.getOut().println(text);
         }
     }
 
@@ -151,6 +124,14 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     }
 
 
+/*
+    public static void serverPush(String username, String message, String id) {
+        for(Connection c : clients) {
+            if(!c.getUsername().equals(username)) {
+                c.sendMessage("type","notification_message","id",id,"user",username,"text",message);
+            }
+        }
+    }*/
 }
 
 class UDPSender{
@@ -175,7 +156,7 @@ class UDPSender{
                             byte[] buf =  reply.getBytes();
                             DatagramPacket msgOut = new DatagramPacket(buf, buf.length, group, 6789);
                             socket.send(msgOut);
-                            Thread.sleep(60000);
+                            Thread.sleep(30000);
                         }
                     } catch (InterruptedException | IOException e) {
                         e.printStackTrace();
@@ -213,10 +194,6 @@ class Connection  extends Thread implements Serializable {
     private boolean logged = false;
     private User u;
 
-    public PrintWriter getOut() {
-        return out;
-    }
-
     public Connection (Socket socket, int numero) {
         thread_number = numero;
         try{
@@ -246,7 +223,8 @@ class Connection  extends Thread implements Serializable {
         LinkedHashMap<String, String> reply = new LinkedHashMap<String, String>();
         for(int i=0;i<args.length;i+=2)
             reply.put(args[i], args[i+1]);
-        out.println(reply.toString());
+        String r = reply.toString().replaceAll("=",":");
+        out.println(r.substring(1, r.length() - 1));
     }
 
     // Corre 1 vez por cada cliente, fica sempre no while()
@@ -254,7 +232,7 @@ class Connection  extends Thread implements Serializable {
         try{
             while(true) {
                 if(!logged) {
-                    System.out.println("NAO ESTA LOGGADO...");
+                    //System.out.println("NAO ESTA LOGGADO...");
                     try {
                         String data= in.readLine();
                         LinkedHashMap<String, String> hashMap = getData(data);
@@ -269,8 +247,13 @@ class Connection  extends Thread implements Serializable {
                         } else {
                             sendMessage("type", "status", "logged", "off", "msg", "You must login first!");
                         }
-                    } catch (Exception e) {
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        e.printStackTrace();
                         out.println("You must follow the protocol.");
+                    } catch (NullPointerException e) {
+                        System.out.println("Desligado a bruta.");
+                        this.removeConection(u);
+                        break;
                     }
                 } else {
                     String data= in.readLine();
@@ -304,21 +287,24 @@ class Connection  extends Thread implements Serializable {
         }
     }
 
-    public void removeConection(User user){
+    public boolean removeConection(User user){
         for(Connection cnt : TCPServer.connections) {
             if (cnt.getUsername().equals(user.getUsername())) {
                 TCPServer.connections.remove(cnt);
-                return;
+                return true;
             }
         }
+        return false;
     }
 
     public LinkedHashMap<String, String> getData(String data){
-        LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();
+        LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();    // {type: login, type : login}
         String [] aux = data.split(",");
 
         for(String field : aux){
-            String [] aux1 = field.trim().split(": ");
+            String [] aux1 = field.trim().split(":");
+            aux1[0] = aux1[0].trim();
+            aux1[1] = aux1[1].trim();
             hashMap.put(aux1[0], aux1[1]);
         }
         return hashMap;
@@ -362,10 +348,10 @@ class Connection  extends Thread implements Serializable {
         }
     }
     public void create_auction(LinkedHashMap <String, String> data, String username){
+        System.out.println(data);
         try {
             if(TCPServer.RMI.create_auction(data,username)){
                 sendMessage("type", "create_auction", "ok", "true");
-
             }
             else{
                 sendMessage("type", "create_auction","ok","false");
@@ -376,13 +362,12 @@ class Connection  extends Thread implements Serializable {
             TCPServer.RMI_reconnection();
             create_auction(data, username);
         }
-
-
     }
     public void detail_auction(LinkedHashMap<String, String> data){
         try {
             LinkedHashMap<String, String> reply = TCPServer.RMI.detail_request(data);
-            out.println(reply.toString());
+            String r = reply.toString().replaceAll("=",":");
+            out.println(r.substring(1, r.length() - 1));
         } catch (RemoteException e) {
             //e.printStackTrace();
             TCPServer.RMI_reconnection();
@@ -393,7 +378,8 @@ class Connection  extends Thread implements Serializable {
     public void search_auction(LinkedHashMap<String, String> data) {
         try {
             LinkedHashMap<String, String> reply = TCPServer.RMI.search_auction(data);
-            out.println(reply.toString());
+            String r = reply.toString().replaceAll("=",":");
+            out.println(r.substring(1, r.length() - 1));
         } catch (RemoteException e) {
             //e.printStackTrace();
             TCPServer.RMI_reconnection();
@@ -403,7 +389,8 @@ class Connection  extends Thread implements Serializable {
     public void my_auctions(LinkedHashMap<String, String> data, String username) {
         try {
             LinkedHashMap<String, String> reply = TCPServer.RMI.my_auctions(data,username);
-            out.println(reply.toString());
+            String r = reply.toString().replaceAll("=",":");
+            out.println(r.substring(1, r.length() - 1));
         } catch (RemoteException e) {
             //e.printStackTrace();
             TCPServer.RMI_reconnection();
@@ -460,7 +447,8 @@ class Connection  extends Thread implements Serializable {
         LinkedHashMap<String, String> reply = null;
         try {
             reply = TCPServer.RMI.listOnlineUsers();
-            out.println(reply.toString());
+            String r = reply.toString().replaceAll("=",":");
+            out.println(r.substring(1, r.length() - 1));
         } catch (RemoteException e) {
             //e.printStackTrace();
             TCPServer.RMI_reconnection();
@@ -472,7 +460,8 @@ class Connection  extends Thread implements Serializable {
         LinkedHashMap<String, String> reply = null;
         try {
             reply = TCPServer.RMI.logoutClient(username);
-            out.println(reply.toString());
+            String r = reply.toString().replaceAll("=",":");
+            out.println(r.substring(1, r.length() - 1));
             logged = false;
             this.removeConection(this.u);
         } catch (RemoteException e) {
@@ -491,6 +480,7 @@ class Connection  extends Thread implements Serializable {
             String username = u.username;
             switch (data.get("type")) {
                 case "create_auction":
+                    System.out.println(data);
                     create_auction(data, username);
                     break;
                 case "login":    // JA ESTA LOGGADO... false
@@ -529,7 +519,8 @@ class Connection  extends Thread implements Serializable {
                 }
 
         } catch (Exception e) {
-            System.out.println("getype:"+e);
+            System.out.println("getType:"+e);
+            e.printStackTrace();
         }
     }
 }

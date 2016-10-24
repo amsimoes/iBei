@@ -3,7 +3,7 @@ import java.net.*;
 import java.util.*;
 public class Leilao implements Serializable{
     public String username_criador;
-    public long artigoId;
+    public String artigoId;
     public long id_leilao;
     public ArrayList <String> titulo;
     public ArrayList <String> descricao;
@@ -14,7 +14,7 @@ public class Leilao implements Serializable{
     public ArrayList<LinkedHashMap <String, String >> licitacoes;//key: author, bid
 
 
-    public Leilao(String username, long artigoId, String titulo, String descricao, double precoMax, Date data_termino){
+    public Leilao(String username, String artigoId, String titulo, String descricao, double precoMax, Date data_termino){
         this.username_criador = username;
         this.artigoId = artigoId;
         this.titulo = new ArrayList<String>();
@@ -71,7 +71,7 @@ public class Leilao implements Serializable{
         return username_criador;
     }
 
-    public long getArtigoId() {
+    public String getArtigoId() {
         return artigoId;
     }
 
@@ -111,7 +111,7 @@ public class Leilao implements Serializable{
         this.username_criador = username_criador;
     }
 
-    public void setArtigoId(long artigoId) {
+    public void setArtigoId(String artigoId) {
         this.artigoId = artigoId;
     }
 

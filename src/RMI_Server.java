@@ -93,20 +93,21 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     public boolean create_auction(LinkedHashMap<String, String> data, String username) throws RemoteException {
-
-        int code = Integer.parseInt(data.get("code"));
+        System.out.println(data);
+        String code = data.get("code");
+        System.out.println(data.get("amount "));
         double amount = Double.parseDouble(data.get("amount"));
 
-        DateFormat d1 = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+
+        DateFormat d1 = new SimpleDateFormat("dd-MM-yyyy HH-mm");
 
         try {
             Date date = d1.parse(data.get("deadline"));
 
             //verificar se existe um leilao ao mesmo tempo, com o mesmo artigo e feito pelo mesmo cliente
             for (Leilao leilao : leiloes) {
-                if (username.equals(leilao.username_criador) && leilao.data_termino.equals(data) && code == leilao.artigoId)
+                if (username.equals(leilao.username_criador) && leilao.data_termino.equals(data) && code.equals(String.valueOf(leilao.artigoId)))
                     return false;
-
             }
 
             Leilao l = new Leilao(username, code, data.get("title"), data.get("description"), amount, date);
@@ -186,10 +187,9 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     public LinkedHashMap<String, String> search_auction(LinkedHashMap<String, String> data) {
-
         ArrayList<Leilao> leiloes_encontrados = new ArrayList<Leilao>();
         for (Leilao leilao : leiloes) {
-            if (leilao.artigoId == Long.parseLong(data.get("code"))) {
+            if (String.valueOf(leilao.artigoId).equals(data.get("code"))) {
                 leiloes_encontrados.add(leilao);
                 leilao.printInfo();
             }
@@ -231,7 +231,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                     } if (data.containsKey("description")) {
                         it.descricao.add(data.get("description"));
                     } if (data.containsKey("deadline")) {
-                        DateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+                        DateFormat df = new SimpleDateFormat("dd-MM-yyyy HH-mm");
                         try {
                             it.data_termino = df.parse(data.get("deadline"));
                         } catch (ParseException e) {

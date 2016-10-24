@@ -110,51 +110,49 @@ if __name__ == '__main__':
     resp = c1.rq("""type: login, username: %s, password: %s """ % (random_user_1, random_pass_1))
     s += ("login", LOGIN_4, resp['ok'] == "false")
 
-    print "1"
+    print "1 - login"
 
     resp = c2.rq("""type: register, username: %s, password: %s """ % (random_user_1, random_pass_1))
     print resp
     s += ("register", REGISTER_2, resp['ok'] == "true")
 
-    print "2"
+    print "2 - register"
 
     resp = c1.rq("""type: register, username: %s, password: %s """ % (random_user_2, random_pass_2))
     print resp
     s += ("register", REGISTER_2, resp['ok'] == "true")
 
-    print "3"
+    print "3 - register"
 
     resp = c1.rq("""type: login, username: %s, password: %s """ % (random_user_1, random_pass_1))
     print resp
     s += ("login", LOGIN_4, resp['ok'] == "true")
 
-    print "4"
+    print "4 - login"
 
     resp = c2.rq("""type: login, username: %s, password: %s """ % (random_user_2, random_pass_2))
     print resp
     s += ("login", LOGIN_4, resp['ok'] == "true")
 
-    print "5"
+    print "5 - login"
 
     p1_code, p1_title, p1_desc, p1_amount = random_string(), random_string(), random_string(), random.randint(5,100)
     p1_deadline = now + datetime.timedelta(minutes=1)
     p1_deadline = p1_deadline.strftime('%Y-%m-%d %H-%M')
 
     resp = c1.rq("""type: my_auctions""")
-    print resp
 
     resp = c1.rq("""type: search_auction, code: %s""" % p1_code)
     print resp
     s += ("search auction", SEARCH_AUCTION_4, int(resp['items_count']) == 0)
 
-    print "6"
+    print "6 - search auction"
 
-    print p1_amount
     resp = c1.rq("""type: create_auction, code: %s, title : %s, description: %s, deadline : %s, amount : %d""" % (p1_code, p1_title, p1_desc, p1_deadline, p1_amount))
-    print resp
     s += ("create auction", CREATE_AUCTION, resp['ok'] == "true")
 
-    print "7"
+    print resp
+    print "7 - create_auction"
 
     resp = c1.rq("""type: search_auction, code: %s""" % p1_code)
     print resp
@@ -163,7 +161,7 @@ if __name__ == '__main__':
     s += ("search auction", SEARCH_AUCTION_4, resp['items_0_title'] == p1_title)
     p1_id = resp['items_0_id']
 
-    print "8"
+    print "8 - search auction"
 
     resp = c1.rq("""type: detail_auction, id: %s""" % p1_id)
     print resp
@@ -172,14 +170,14 @@ if __name__ == '__main__':
     #s += ("detail auction", DETAIL_AUCTION_4, resp['code'] == p1_code)
     s += ("detail auction", DETAIL_AUCTION_4, resp['title'] == p1_title)
 
-    print "9"
+    print "9 - detail auction"
 
     resp = c1.rq("""type: my_auctions""")
     s += ("my auction", MY_AUCTIONS_3, int(resp['items_count']) == 1)
     s += ("my auction", MY_AUCTIONS_3, resp['items_0_code'] == p1_code)
     s += ("my auction", MY_AUCTIONS_3, resp['items_0_title'] == p1_title)
 
-    print "10"
+    print "10 - my auctions"
 
     resp = c2.rq("""type: bid, id: %s, amount: %f""" % (p1_id, p1_amount * 0.8))
     s += ("bid", BID_4, resp['ok'] == 'true')
@@ -228,8 +226,9 @@ if __name__ == '__main__':
     s += ("offline bid notifications", OFFLINE_MESSAGE_NOTIFICATIONS_1, len(c2.notifications) >= 1)
 
     resp = c1.rq("""type: detail_auction, id: %s""" % p1_id)
-    print resp['messages_count']
     s += ("detail auction", MESSAGE_2, int(resp['messages_count']) == 1)
+
+    print s.summary()
 
     resp = c1.rq("""type: online_users""")
     s += ("online_users", ONLINE_USERS_1, int(resp['users_count']) > 0)

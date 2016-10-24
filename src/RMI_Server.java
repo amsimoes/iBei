@@ -359,12 +359,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         auc.printInfo();
         //this.export_auctions();
         this.exportObjLogged();
-        /*try {
-            for (TCP_Interface s : tcpServers)
-                s.bidNotification(auc, username, amount);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }*/
         this.bidNotification(auc,amount,username);
 
         return true;

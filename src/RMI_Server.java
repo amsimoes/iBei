@@ -175,6 +175,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
             reply.put("deadline", leilao.data_termino.toString());
             reply.put("messages_count", String.valueOf(leilao.mensagens.size()));
+            reply.put("code", leilao.getArtigoId());
             //mandar mensagens
             for (i = 0; i < leilao.mensagens.size(); i++) {
                 reply.put("messages_" + String.valueOf(i) + "_user", leilao.mensagens.get(i).get("author"));

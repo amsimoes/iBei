@@ -393,7 +393,6 @@ class Connection  extends Thread implements Serializable {
             }
             else{
                 sendMessage("type", "create_auction","ok","false");
-
             }
         } catch (RemoteException e) {
             //e.printStackTrace();

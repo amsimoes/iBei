@@ -1,6 +1,7 @@
 //java Server_TCP <porto>
 import java.net.*;
 import java.rmi.NotBoundException;
+import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -8,10 +9,16 @@ import java.io.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
-public class TCPServer  {
+public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     public static int numero=0;//numero de clientes online
     public static RMI_Interface RMI;
-    private static ArrayList<Connection> clients = new ArrayList<Connection>();
+    public static int count=0;
+    //private static ArrayList<Connection> clients = new ArrayList<Connection>();
+    static ArrayList<Connection> connections;
+
+    protected TCPServer() throws RemoteException {
+        connections = new ArrayList<Connection>();
+    }
 
     public static void main(String args[]) {
         if (args.length == 0) {
@@ -22,47 +29,162 @@ public class TCPServer  {
 
         try{
             TCPServer.RMI = (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
+            TCP_Interface tcpserver = new TCPServer();
 
             int serverPort = Integer.parseInt(port);
+            TCPServer.RMI.data(tcpserver);
+
+
+            InetAddress group = InetAddress.getByName("225.0.0.0");
+            MulticastSocket socket = new MulticastSocket(6789);
+            socket.joinGroup(group);
+            UDPSender udp = new UDPSender(numero, serverPort);
+
+            new Thread(){
+                public void run(){
+                    try {
+                        while(true){
+                            udp.setNumero(connections.size());
+                            byte[] inBuf = new byte[8*1024];
+                            DatagramPacket msgIn = new DatagramPacket(inBuf, inBuf.length);
+                            socket.receive(msgIn);
+                            String rcv = new String(inBuf, 0, msgIn.getLength());
+                            System.out.println("Received from " + rcv);
+                            Thread.sleep(29000);
+                            //enviar para clientes dados
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }.start();
+
+
             System.out.println("Listening on Port: "+port);
             ServerSocket listenSocket = new ServerSocket(serverPort);
+
             //loop that accepts clients
             while(true) {
                 Socket clientSocket = listenSocket.accept(); // BLOQUEANTE
                 System.out.println("CLIENT_SOCKET (created at accept())="+clientSocket);
                 numero++;
                 Connection c = new Connection(clientSocket, numero);
-                clients.add(c);
+                //clients.add(c);
                 System.out.println(numero);
             }
         } catch(IOException e) {
             System.out.println("Listen: " + e.getMessage());
         } catch(Exception ex){
             System.out.println("NULL ???");
-            System.out.println(ex);
+            ex.printStackTrace();
         }
     }
 
     public static void RMI_reconnection(){
         try {
             Thread.sleep(2000);
+            System.out.println(count);
             TCPServer.RMI = (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
+            count = 0;
         } catch (RemoteException | NotBoundException e) {
+            count += 2;
+            if(count >= 30) {
+                System.out.println("RMI Servers with problems...");
+            }
             TCPServer.RMI_reconnection();
-            e.printStackTrace();
+            //e.printStackTrace();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            count += 2;
+            if(count >= 30) {
+                System.out.println("RMI Servers with problems...");
+            }
+            //e.printStackTrace();
         }
     }
 
+    public void sendMsg(String type, String username, String text, Leilao leilao, String author) throws RemoteException{
+        for(Connection ctn : connections){
+            if(ctn.getUsername().equals(username))
+                ctn.sendMessage("type",type,"id",String.valueOf(leilao.id_leilao),"user",author,"text",text);
+        }
+    }
+
+    public boolean checkUser(String username) throws RemoteException{
+        for(Connection cnt : connections){
+            if(cnt.getUsername().equals(username))
+                return true;
+        }
+        return false;
+    }
+
+
+    public static void addConnections(Connection cnt){
+        connections.add(cnt);
+    }
+
+
+/*
     public static void serverPush(String username, String message, String id) {
         for(Connection c : clients) {
             if(!c.getUsername().equals(username)) {
                 c.sendMessage("type","notification_message","id",id,"user",username,"text",message);
             }
         }
+    }*/
+}
+
+class UDPSender{
+    private int numero;
+    private int port;
+    public UDPSender(int numero, int tcpPort){
+
+        this.numero = numero;
+        this.port = tcpPort;
+        try {
+            DatagramSocket socket = new DatagramSocket();
+
+
+            new Thread(){
+                public void run() {
+                    try {
+                        InputStreamReader input = new InputStreamReader(System.in);
+                        BufferedReader reader = new BufferedReader(input);
+                        while(true) {
+                            InetAddress group = InetAddress.getByName("225.0.0.0");
+                            String reply = String.valueOf(tcpPort)+": "+String.valueOf(getNumero());
+                            byte[] buf =  reply.getBytes();
+                            DatagramPacket msgOut = new DatagramPacket(buf, buf.length, group, 6789);
+                            socket.send(msgOut);
+                            Thread.sleep(30000);
+                        }
+                    } catch (InterruptedException | IOException e) {
+                        e.printStackTrace();
+                    }
+                    //while(true){
+                    //}
+                }
+            }.start();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public int getNumero() {
+        return numero;
+    }
+
+    public void setNumero(int numero) {
+        this.numero = numero;
     }
 }
+
+
+
+
 
 // Thread para tratar da comunicação com um cliente
 class Connection  extends Thread implements Serializable {
@@ -89,6 +211,9 @@ class Connection  extends Thread implements Serializable {
     }
     public String getUsername() {
         return u.username;
+    }
+    public User getUser() {
+        return u;
     }
 
     public void sendMessage(String... args) {
@@ -147,11 +272,22 @@ class Connection  extends Thread implements Serializable {
             try {
                 TCPServer.RMI.logoutClient(u.username);
                 System.out.println("User "+u.username+" desligado a bruta.");
+                this.removeConection(u);
             } catch (RemoteException e1) {
-                e1.printStackTrace();
+                //e1.printStackTrace();
+                System.out.println("Erro ao desconnectar a forca o user: "+u.username);
             }
         } catch(IOException e) {
             System.out.println("IO:" + e);
+        }
+    }
+
+    public void removeConection(User user){
+        for(Connection cnt : TCPServer.connections) {
+            if (cnt.getUsername().equals(user.getUsername())) {
+                TCPServer.connections.remove(cnt);
+                return;
+            }
         }
     }
 
@@ -175,12 +311,18 @@ class Connection  extends Thread implements Serializable {
                 sendMessage("type", "login", "ok", "true");
                 logged = true;
                 u = new User(hashMap.get("username"), hashMap.get("password"));
+                TCPServer.addConnections(this);
+                List <String> notifications = TCPServer.RMI.getNotifications(hashMap.get("username"));
+                for(String notification : notifications){
+                    this.out.println(notification);
+                }
+                TCPServer.RMI.cleanNotifications(hashMap.get("username"));
             }
         } catch (RemoteException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             TCPServer.RMI_reconnection();
             login(hashMap);
-            sendMessage("type", "login", "ok", "false");
+            //sendMessage("type", "login", "ok", "false");
         }
     }
 
@@ -268,7 +410,7 @@ class Connection  extends Thread implements Serializable {
         try {
             if(TCPServer.RMI.write_message(data, username)){
                 sendMessage("type","message","ok","true");
-                TCPServer.serverPush(username, data.get("text"), data.get("id"));
+                //TCPServer.serverPush(username, data.get("text"), data.get("id"));
             }
             else{
                 sendMessage("type","message","ok","false");
@@ -310,6 +452,7 @@ class Connection  extends Thread implements Serializable {
             reply = TCPServer.RMI.logoutClient(username);
             out.println(reply.toString());
             logged = false;
+            this.removeConection(this.u);
         } catch (RemoteException e) {
             //e.printStackTrace();
             TCPServer.RMI_reconnection();

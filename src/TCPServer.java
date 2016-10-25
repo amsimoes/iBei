@@ -151,8 +151,14 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
 
     public void sendMsg(String type, String username, String text, Leilao leilao, String author) throws RemoteException{
         for(Connection ctn : connections){
-            if(ctn.getUsername().equals(username))
-                ctn.sendMessage("type",type,"id",String.valueOf(leilao.id_leilao),"user",author,"text",text);
+            if(ctn.getUsername().equals(username)) {
+                if (type.equals("notification_bid"))
+                    ctn.sendMessage("type", type, "id", String.valueOf(leilao.id_leilao), "user", author, "amount", text);
+
+                else {
+                    ctn.sendMessage("type", type, "id", String.valueOf(leilao.id_leilao), "user", author, "text", text);
+                }
+            }
         }
     }
 

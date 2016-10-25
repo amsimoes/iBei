@@ -132,6 +132,20 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
         }
     } 
 
+    public long getItemID(String data){
+        String [] aux = data.split(",");
+
+        for(String field : aux){
+            String [] aux1 = field.trim().split(":", 2);
+            aux1[0] = aux1[0].trim();
+            aux1[1] = aux1[1].trim();
+            if (aux1[0].equals("items_0_id")){
+                return Long.parseLong(aux1[1]);
+            }
+        }
+        return -1;
+    }
+
     private boolean testTCP(String... args){
     	//TODO add tcp client code
         Socket socket;
@@ -164,7 +178,7 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
             }
 
             //testing for equal codes
-            outToServer.println("type: search_auction , code: "+code);
+            outToServer.println("type: search_auction, code: "+code);
             while(!inFromServer.readLine().equals("type: search_auction , items_count: 0")){
             	count++;
             	if (count>10){
@@ -174,20 +188,22 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
             }
 
             //creating auction
-            outToServer.println("type: create_auction, code: "+code+", title : "+title+", description: "+description+", deadline : "+deadline+", amount : "+amount);
+            outToServer.println("type: create_auction, code: "+code+", title: "+title+", description: "+description+", deadline: "+deadline+", amount: "+amount);
             if(!inFromServer.readLine().equals("type: create_auction, ok: true")){
             	return false;
             }
 
             //getting id
-            outToServer.println("type: search_auction , code: "+code);
-           	if(!inFromServer.readLine().equals("type: search_auction , items_count: 1")){
+            outToServer.println("type: search_auction, code: "+code);
+           	String temp=inFromServer.readLine();
+            id=getItemID(temp);
+            if ((id==-1)||(!temp.equals("type: search_auction, items_count: 1, items_0_id: "+id+", items_0_code: "+code+", items_0_title: "+title))){
             	return false;
             }
 
             //checkign details
-            outToServer.println("type: detail_auction , id: "+id);
-            if(!inFromServer.readLine().equals("type: detail_auction, title : "+title+", description : "+description+", deadline : "+deadline+" , messages_count: 0, bids_count : 0")){
+            outToServer.println("type: detail_auction, id: "+id);
+            if(!inFromServer.readLine().equals("type: detail_auction, title: "+title+", description: "+description+", deadline: "+deadline+" , messages_count: 0, bids_count : 0")){
             	return false;
             }
 
@@ -198,8 +214,8 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
             }
 
             //checking details
-            outToServer.println("type: detail_auction , id: "+id);
-            if(!inFromServer.readLine().equals("type: detail_auction , title : "+title+", description : "+description+", deadline : "+deadline+" , messages_count: 0, bids_count : 1")){
+            outToServer.println("type: detail_auction, id: "+id);
+            if(!inFromServer.readLine().equals("type: detail_auction, title: "+title+", description: "+description+", deadline: "+deadline+", messages_count: 0, bids_count: 1")){
             	return false;
             }
             return true;
@@ -246,7 +262,7 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
     	}while(slt!=0);
     }
 
-    static public void checkMsg(String str, HashMap<Integer, Integer> info){
+    /*static public void checkMsg(String str, HashMap<Integer, Integer> info){
         String [] fields = str.split(":");
         int i=0;
         for(i=0; i< fields.length;i++){
@@ -256,7 +272,7 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
 
 
     }
-
+    */
     /*static public void sendClients(HashMap<Integer, Integer> info){
         int i=0;
         String text = "type: notification_load, server_list: "+info.size();

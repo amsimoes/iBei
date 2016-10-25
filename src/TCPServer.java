@@ -51,7 +51,7 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
                             socket.receive(msgIn);
                             String rcv = new String(inBuf, 0, msgIn.getLength());
                             checkMsg(rcv, info);
-                            System.out.println("Received from " + rcv);
+                            System.out.println("Number of clients logged | Received from: " + rcv);
                             //enviar para clientes dados
                         }
                     } catch (IOException e) {
@@ -64,7 +64,7 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
                 public void run(){
                     try {
                         while (true) {
-                            sendClients(info);
+                            //sendClients(info);
                             Thread.sleep(60000);
                         }
                     } catch (InterruptedException e) {
@@ -109,7 +109,7 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
 
     static public void sendClients(HashMap<Integer, Integer> info){
         int i=0;
-        String text = "type: notification_load, server_list: "+info.size();
+        String text = "type: notification_load, server_list: "+info.size()+",";
         for (HashMap.Entry<Integer, Integer> entry : info.entrySet()) {
             Integer key = entry.getKey();
             Integer value = entry.getValue();
@@ -295,6 +295,7 @@ class Connection  extends Thread implements Serializable {
                         break;
                     }
                 } else {
+                    System.out.println("A espera do user...");
                     String data= in.readLine();
                     LinkedHashMap<String, String> hashMap = parseData(data);
 
@@ -310,15 +311,14 @@ class Connection  extends Thread implements Serializable {
                     System.out.println("loggado: "+logged);
                 }
             }
-        } catch(EOFException | NullPointerException e){
-            System.out.println("The client["+thread_number+"] ended the connection: EOF:" + e);
+        } catch(EOFException | NullPointerException | SocketException e){
+            System.out.println("The client["+thread_number+"] ("+u.username+") ended the connection: EOF:"+e);
             TCPServer.numero--;
             try {
                 TCPServer.RMI.logoutClient(u.username);
                 System.out.println("User "+u.username+" desligado a bruta.");
                 this.removeConection(u);
             } catch (RemoteException e1) {
-                //e1.printStackTrace();
                 System.out.println("Erro ao desconnectar a forca o user: "+u.username);
             }
         } catch(IOException e) {

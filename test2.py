@@ -109,6 +109,8 @@ if __name__ == '__main__':
     c1 = Client()
     c2 = Client(name='c2')
 
+    print "NOW = "+str(now)
+
     random_user_1, random_pass_1 = random_string(), random_string()
     random_user_2, random_pass_2 = random_string(), random_string()
 
@@ -153,7 +155,7 @@ if __name__ == '__main__':
     print s.summary()
 
     p1_code, p1_title, p1_desc, p1_amount = random_string(), random_string(), random_string(), random.randint(5,100)
-    p1_deadline = now + datetime.timedelta(minutes=2)
+    p1_deadline = now + datetime.timedelta(minutes=1)
     p1_deadline = p1_deadline.strftime('%Y-%m-%d %H-%M')
     print "DEADLINE = "+p1_deadline
 

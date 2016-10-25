@@ -23,6 +23,8 @@ public class Leilao implements Serializable{
         this.descricao.add(descricao);
         this.precoMax = precoMax;
         this.data_termino = data_termino;
+        System.out.println("data_termino: "+data_termino);
+        System.out.println("this.data_termino: "+this.data_termino);
         this.mensagens = new ArrayList<LinkedHashMap <String, String>>();
         this.licitacoes = new ArrayList<LinkedHashMap <String, String>>();
         //random number generator
@@ -66,6 +68,7 @@ public class Leilao implements Serializable{
 
         }
     }
+
 
     public String getUsername_criador() {
         return username_criador;

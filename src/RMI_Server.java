@@ -27,6 +27,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     public boolean register_client(LinkedHashMap<String, String> data) throws RemoteException {
+        System.out.println("[ REGISTER CLIENT ]");
         try {
             User u = new User(data.get("username"), data.get("password"));
             for (User user : registados) {
@@ -45,6 +46,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     public boolean login_client(LinkedHashMap<String, String> data) throws RemoteException {
+        System.out.println("[ LOGIN CLIENT ] ");
         try {
             User u = new User(data.get("username"), data.get("password"));
             // Verificar se se encontra registado
@@ -93,12 +95,13 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     public boolean create_auction(LinkedHashMap<String, String> data, String username) throws RemoteException {
+        System.out.println("[ CREATE AUCTION ]");
         String code = data.get("code");
 
         double amount = Double.parseDouble(data.get("amount"));
 
-        DateFormat d1 = new SimpleDateFormat("dd-MM-yyyy HH-mm");
-        DateFormat d2 = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+        DateFormat d1 = new SimpleDateFormat("yyyy-MM-dd HH-mm");
+        DateFormat d2 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         System.out.println("Deadline: "+data.get("deadline"));
 
         try {
@@ -115,9 +118,9 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                     System.out.println("[FALHA] Create auction - false.");
                     return false;
                 }
-
             }
 
+            System.out.println("[DATE]"+date);
             Leilao l = new Leilao(username, code, data.get("title"), data.get("description"), amount, date);
 
             leiloes.add(l);
@@ -128,7 +131,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             this.exportObjAuctions();
             return true;
         } catch (Exception e) {
-            System.out.println("[EXCEPTION] Create auction");
+            System.out.println("[EXCEPTION] Failed to create auction");
             e.printStackTrace();
         }
 
@@ -151,7 +154,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     public LinkedHashMap<String, String> detail_request(LinkedHashMap<String, String> data) {
-
+        System.out.println("[ DETAIL AUCTION ]");
         Leilao leilao = detail_auction(data);
 
         int i;
@@ -197,6 +200,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     public LinkedHashMap<String, String> search_auction(LinkedHashMap<String, String> data) {
+        System.out.println("[ SEARCH AUCTION ]");
         ArrayList<Leilao> leiloes_encontrados = new ArrayList<Leilao>();
         for (Leilao leilao : leiloes) {
             if (String.valueOf(leilao.artigoId).equals(data.get("code"))) {
@@ -227,6 +231,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
 
     public boolean edit_auction(LinkedHashMap<String, String> data, String username) throws RemoteException {
+        System.out.println("[ EDIT AUCTION ]");
         try {
             long id2edit = Long.parseLong(data.get("id"));
             for(Leilao it : leiloes) {
@@ -264,6 +269,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     public LinkedHashMap<String, String> listOnlineUsers() throws RemoteException {
+        System.out.println("[ LIST ONLINE USERS ]");
         LinkedHashMap <String, String> reply = new LinkedHashMap<>();
         reply.put("type", "online_users");
         int users_count = loggados.size();
@@ -273,14 +279,10 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         }
         return reply;
     }
-
-
-
-
-
+    
     //temos que excluir os leiloes que ja acabaram?
     public LinkedHashMap<String, String> my_auctions(LinkedHashMap<String, String> data, String username) {
-
+        System.out.println("[ MY AUCTIONS ]");
         ArrayList<Leilao> leiloes_encontrados = new ArrayList<Leilao>();
 
         for (Leilao leilao : leiloes) {
@@ -324,40 +326,51 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             reply.put("items_count", "0");
         }
 
-
+        System.out.println("[ END ]");
         return reply;
     }
 
     //falta mandar para os restantes licitadores a notificacao
     public boolean make_bid(LinkedHashMap<String, String> data, String username) throws RemoteException {
+        System.out.println("[ BID ]");
         long id = Long.parseLong(data.get("id"));
         double amount = Double.parseDouble(data.get("amount"));
+
         int i;
         for (i = 0; i < leiloes.size(); i++) {
             if (leiloes.get(i).id_leilao == id) {
+                System.out.println("Leilao existente.");
                 break;
             }
         }
 
         if (i >= leiloes.size()) {
-            System.out.println("Auction does not exist");
+            System.out.println("Leilao nao existe.");
+            System.out.println("[ END ]");
             return false;
         }
 
         Leilao auc = leiloes.get(i);
+        System.out.println("[INFO LEILAO]");
+        System.out.println(auc.toString());
         if (auc.precoMax <= amount) {
             System.out.println("Bid higher than preco Max");
+            System.out.println("[ END ]");
             return false;
         }
 
         for (LinkedHashMap<String, String> lic : auc.licitacoes) {
             if (amount > Double.parseDouble(lic.get("bid"))) {
+                System.out.println("Montante maior que a ultima bid.");
+                System.out.println("[ END ]");
                 return false;
             }
         }
 
         if (auc.state == 1 || auc.state == 2) {
-            System.out.println("The auction already ended or was canceled");
+            System.out.println("[BID] The auction already ended or was canceled");
+            System.out.println("Auction deadline: "+auc.getData_termino().toString());
+            System.out.println("[ END ]");
             return false;
         }
 
@@ -372,11 +385,13 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         this.exportObjLogged();
         this.bidNotification(auc,amount,username);
 
+        System.out.println("[ END ]");
         return true;
     }
 
     //falta mandar para a notificao para os que escreveram no mural e para o criador do leilao
     public boolean write_message(LinkedHashMap<String, String> data, String username) throws RemoteException {
+        System.out.println("[ WRITE MESSAGE ]");
         long id = Long.parseLong(data.get("id"));
         String text = data.get("text");
 
@@ -414,6 +429,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     public void msgNotification(Leilao auc, String text, String username) {
+        System.out.println("[ MSG NOTIFICATION ]");
         try {
             int i = 0;
             boolean flag = false;
@@ -427,7 +443,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                         }
                     }
                     //users offline
-                    if (flag == false && !msg.get("author").equals(username) && !msg.get("author").equals(auc.getUsername_criador())) {
+                    if (!flag && !msg.get("author").equals(username) && !msg.get("author").equals(auc.getUsername_criador())) {
                         //mandar notificaçao offline
                         String notification = "type: notification_message, id: " + String.valueOf(auc.id_leilao) + ", user: " + username + ", text: " + text;
                         addNotification(msg.get("author"), notification);
@@ -444,6 +460,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     public void bidNotification(Leilao auc, Double amount, String username) {
+        System.out.println("[ BID NOTIFICATION ]");
         try {
             int i = 0;
             for (LinkedHashMap<String, String> bid : auc.licitacoes) {
@@ -461,8 +478,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             e.printStackTrace();
         }
     }
-
-
 
     //verifica se o criador do leilao esta online e manda a notificaçao
     public void checkOwner(Leilao leilao, String username, String text) {
@@ -509,7 +524,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
 
     // FicheirosObjetos
-    public static void importObjLogged() {
+    private static void importObjLogged() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
             file.abreLeitura("loggados.ser");
@@ -521,7 +536,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             System.out.println("Classe ArrayList/User not found.");
         }
     }
-    public void exportObjLogged() {
+    private void exportObjLogged() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
             file.abreEscrita("loggados.ser");
@@ -532,7 +547,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         }
     }
 
-    public void importObjRegisted() {
+    private void importObjRegisted() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
             file.abreLeitura("registados.ser");
@@ -546,7 +561,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             System.out.println("Classe ArrayList/User not found.");
         }
     }
-    public void exportObjRegisted() {
+    private void exportObjRegisted() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
             file.abreEscrita("registados.ser");
@@ -557,7 +572,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         }
     }
 
-    public void importObjAuctions() {
+    private void importObjAuctions() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
             file.abreLeitura("leiloes.ser");
@@ -570,7 +585,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             System.out.println("Classe ArrayList/Leilao not found.");
         }
     }
-    public void exportObjAuctions() {
+    private void exportObjAuctions() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
             file.abreEscrita("leiloes.ser");
@@ -582,7 +597,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     //adiciona uma notificaçao a lista de notificaçoes do user
-    synchronized public void addNotification(String username, String text) throws RemoteException{
+    private synchronized void addNotification(String username, String text) throws RemoteException{
         for(User user: registados){
             if(user.getUsername().equals(username)){
                 user.addNotification(text);
@@ -612,9 +627,12 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         }
     }
 
-    public void verifica_terminoLeiloes(){
+    private void verifica_terminoLeiloes(){
         for(Leilao leilao: leiloes){
             if(new Date().after(leilao.data_termino) && leilao.state == 0){
+                Date now = new Date();
+                System.out.println("DATA ATUAL: "+now);
+                System.out.println("DATA_TERMINO: "+leilao.data_termino);
                 leilao.state = 2;
                 System.out.println("Leilao com id: "+leilao.id_leilao+"e  titulo: "+leilao.titulo.get(leilao.titulo.size()-1)+" terminou");
                 if(leilao.licitacoes.size() == 0)
@@ -626,7 +644,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         }
     }
 
-    public static void start(){
+    private static void start(){
         try {
             RMI_Server h = new RMI_Server();
             Registry r = LocateRegistry.createRegistry(7000);
@@ -662,7 +680,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return "A verificar Servidor RMI Primario";
     }
 
-    public static void verifica(RMI_Interface h) {
+    private static void verifica(RMI_Interface h) {
         try {
             String teste = h.teste();
             System.out.println(teste);

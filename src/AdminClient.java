@@ -39,7 +39,7 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
             socket.joinGroup(group);
             //UDPSender udp = new UDPSender(numero, serverPort);
 
-            HashMap <Integer, Integer> info = new HashMap<Integer, Integer>();
+            //HashMap <Integer, Integer> info = new HashMap<Integer, Integer>();
             /*new Thread(){
                 public void run(){
 
@@ -132,8 +132,85 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
         }
     } 
 
-    private boolean testTCP(){
+    private boolean testTCP(String... args){
     	//TODO add tcp client code
+        Socket socket;
+        PrintWriter outToServer;
+        BufferedReader inFromServer = null;
+        try {
+            // connect to the specified address:port (default is localhost:12345)
+            if(args.length == 2)
+                socket = new Socket(args[0], Integer.parseInt(args[1]));
+            else
+                socket = new Socket("localhost", 12345);
+
+            //test values
+            long code=(long)(Random.nextDouble()*2^62);
+            long id;
+            String title = "Test auction please don't bid";
+            String description = "The unseen auction is the deadliest";
+            String deadline = "3000-09-19 16:20";
+            int amount=666;
+            int count=0;
+
+            // create streams for writing to and reading from the socket
+            inFromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            outToServer = new PrintWriter(socket.getOutputStream(), true);
+           
+           	//login
+            outToServer.println("type: login, username: admin, password: 123");
+            if(!inFromServer.readLine().equals("type: login, ok: true")){
+            	return false;
+            }
+
+            //testing for equal codes
+            outToServer.println("type: search_auction , code: "+code);
+            while(!inFromServer.readLine().equals("type: search_auction , items_count: 0")){
+            	count++;
+            	if (count>10){
+            		return false;
+            	}
+            	code=(long)(Random.nextDouble()*2^62);
+            }
+
+            //creating auction
+            outToServer.println("type: create_auction, code: "+code+", title : "+title+", description: "+description+", deadline : "+deadline+", amount : "+amount);
+            if(!inFromServer.readLine().equals("type: create_auction, ok: true")){
+            	return false;
+            }
+
+            //getting id
+            outToServer.println("type: search_auction , code: "+code);
+           	if(!inFromServer.readLine().equals("type: search_auction , items_count: 1")){
+            	return false;
+            }
+
+            //checkign details
+            outToServer.println("type: detail_auction , id: "+id);
+            if(!inFromServer.readLine().equals("type: detail_auction, title : "+title+", description : "+description+", deadline : "+deadline+" , messages_count: 0, bids_count : 0")){
+            	return false;
+            }
+
+            //biding
+            outToServer.println("type: bid, id: "+id+", amount: "+amount);
+            if(!inFromServer.readLine().equals("type: bid, ok: true")){
+            	return false;
+            }
+
+            //checking details
+            outToServer.println("type: detail_auction , id: "+id);
+            if(!inFromServer.readLine().equals("type: detail_auction , title : "+title+", description : "+description+", deadline : "+deadline+" , messages_count: 0, bids_count : 1")){
+            	return false;
+            }
+            return true;
+
+        } catch (IOException e) {
+            if(inFromServer == null)
+                System.out.println("\nUsage: java TCPClient <host> <port>\n");
+            System.out.println(e.getMessage());
+        } finally {
+            try { inFromServer.close(); } catch (Exception e) {}
+        }
     } 
 
     static public void menu(){

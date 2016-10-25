@@ -439,8 +439,10 @@ class Connection  extends Thread implements Serializable {
     public void make_bid(LinkedHashMap<String, String> data, String username){
         //falta mandar para os restantes licitadores a notificacao
         try {
-            if(TCPServer.RMI.make_bid(data, username)){
+            Leilao leilao = TCPServer.RMI.make_bid(data, username);
+            if(leilao != null){
                 sendMessage("type","bid","ok","true");
+                TCPServer.RMI.bidNotf(leilao,Double.parseDouble(data.get("amount")),username);
             }
             else{
                 sendMessage("type","bid","ok","false");
@@ -454,9 +456,10 @@ class Connection  extends Thread implements Serializable {
     public void write_message(LinkedHashMap<String, String> data, String username){
         //falta mandar para a notificao para os que escreveram no mural e para o criador do leilao
         try {
-            if(TCPServer.RMI.write_message(data, username)){
+            Leilao leilao = TCPServer.RMI.write_message(data, username);
+            if(leilao != null){
                 sendMessage("type","message","ok","true");
-                //TCPServer.serverPush(username, data.get("text"), data.get("id"));
+                TCPServer.RMI.msgNotf(leilao,data.get("text"),username);
             }
             else{
                 sendMessage("type","message","ok","false");
@@ -513,8 +516,8 @@ class Connection  extends Thread implements Serializable {
 
     //ve o tipo de operacao e responde ao cliente conforma o tipo de operacao
     public void getType(LinkedHashMap <String, String> data){
+        String username = u.username;
         try{
-            String username = u.username;
             switch (data.get("type")) {
                 case "create_auction":
                     System.out.println(data);
@@ -555,8 +558,11 @@ class Connection  extends Thread implements Serializable {
                     break;
                 }
 
-        } catch (Exception e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             System.out.println("getType:"+e);
+            e.printStackTrace();
+            Logout(username);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

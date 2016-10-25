@@ -331,7 +331,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     //falta mandar para os restantes licitadores a notificacao
-    public boolean make_bid(LinkedHashMap<String, String> data, String username) throws RemoteException {
+    public Leilao make_bid(LinkedHashMap<String, String> data, String username) throws RemoteException {
         System.out.println("[ BID ]");
         long id = Long.parseLong(data.get("id"));
         double amount = Double.parseDouble(data.get("amount"));
@@ -347,7 +347,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         if (i >= leiloes.size()) {
             System.out.println("Leilao nao existe.");
             System.out.println("[ END ]");
-            return false;
+            return null;
         }
 
         Leilao auc = leiloes.get(i);
@@ -356,14 +356,14 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         if (auc.precoMax <= amount) {
             System.out.println("Bid higher than preco Max");
             System.out.println("[ END ]");
-            return false;
+            return null;
         }
 
         for (LinkedHashMap<String, String> lic : auc.licitacoes) {
             if (amount > Double.parseDouble(lic.get("bid"))) {
                 System.out.println("Montante maior que a ultima bid.");
                 System.out.println("[ END ]");
-                return false;
+                return null;
             }
         }
 
@@ -371,7 +371,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             System.out.println("[BID] The auction already ended or was canceled");
             System.out.println("Auction deadline: "+auc.getData_termino().toString());
             System.out.println("[ END ]");
-            return false;
+            return null;
         }
 
         LinkedHashMap<String, String> my_bid = new LinkedHashMap<String, String>();
@@ -383,15 +383,48 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         auc.printInfo();
         //this.export_auctions();
         this.exportObjLogged();
-        this.bidNotification(auc,amount,username);
 
         System.out.println("[ END ]");
-        return true;
+        return auc;
+    }
+
+    public void bidNotf(Leilao auc, Double amount, String username) throws RemoteException{
+
+        this.bidNotification(auc,amount,username);
+
+    }
+
+    public void bidNotification(Leilao auc, Double amount, String username) {
+        boolean flag = false;
+        try {
+            int i = 0;
+            for (LinkedHashMap<String, String> bid : auc.licitacoes) {
+                if (checkPrevious(auc.licitacoes, bid.get("author"), i)) {
+                    for (TCP_Interface s : tcpServers) {
+                        if (s.checkUser(bid.get("author"))/* && !bid.get("author").equals(username)*/) {
+                            flag = true;
+                            s.sendMsg("notification_bid",bid.get("author"), String.valueOf(amount), auc, username);
+                        }
+                    }
+                    //users offline
+                    if (!flag &&/* !bid.get("author").equals(username) &&*/ !bid.get("author").equals(auc.getUsername_criador())) {
+                        //mandar notificaçao offline
+                        System.out.println("msg users offline");
+                        String notification = "type: notification_bid, id: " + String.valueOf(auc.id_leilao) + ", user: " + username + ", amount: " + amount;
+                        addNotification(bid.get("author"), notification);
+                    }
+                    flag = false;
+
+                }
+                i++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     //falta mandar para a notificao para os que escreveram no mural e para o criador do leilao
-    public boolean write_message(LinkedHashMap<String, String> data, String username) throws RemoteException {
-        System.out.println("[ WRITE MESSAGE ]");
+    public Leilao write_message(LinkedHashMap<String, String> data, String username) throws RemoteException {
         long id = Long.parseLong(data.get("id"));
         String text = data.get("text");
 
@@ -404,14 +437,14 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         //se o leilao nao existir
         if (i >= leiloes.size()) {
             System.out.println("Auction does not exist");
-            return false;
+            return null;
         }
 
         Leilao auc = leiloes.get(i);
 
         if (auc.state == 1 || auc.state == 2) {
             System.out.println("The auction already ended or was canceled");
-            return false;
+            return null;
         }
 
         LinkedHashMap<String, String> my_msg = new LinkedHashMap<String, String>();
@@ -419,17 +452,20 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         my_msg.put("message", text);
 
         auc.mensagens.add(my_msg);
-        System.out.println("print no write");
         auc.printInfo();
 
         this.exportObjAuctions();
-        this.msgNotification(auc, text, username);
 
-        return true;
+        return auc;
+    }
+
+
+
+    public void msgNotf(Leilao auc, String text, String username) throws RemoteException{
+        this.msgNotification(auc, text, username);
     }
 
     public void msgNotification(Leilao auc, String text, String username) {
-        System.out.println("[ MSG NOTIFICATION ]");
         try {
             int i = 0;
             boolean flag = false;
@@ -437,14 +473,16 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                 if (checkPrevious(auc.mensagens, msg.get("author"), i)) {
                     for (TCP_Interface s : tcpServers) {
                         //users online
-                        if (s.checkUser(msg.get("author")) && !msg.get("author").equals(username) && !msg.get("author").equals(auc.getUsername_criador())) {
+                        if (s.checkUser(msg.get("author")) /*&& !msg.get("author").equals(username)*/ && !msg.get("author").equals(auc.getUsername_criador())) {
                             flag = true;
+                            System.out.println("msg users online");
                             s.sendMsg("notification_message",msg.get("author"), text, auc, username);
                         }
                     }
                     //users offline
-                    if (!flag && !msg.get("author").equals(username) && !msg.get("author").equals(auc.getUsername_criador())) {
+                    if (flag == false && !msg.get("author").equals(username) && !msg.get("author").equals(auc.getUsername_criador())) {
                         //mandar notificaçao offline
+                        System.out.println("msg users offline");
                         String notification = "type: notification_message, id: " + String.valueOf(auc.id_leilao) + ", user: " + username + ", text: " + text;
                         addNotification(msg.get("author"), notification);
                     }
@@ -453,27 +491,19 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                 }
                 i++;
             }
-            checkOwner(auc, username, text);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void bidNotification(Leilao auc, Double amount, String username) {
-        System.out.println("[ BID NOTIFICATION ]");
-        try {
-            int i = 0;
             for (LinkedHashMap<String, String> bid : auc.licitacoes) {
                 if (checkPrevious(auc.licitacoes, bid.get("author"), i)) {
                     for (TCP_Interface s : tcpServers) {
-                        if (s.checkUser(bid.get("author")) && !bid.get("author").equals(username)) {
-                            s.sendMsg("notification_bid",bid.get("author"), String.valueOf(amount), auc, username);
+                        if (s.checkUser(bid.get("author"))/* && !bid.get("author").equals(username)*/) {
+                            System.out.println("bid users online");
+                            s.sendMsg("notification_message",bid.get("author"), text, auc, username);
                         }
                     }
 
                 }
                 i++;
             }
+            checkOwner(auc, username, text);
         } catch (Exception e) {
             e.printStackTrace();
         }

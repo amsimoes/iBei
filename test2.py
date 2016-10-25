@@ -42,6 +42,8 @@ class Client(object):
         while True:
             while not rcv:
                 rcv = self.sock.recv(4096)
+            print "RECEBIDO = "+rcv
+
 
             if '\n' in rcv:
                 parts = rcv.split("\n")
@@ -91,15 +93,15 @@ class ScoreChecker(object):
             self.per_section[section] += points
         return self
 
-    '''def summary(self):
-        l = "\n".join(["%s: %.1f" % (sec, self.per_section[sec]) for sec in self.sections ])
-        return """%s
-        Final Score: %.1f out of %.0f""" % (l, self.positive, self.total)'''
-
     def summary(self):
         l = "\n".join(["%s: %.1f" % (sec, self.per_section[sec]) for sec in self.sections ])
+        return """%s
+        Final Score: %.1f out of %.0f""" % (l, self.positive, self.total)
+
+    '''def summary(self):
+        l = "\n".join(["%s: %.1f" % (sec, self.per_section[sec]) for sec in self.sections ])
         return """
-        Final Score: %.1f out of %.0f""" % (self.positive, self.total)
+        Final Score: %.1f out of %.0f""" % (self.positive, self.total)'''
 
 def random_string():
     return "".join([ random.choice(string.ascii_letters + string.digits) for i in range(random.randint(3,20))])
@@ -266,6 +268,11 @@ if __name__ == '__main__':
     print resp
     print s.summary()
 
+    print "NOTIFICATIONS C1 ="
+    print c1.notifications
+    print "NOTIFICATIONS C2 ="
+    print c2.notifications
+
     c2.close()
 
     resp = c1.rq("""type: bid, id: %s, amount: %f""" % (p1_id, p1_amount * 0.5))
@@ -318,6 +325,11 @@ if __name__ == '__main__':
     print "22 - bid ending"
     print "ok == false"
     print resp
+
+    print "NOTIFICATIONS C1 ="
+    print c1.notifications
+    print "NOTIFICATIONS C2 ="
+    print c2.notifications
 
     c1.close()
     c2.close()

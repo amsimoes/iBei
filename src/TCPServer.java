@@ -1,4 +1,3 @@
-//java Server_TCP <porto>
 import java.net.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -12,29 +11,39 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     public static int numero=0;//numero de clientes online
     public static RMI_Interface RMI;
     public static int count=0;
-    static ArrayList<Connection> connections;
-    static String [] ip = new String[2];
-    static int currentIp = 1;
+    public static ArrayList<Connection> connections;
+    private static String [] ipRmi = new String[1];
+    public static int currentIp = 1;
     protected TCPServer() throws RemoteException {
         connections = new ArrayList<Connection>();
     }
 
     public static void main(String args[]) {
-        if (args.length != 3) {
-            System.out.println("insert port to listen, ip of Primary RMI and ip of Backup RMI");
+        String rmiPort = "7000";    // default porta 7000
+        if (args.length < 3 || args.length > 4 || !checkIp(args[1])) {
+            System.out.println("Usage: <localport> <Primary RMI ip> <RMI Port>");
+            System.out.println("Optional: <localport> <Primary RMI ip> <Backup RMI Server ip> <RMI Port>");
             System.exit(0);
+        } else if (args.length == 3){   // Backup RMI Server ip = Primary RMI Server ip
+            ipRmi[0] = args[1];
+            ipRmi[1] = args[1];
+            rmiPort = args[2];
+        } else if (args.length == 4 && checkIp(args[2])){
+            ipRmi[0] = args[1];
+            ipRmi[1] = args[2];
+            rmiPort = args[3];
         }
-        System.out.println(args[0]+" "+ args[1]+" "+ args[2]);
+
+        System.out.println("Localport: "+args[0]+"\nPrimary RMI Server: "+args[1]+"\nRMI Port:"+ args[2]);
         String port = args[0];
-        ip[0] = args[1];
-        ip[1] = args[2];
-        try{
-            TCPServer.RMI = (RMI_Interface) LocateRegistry.getRegistry(ip[0], 7000).lookup("ibei");//RMI
+        int rmi_port = Integer.parseInt(rmiPort);
+
+        try {
+            TCPServer.RMI = (RMI_Interface) LocateRegistry.getRegistry(ipRmi[0], rmi_port).lookup("ibei");//RMI
             TCP_Interface tcpserver = new TCPServer();
 
             int serverPort = Integer.parseInt(port);
             TCPServer.RMI.data(tcpserver);
-
 
             InetAddress group = InetAddress.getByName("225.0.0.0");
             MulticastSocket socket = new MulticastSocket(6789);
@@ -96,20 +105,22 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
         }
     }
 
+    public static boolean checkIp(String ip) {
+        if(ip.matches(".*\\..*\\..*\\..*"))
+            return true;
+        return false;
+    }
 
-
-    static public void checkMsg(String str, HashMap<Integer, Integer> info){
+    public static void checkMsg(String str, HashMap<Integer, Integer> info){
         String [] fields = str.split(":");
         int i=0;
         for(i=0; i< fields.length;i++){
             fields[i] = fields[i].trim();
         }
         info.put(Integer.parseInt(fields[0]), Integer.parseInt(fields[1]));
-
-
     }
 
-    static public void sendClients(HashMap<Integer, Integer> info){
+    public static void sendClients(HashMap<Integer, Integer> info){
         int i=0;
         String text = "type: notification_load, server_list: "+info.size()+",";
         for (HashMap.Entry<Integer, Integer> entry : info.entrySet()) {
@@ -126,25 +137,22 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     }
 
 
-
-
-
     public static void RMI_reconnection(){
         try {
             Thread.sleep(2000);
             System.out.println(count);
             if (currentIp == 0)
-                currentIp =1;
+                currentIp = 1;
             else if(currentIp == 1)
-                currentIp =0;
-            TCPServer.RMI = (RMI_Interface) LocateRegistry.getRegistry(ip[currentIp],7000).lookup("ibei");
+                currentIp = 0;
+            TCPServer.RMI = (RMI_Interface) LocateRegistry.getRegistry(ipRmi[currentIp],7000).lookup("ibei");
 
 
             count = 0;
         } catch (RemoteException | NotBoundException e) {
             count += 2;
             if(count >= 30) {
-                System.out.println(ip[currentIp]);
+                System.out.println(ipRmi[currentIp]);
                 System.out.println("RMI Servers with problems...");
             }
             TCPServer.RMI_reconnection();
@@ -179,8 +187,6 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     public static void addConnections(Connection cnt){
         connections.add(cnt);
     }
-
-
 
 }
 
@@ -230,9 +236,6 @@ class UDPSender{
         this.numero = numero;
     }
 }
-
-
-
 
 
 // Thread para tratar da comunicação com um cliente

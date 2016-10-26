@@ -13,6 +13,9 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     private static ArrayList<User> loggados;
     private ArrayList<Connection> conns;
     ArrayList<TCP_Interface> tcpServers;
+    public static String primaryRmi [] = new String[1];
+    public static String backupRmi [] = new String[1];
+
 
     public RMI_Server() throws RemoteException {
         super();
@@ -651,7 +654,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
     public int statsLastWeek(){
         int count=0;
-        for (int i=0; leiloes.size(); i++){
+        for (int i=0; i<leiloes.size(); i++){
             if(leiloes.get(i).lastWeek()){
                 count++;
             }
@@ -714,7 +717,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         try {
             RMI_Server h = new RMI_Server();
 
-            Registry r = LocateRegistry.createRegistry(7000);
+            Registry r = LocateRegistry.createRegistry(Integer.parseInt(primaryRmi[1]));
             r.rebind("ibei", h);
             h.importObjRegisted();
             System.out.println("[Base dados] Registados importados: "+h.registados);
@@ -757,7 +760,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } catch (RemoteException e){
+        } catch (RemoteException e){    // Server primario vai abaixo
             start();
             importObjLogged();
             System.out.println("[Base dados] Users loggados importados: "+loggados);
@@ -765,17 +768,25 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
     
     public static void main(String args[]) {
-        if (args.length != 1) {
-            System.out.println("insert ip");
+        if (args.length != 2 && args.length != 4) {
+            System.out.println("Usage: <primary RMI server ip> <primary RMI port>");
+            System.out.println("Optional (Secondary RMI on other machine): ... <secondary RMI server ip> <secondary RMI port>");
             System.exit(0);
+        } else if (args.length == 2) {
+            primaryRmi[0] = args[0];
+            primaryRmi[1] = args[1];
+        } else {
+            primaryRmi[0] = args[0];
+            primaryRmi[1] = args[1];
+            backupRmi[0] = args[2];
+            backupRmi[1] = args[3];
         }
-        String ip = args[0];
-        System.out.println("Establish connection with RMI ip adress: "+ip);
 
+        System.out.println("Establish connection with RMI ip address:"+primaryRmi[0]);
 
         try {
-            System.setProperty("java.rmi.server.hostname", ip);
-            RMI_Interface h= (RMI_Interface) LocateRegistry.getRegistry(ip, 7000).lookup("ibei");
+            System.setProperty("java.rmi.server.hostname", primaryRmi[0]);
+            RMI_Interface h = (RMI_Interface) LocateRegistry.getRegistry(primaryRmi[0], Integer.parseInt(primaryRmi[1])).lookup("ibei");
             verifica(h);
         } catch (RemoteException | NotBoundException re) {
             start();

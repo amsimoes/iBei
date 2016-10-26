@@ -75,51 +75,43 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
         }
         return true;
     }
-/*
+
     //displays stats (# logged users, #total auctions, #on going auctions, #ended auctions, #banned users, #total users, etc)
-    private static boolean getStatsLeiloes(){
+    private static void getStatsLeiloes(){
     	try {
-            if(AdminClient.RMI.getStats()){
-                //TODO print stats
-            }
+            User [] stats = AdminClient.RMI.statsLeiloes();
+            //TODO print stats
+
         } catch (RemoteException e) {
             //e.printStackTrace();
             AdminClient.RMI_reconnection();
             getStatsLeiloes();
         }
+
     }
 
-    private static boolean getStatsVitorias(){
+    private static void getStatsVitorias(){
         try {
-            if(AdminClient.RMI.getStats()){
-                //TODO print stats
-            }
+            User [] stats = AdminClient.RMI.statsVitorias();
         } catch (RemoteException e) {
             //e.printStackTrace();
             AdminClient.RMI_reconnection();
             getStatsVitorias();
         }
+
     }
 
-    private static boolean getStatsLastWeek(){
-        try {
-            if(AdminClient.RMI.getStats()){
-                //TODO print stats
-            }
-        } catch (RemoteException e) {
-            //e.printStackTrace();
-            AdminClient.RMI_reconnection();
-            getStatsLastWeek();
-        }
+    private static void getStatsLastWeek(){
+            int stats = AdminClient.RMI.statsLastWeek();
 
     } 
-*/
 
-    private static void getStats(){
-        /*getStatsVitorias();
+
+    private static void getStats() {
+        getStatsVitorias();
         getStatsLeiloes();
-        getStatsLastWeek();*/
-    ]
+        getStatsLastWeek();
+    }
 
     private static long getItemID(String data){
         String [] aux = data.split(",");

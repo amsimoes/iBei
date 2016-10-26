@@ -17,13 +17,13 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
     }
 
     public static void main(String args[]) {
-        if (args.length == 0) {
-            System.out.println("insert serverport");
+        if (args.length != 4) {
+            System.out.println("usage: RMI port, RMI ip, TCP port, TCP ip");
             System.exit(0);
         }
 
         try{
-            AdminClient.RMI = (RMI_Interface) LocateRegistry.getRegistry("192.168.1.8",7000).lookup("ibei");
+            AdminClient.RMI = (RMI_Interface) LocateRegistry.getRegistry(args[1],Integer.parseInt(args[0])).lookup("ibei");
             AdminClient adminclient = new AdminClient();
 
             adminclient.menu();
@@ -130,7 +130,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
         try {
             // connect to the specified address:port (default is localhost:12345)
             if(args.length == 2)
-                socket = new Socket(args[0], Integer.parseInt(args[1]));
+                socket = new Socket(args[2], Integer.parseInt(args[3]));
             else
                 return false;
 

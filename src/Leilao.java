@@ -152,8 +152,8 @@ public class Leilao implements Serializable{
         this.licitacoes = licitacoes;
     }
 
-    public boolean lastWeek(){
-        if (((new Date()).getTime()-data.data_inicio.getTime())>(604800)){//seconds in a week
+    private boolean lastWeek(){
+        if (((new Date()).getTime()-this.data_inicio.getTime())>(604800)){//seconds in a week
             return false;
         }
         return true;

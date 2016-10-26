@@ -85,11 +85,11 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
         } catch (RemoteException e) {
             //e.printStackTrace();
             AdminClient.RMI_reconnection();
-            getStats();
+            getStatsLeiloes();
         }
     }
 
-    private static boolean getStatsLVitorias(){
+    private static boolean getStatsVitorias(){
         try {
             if(AdminClient.RMI.getStats()){
                 //TODO print stats
@@ -97,10 +97,30 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
         } catch (RemoteException e) {
             //e.printStackTrace();
             AdminClient.RMI_reconnection();
-            getStats();
+            getStatsVitorias();
         }
+    }
+
+    private static boolean getStatsLastWeek(){
+        try {
+            if(AdminClient.RMI.getStats()){
+                //TODO print stats
+            }
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            AdminClient.RMI_reconnection();
+            getStatsLastWeek();
+        }
+
     } 
 */
+
+    private static void getStats(){
+        /*getStatsVitorias();
+        getStatsLeiloes();
+        getStatsLastWeek();*/
+    ]
+
     private static long getItemID(String data){
         String [] aux = data.split(",");
         long r = -1;

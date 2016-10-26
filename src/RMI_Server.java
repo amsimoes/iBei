@@ -649,6 +649,16 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return reply;
     }
 
+    public int statsLastWeek(){
+        int count=0;
+        for (int i=0; leiloes.size(); i++){
+            if(leiloes.get(i).lastWeek()){
+                count++;
+            }
+        }
+        return count;
+    }
+
     // Admin
     public boolean cancelAuction (long id) throws RemoteException{
         Leilao current;

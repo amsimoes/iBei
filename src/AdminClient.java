@@ -1,5 +1,6 @@
 //java Server_TCP <porto>
 import java.net.*;
+import java.rmi.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -8,11 +9,11 @@ import java.io.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
-public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*/{
+public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*/{
     public static RMI_Interface RMI;
     public static int count=0;
 
-    protected AdminCLient() throws RemoteException {
+    protected AdminClient() throws RemoteException {
     }
 
     public static void main(String args[]) {
@@ -23,11 +24,12 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
         String port = args[0];
 
         try{
-            AdminCLient.RMI = (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
-            TCP_Interface AdminCLient = new AdminCLient();
+            AdminClient.RMI = (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
+            AdminClient adminclient = new AdminClient();
+
+            adminclient.menu();
 
             int serverPort = Integer.parseInt(port);
-            AdminCLient.RMI.data(AdminCLient);
 
 
             InetAddress group = InetAddress.getByName("225.0.0.0");
@@ -43,61 +45,78 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
     }
 
     //cancels an on going auction
-    private boolean cancelAuction(int id){
+    private static boolean cancelAuction(long id){
         try {
-            if(AdminCLient.RMI.cancelAuction(id)){
+            if(AdminClient.RMI.cancelAuction(id)){
             	System.out.println("Leilão cancelado com sucesso.");
             }else{
             	System.out.println("Não existe nenhum leilão com ID: "+id+".");
             }
         } catch (RemoteException e) {
             //e.printStackTrace();
-            AdminCLient.RMI_reconnection();
+            AdminClient.RMI_reconnection();
             cancelAuction(id);
         }
     }
 
     //bans user and removes his auctions and his bids from on going auction
-    private boolean banUser(String username){
+    private static boolean banUser(String username){
     	try {
-            if(AdminCLient.RMI.banUser(username)){
+            if(AdminClient.RMI.banUser(username)){
             	System.out.println("Utlizador "+username+" banido com sucesso.");
             }else{
             	System.out.println("Não existe nenhum utilizador "+username+".");
             }
         } catch (RemoteException e) {
             //e.printStackTrace();
-            AdminCLient.RMI_reconnection();
-            banuser(username);
+            AdminClient.RMI_reconnection();
+            banUser(username);
         }
     }
 
     //displays stats (# logged users, #total auctions, #on going auctions, #ended auctions, #banned users, #total users, etc)
-    private boolean getStats(){
+    private static boolean getStatsLeiloes(){
     	try {
-            if(AdminCLient.RMI.getStats()){
+            if(AdminClient.RMI.getStats()){
+                //TODO print stats
+            }
         } catch (RemoteException e) {
             //e.printStackTrace();
-            AdminCLient.RMI_reconnection();
+            AdminClient.RMI_reconnection();
+            getStats();
+        }
+    }
+
+    private static boolean getStatsLVitorias(){
+        try {
+            if(AdminClient.RMI.getStats()){
+                //TODO print stats
+            }
+        } catch (RemoteException e) {
+            //e.printStackTrace();
+            AdminClient.RMI_reconnection();
             getStats();
         }
     } 
 
-    public long getItemID(String data){
+    private static long getItemID(String data){
         String [] aux = data.split(",");
-
+        long r = -1;
+        int i = 0;
         for(String field : aux){
             String [] aux1 = field.trim().split(":", 2);
             aux1[0] = aux1[0].trim();
             aux1[1] = aux1[1].trim();
-            if (aux1[0].equals("items_0_id")){
-                return Long.parseLong(aux1[1]);
+            if (aux1[0].equals("items_"+i+"_id")){
+                i++;
+                r = Long.parseLong(aux1[1]);
             }
+
         }
-        return -1;
+        return r;
     }
 
-    private boolean testTCP(String... args){
+    private static boolean testTCP(String [] args){
     	//TODO add tcp client code
         Socket socket;
         PrintWriter outToServer;
@@ -107,10 +126,10 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
             if(args.length == 2)
                 socket = new Socket(args[0], Integer.parseInt(args[1]));
             else
-                socket = new Socket("localhost", 12345);
+                return false;
 
             //test values
-            long code=(long)(Random.nextDouble()*2^62);
+            long code=9001;
             long id;
             String title = "Test auction please don't bid";
             String description = "The unseen auction is the deadliest";
@@ -125,27 +144,13 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
            	//login
             outToServer.println("type: login, username: admin, password: 123");
             if(!inFromServer.readLine().equals("type: login, ok: true")){
-            	inFromServer.close();
                 socket.close();
                 return false;
-            }
-
-            //testing for equal codes
-            outToServer.println("type: search_auction, code: "+code);
-            while(!inFromServer.readLine().equals("type: search_auction , items_count: 0")){
-            	count++;
-            	if (count>10){
-            		inFromServer.close();
-                    socket.close();
-                    return false;
-            	}
-            	code=(long)(Random.nextDouble()*2^62);
             }
 
             //creating auction
             outToServer.println("type: create_auction, code: "+code+", title: "+title+", description: "+description+", deadline: "+deadline+", amount: "+amount);
             if(!inFromServer.readLine().equals("type: create_auction, ok: true")){
-            	inFromServer.close();
                 socket.close();
                 return false;
             }
@@ -154,8 +159,7 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
             outToServer.println("type: search_auction, code: "+code);
            	String temp=inFromServer.readLine();
             id=getItemID(temp);
-            if ((id==-1)||(!temp.equals("type: search_auction, items_count: 1, items_0_id: "+id+", items_0_code: "+code+", items_0_title: "+title))){
-            	inFromServer.close();
+            if (id!=-1){
                 socket.close();
                 return false;
             }
@@ -163,28 +167,29 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
             //checkign details
             outToServer.println("type: detail_auction, id: "+id);
             if(!inFromServer.readLine().equals("type: detail_auction, title: "+title+", description: "+description+", deadline: "+deadline+" , messages_count: 0, bids_count : 0")){
-            	inFromServer.close();
                 socket.close();
+                cancelAuction(id);
                 return false;
             }
 
             //biding
             outToServer.println("type: bid, id: "+id+", amount: "+amount);
             if(!inFromServer.readLine().equals("type: bid, ok: true")){
-            	inFromServer.close();
                 socket.close();
+                cancelAuction(id);
                 return false;
             }
 
             //checking details
             outToServer.println("type: detail_auction, id: "+id);
             if(!inFromServer.readLine().equals("type: detail_auction, title: "+title+", description: "+description+", deadline: "+deadline+", messages_count: 0, bids_count: 1")){
-            	inFromServer.close();
                 socket.close();
+                cancelAuction(id);
                 return false;
             }
             inFromServer.close();
             socket.close();
+            cancelAuction(id);
             return true;
 
         } catch (IOException e) {
@@ -199,7 +204,7 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
 
     } 
 
-    static public void menu(){
+    public static void menu(){
     	int slt;
     	Scanner scan = new Scanner(System.in);
     	do{
@@ -208,21 +213,20 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
     		switch(slt){
     			case 1:
     				System.out.print("ID do leião: ");
-    				int id = scan.nextLong();
-    				cancelAuction();
+    				long id = scan.nextLong();
+    				cancelAuction(id);
     				break;
     			case 2:
 	    			System.out.print("Nome de utilizador: ");
-			    	String username = scan.readLine();
+			    	String username = scan.nextLine();
     				banUser(username);
     				break;
     			case 3:
-    				System.out.print("TCP Server: ");
-    				//TODO scan tcp server info
     				getStats();
     				break;
     			case 4:
-    				testTCP();
+    				System.out.print("TCP Server <host> <port>: ");
+                    testTCP(scan.nextLine().split(" "));
     				break;
     			case 0:
     				break;
@@ -267,14 +271,14 @@ public class AdminCLient extends UnicastRemoteObject /*implements TCP_Interface*
         try {
             Thread.sleep(2000);
             System.out.println(count);
-            AdminCLient.RMI = (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
+            AdminClient.RMI = (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
             count = 0;
         } catch (RemoteException | NotBoundException e) {
             count += 2;
             if(count >= 30) {
                 System.out.println("RMI Servers with problems...");
             }
-            AdminCLient.RMI_reconnection();
+            AdminClient.RMI_reconnection();
             //e.printStackTrace();
         } catch (InterruptedException e) {
             count += 2;

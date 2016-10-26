@@ -12,22 +12,26 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     public static int numero=0;//numero de clientes online
     public static RMI_Interface RMI;
     public static int count=0;
-    //private static ArrayList<Connection> clients = new ArrayList<Connection>();
     static ArrayList<Connection> connections;
-
+    static String [] ip = new String[2];
+    static int currentIp = 1;
     protected TCPServer() throws RemoteException {
         connections = new ArrayList<Connection>();
     }
 
     public static void main(String args[]) {
-        if (args.length == 0) {
-            System.out.println("insert serverport");
+        if (args.length != 3) {
+            System.out.println("insert port to listen, ip of Primary RMI and ip of Backup RMI");
             System.exit(0);
         }
+        System.out.println(args[0]+" "+ args[1]+" "+ args[2]+" "+ args[3]);
         String port = args[0];
-
+        ip[0] = args[1];
+        ip[1] = args[2];
         try{
-            TCPServer.RMI = (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
+
+
+            TCPServer.RMI = (RMI_Interface) LocateRegistry.getRegistry(ip[0], 7000).lookup("ibei");//RMI
             TCP_Interface tcpserver = new TCPServer();
 
             int serverPort = Integer.parseInt(port);
@@ -131,20 +135,23 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
         try {
             Thread.sleep(2000);
             System.out.println(count);
-            TCPServer.RMI = (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
+            if (currentIp == 0)
+                currentIp =1;
+            else if(currentIp == 1)
+                currentIp =0;
+            TCPServer.RMI = (RMI_Interface) LocateRegistry.getRegistry(ip[currentIp],7000).lookup("ibei");
+
+
             count = 0;
         } catch (RemoteException | NotBoundException e) {
             count += 2;
             if(count >= 30) {
+                System.out.println(ip[currentIp]);
                 System.out.println("RMI Servers with problems...");
             }
             TCPServer.RMI_reconnection();
             //e.printStackTrace();
         } catch (InterruptedException e) {
-            count += 2;
-            if(count >= 30) {
-                System.out.println("RMI Servers with problems...");
-            }
             //e.printStackTrace();
         }
     }
@@ -331,7 +338,7 @@ class Connection  extends Thread implements Serializable {
             System.out.println("IO:" + e);
         }
     }
-
+    //remove connection from Connections array
     public boolean removeConection(User user){
         for(Connection cnt : TCPServer.connections) {
             if (cnt.getUsername().equals(user.getUsername())) {
@@ -408,7 +415,49 @@ class Connection  extends Thread implements Serializable {
     }
     public void detail_auction(LinkedHashMap<String, String> data){
         try {
-            LinkedHashMap<String, String> reply = TCPServer.RMI.detail_request(data);
+            LinkedHashMap<String, String> reply = new LinkedHashMap<String, String>();
+            Leilao leilao = TCPServer.RMI.detail_auction(data);
+
+            int i;
+
+            if (leilao != null) {
+                reply.put("type", "detail_auction");
+                String titulos = "";
+                i=0;
+                for (String titulo : leilao.titulo) {
+                    i++;
+                    titulos += i + "º: "+titulo + ", ";
+                }
+                i=0;
+                reply.put("title", titulos.substring(0, titulos.length() - 2));
+                String descricoes = "";
+                for (String descricao : leilao.descricao) {
+                    i++;
+                    descricoes += i+"º: " + descricao + ", ";
+                }
+                reply.put("description", descricoes.substring(0, descricoes.length() - 2));
+
+                reply.put("deadline", leilao.data_termino.toString());
+                reply.put("messages_count", String.valueOf(leilao.mensagens.size()));
+                reply.put("code", leilao.getArtigoId());
+                //mandar mensagens
+                for (i = 0; i < leilao.mensagens.size(); i++) {
+                    reply.put("messages_" + String.valueOf(i) + "_user", leilao.mensagens.get(i).get("author"));
+                    reply.put("messages_" + String.valueOf(i) + "_text", leilao.mensagens.get(i).get("message"));
+                }
+
+                reply.put("bids_count", String.valueOf(leilao.licitacoes.size()));
+                //mandar licitacoes
+                for (i = 0; i < leilao.licitacoes.size(); i++) {
+                    reply.put("messages_" + String.valueOf(i) + "_user", leilao.licitacoes.get(i).get("author"));
+                    reply.put("messages_" + String.valueOf(i) + "_text", leilao.licitacoes.get(i).get("bid"));
+                }
+
+            } else {
+                reply.put("type", "detail_auction");
+                reply.put("ok", "false");
+            }
+
             String r = reply.toString().replaceAll("=",":");
             out.println(r.substring(1, r.length() - 1));
         } catch (RemoteException e) {
@@ -420,7 +469,23 @@ class Connection  extends Thread implements Serializable {
     }
     public void search_auction(LinkedHashMap<String, String> data) {
         try {
-            LinkedHashMap<String, String> reply = TCPServer.RMI.search_auction(data);
+            ArrayList <Leilao> leiloes_encontrados = TCPServer.RMI.search_auction(data);
+
+            LinkedHashMap<String, String> reply = new LinkedHashMap<String, String>();
+            int i;
+            if (leiloes_encontrados.size() != 0) {
+                reply.put("type", "search_auction");
+                reply.put("items_count", String.valueOf(leiloes_encontrados.size()));
+                for (i = 0; i < leiloes_encontrados.size(); i++) {
+                    reply.put("items_" + String.valueOf(i) + "_id", String.valueOf(leiloes_encontrados.get(i).id_leilao));
+                    reply.put("items_" + String.valueOf(i) + "_code", String.valueOf(leiloes_encontrados.get(i).artigoId));
+                    reply.put("items_" + String.valueOf(i) + "_title", leiloes_encontrados.get(i).titulo.get(leiloes_encontrados.get(i).titulo.size() - 1));//so mostra o titulo mais recente
+                }
+            } else {
+                reply.put("type", "search_auction");
+                reply.put("items_count", "0");
+            }
+
             String r = reply.toString().replaceAll("=",":");
             out.println(r.substring(1, r.length() - 1));
         } catch (RemoteException e) {
@@ -431,7 +496,27 @@ class Connection  extends Thread implements Serializable {
     }
     public void my_auctions(LinkedHashMap<String, String> data, String username) {
         try {
-            LinkedHashMap<String, String> reply = TCPServer.RMI.my_auctions(data,username);
+            ArrayList <Leilao> leiloes_encontrados = TCPServer.RMI.my_auctions(data,username);
+
+            LinkedHashMap<String, String> reply = new LinkedHashMap<String, String>();
+            int i;
+            if (leiloes_encontrados.size() != 0) {
+                reply.put("type", "my_auctions");
+                reply.put("items_count", String.valueOf(leiloes_encontrados.size()));
+                for (i = 0; i < leiloes_encontrados.size(); i++) {
+                    reply.put("items_" + String.valueOf(i) + "_id", String.valueOf(leiloes_encontrados.get(i).id_leilao));
+                    reply.put("items_" + String.valueOf(i) + "_code", String.valueOf(leiloes_encontrados.get(i).artigoId));
+                    reply.put("items_" + String.valueOf(i) + "_title", leiloes_encontrados.get(i).titulo.get(leiloes_encontrados.get(i).titulo.size() - 1));//so mostra o titulo mais recente
+                }
+            } else {
+                reply.put("type", "my_auctions");
+                reply.put("items_count", "0");
+            }
+
+            System.out.println("[ END ]");
+
+
+
             String r = reply.toString().replaceAll("=",":");
             out.println(r.substring(1, r.length() - 1));
         } catch (RemoteException e) {
@@ -448,7 +533,7 @@ class Connection  extends Thread implements Serializable {
             Leilao leilao = TCPServer.RMI.make_bid(data, username);
             if(leilao != null){
                 sendMessage("type","bid","ok","true");
-                TCPServer.RMI.bidNotf(leilao,Double.parseDouble(data.get("amount")),username);
+                TCPServer.RMI.bidNotification(leilao,Double.parseDouble(data.get("amount")),username);
             }
             else{
                 sendMessage("type","bid","ok","false");
@@ -465,7 +550,7 @@ class Connection  extends Thread implements Serializable {
             Leilao leilao = TCPServer.RMI.write_message(data, username);
             if(leilao != null){
                 sendMessage("type","message","ok","true");
-                TCPServer.RMI.msgNotf(leilao,data.get("text"),username);
+                TCPServer.RMI.msgNotification(leilao,data.get("text"),username);
             }
             else{
                 sendMessage("type","message","ok","false");
@@ -490,9 +575,19 @@ class Connection  extends Thread implements Serializable {
         }
     }
     public void OnlineUsers(){
-        LinkedHashMap<String, String> reply = null;
+        LinkedHashMap <String, String> reply = new LinkedHashMap<>();
+
         try {
-            reply = TCPServer.RMI.listOnlineUsers();
+            ArrayList <User> loggados = TCPServer.RMI.listOnlineUsers();
+
+            System.out.println("[ LIST ONLINE USERS ]");
+            reply.put("type", "online_users");
+            int users_count = loggados.size();
+            reply.put("users_count", String.valueOf(users_count));
+            for(int i=0;i<loggados.size();i++) {
+                reply.put("users_"+i+"_username", loggados.get(i).username);
+            }
+
             String r = reply.toString().replaceAll("=",":");
             out.println(r.substring(1, r.length() - 1));
         } catch (RemoteException e) {

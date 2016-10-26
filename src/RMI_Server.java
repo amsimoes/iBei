@@ -576,6 +576,130 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         }
     }
 
+    //ADMIN
+    public User [] statsVitorias() throws RemoteException{
+        //top 10
+        User current;
+        User [] reply;
+        if (registados.size()<10){
+            reply = new User[registados.size()];
+            for (int i=1; i<registados.size(); i++){
+                reply[i] = registados.get(i);
+            }
+        }else{
+            reply = new User[10];
+            reply[0] = registados.get(0);
+            int min = 0;
+            for (int i=0; i<reply.length; i++){
+                reply[i] = registados.get(i);
+                if (reply[i].getVitorias()<reply[min].getVitorias()){
+                    min=i;
+                }
+            }
+            for (int i=10; i<registados.size(); i++){
+                current = registados.get(i);
+                if (current.getVitorias()>reply[min].getVitorias()){
+                    reply[min]=current;
+                    min=0;
+                    for(int k=1; k<reply.length;k++){
+                        if (reply[k].getVitorias()<reply[min].getVitorias()){
+                            min=k;
+                        }
+                    }
+                }
+            }
+        }
+        Arrays.sort(reply,User::compareVitorias);
+        return reply;
+    }
+
+    public User [] statsLeiloes() throws RemoteException{
+        //top 10
+        User current;
+        User [] reply;
+        if(registados.size()<10){
+             reply = new User[registados.size()];
+            for (int i=0; i<registados.size(); i++){
+                reply[i] = registados.get(i);
+            }
+        }else{
+            reply = new User[10];
+            reply[0] = registados.get(0);
+            int min = 0;
+            for (int i=1; i<reply.length; i++){
+                reply[i] = registados.get(i);
+                if (reply[i].getLeiloes()<reply[min].getLeiloes()){
+                    min=i;
+                }
+            }
+            for (int i=10; i<registados.size(); i++){
+                current = registados.get(i);
+                if (current.getLeiloes()>reply[min].getLeiloes()){
+                    reply[min]=current;
+                    min=0;
+                    for(int k=1; k<reply.length; k++){
+                        if (reply[k].getLeiloes()<reply[min].getLeiloes()){
+                            min=k;
+                        }
+                    }
+                }
+            }
+        }
+        Arrays.sort(reply,User::compareLeiloes);
+        return reply;
+    }
+
+    // Admin
+    public boolean cancelAuction (long id) throws RemoteException{
+        Leilao current;
+        for (int i=0; i<leiloes.size(); i++){
+            current = leiloes.get(i);
+            if (Long.parseLong(current.getArtigoId())==id){
+                current.setState(1);
+                leiloes.set(i,current);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean banUser (String username) throws RemoteException{
+        Leilao current;
+        for (int i=0; i<leiloes.size(); i++){
+            current = leiloes.get(i);
+            if ((current.getUsername_criador().equals(username))&&(current.getState()==0)){//não apaga concluidos?
+                current.setState(1);
+            }
+            else{ //deletes bids
+                String bid = null;
+                int pos = 0;
+                for (int k=0; k<current.licitacoes.size(); k++) {
+                    if (current.licitacoes.get(k).get("author").equals(username)) {
+                        bid = current.licitacoes.get(k).get("bid");
+                        current.licitacoes.remove(k);
+                        pos = k;
+                        k--;
+                    }
+                }
+                    LinkedHashMap <String,String> temp=current.licitacoes.get(current.licitacoes.size()-1);
+                    temp.put("bid",bid);
+                    current.licitacoes.set(pos,temp);
+                    for (int k=current.licitacoes.size()-1; k>pos;k--){
+                        current.licitacoes.remove(k);
+                    }
+                }
+                for (int k=0; k<current.mensagens.size(); k++){
+                    if (current.mensagens.get(k).get("author").equals(username)){
+                        current.mensagens.remove(k);
+                        k--;
+                    }
+                }
+
+                leiloes.set(i, current);
+            }
+            return true;
+        }
+
     private static void start(){
         try {
             RMI_Server h = new RMI_Server();

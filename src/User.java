@@ -29,11 +29,11 @@ public class User implements Serializable{
         return banned;
     }
 
-    public Boolean getLeiloes() {
+    public int getLeiloes() {
         return leiloes;
     }
 
-    public Boolean getvitorias() {
+    public int getVitorias() {
         return vitorias;
     }
 
@@ -49,11 +49,11 @@ public class User implements Serializable{
         this.banned = banned;
     }
 
-    public Boolean setLeiloes() {
+    public void setLeiloes() {
         this.leiloes = leiloes;
     }
 
-    public Boolean getvitorias() {
+    public void setvitorias() {
         this.vitorias = vitorias;
     }
 
@@ -63,5 +63,13 @@ public class User implements Serializable{
 
     public List<String> getNotifications() {
         return notifications;
+    }
+
+    public static int compareLeiloes(User a, User b){
+        return Integer.compare(a.getLeiloes(),b.getLeiloes());
+    }
+
+    public static int compareVitorias(User a, User b){
+        return Integer.compare(a.getVitorias(),b.getVitorias());
     }
 }

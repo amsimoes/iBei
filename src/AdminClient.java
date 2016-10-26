@@ -57,6 +57,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
             AdminClient.RMI_reconnection();
             cancelAuction(id);
         }
+        return true;
     }
 
     //bans user and removes his auctions and his bids from on going auction
@@ -72,8 +73,9 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
             AdminClient.RMI_reconnection();
             banUser(username);
         }
+        return true;
     }
-
+/*
     //displays stats (# logged users, #total auctions, #on going auctions, #ended auctions, #banned users, #total users, etc)
     private static boolean getStatsLeiloes(){
     	try {
@@ -98,7 +100,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
             getStats();
         }
     } 
-
+*/
     private static long getItemID(String data){
         String [] aux = data.split(",");
         long r = -1;

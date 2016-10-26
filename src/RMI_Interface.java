@@ -20,6 +20,11 @@ public interface RMI_Interface extends Remote {
     public String teste() throws RemoteException;
     public void msgNotification(Leilao auc, String text, String username) throws RemoteException;
     public void bidNotification(Leilao auc, Double amount, String username) throws RemoteException;
+    public boolean cancelAuction (long id) throws RemoteException;
+    public User [] statsLeiloes() throws RemoteException;
+    public User [] statsVitorias() throws RemoteException;
+    public boolean banUser (String username) throws RemoteException;
+
 
 
     }

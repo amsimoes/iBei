@@ -9,6 +9,7 @@ public class Leilao implements Serializable{
     public ArrayList <String> descricao;
     public double precoMax;
     public int state;//0 se estiver ativo, 1 se tiver cancelado, 2 se tiver terminado
+    public Date data_inicio;
     public Date data_termino;
     public ArrayList<LinkedHashMap <String, String >> mensagens;//key: author, message
     public ArrayList<LinkedHashMap <String, String >> licitacoes;//key: author, bid
@@ -22,6 +23,7 @@ public class Leilao implements Serializable{
         this.descricao = new ArrayList<String>();
         this.descricao.add(descricao);
         this.precoMax = precoMax;
+        this,data_inicio=new Date();
         this.data_termino = data_termino;
         System.out.println("data_termino: "+data_termino);
         System.out.println("this.data_termino: "+this.data_termino);
@@ -148,6 +150,13 @@ public class Leilao implements Serializable{
 
     public void setLicitacoes(ArrayList<LinkedHashMap<String, String>> licitacoes) {
         this.licitacoes = licitacoes;
+    }
+
+    public boolean lastWeek(){
+        if (((new Date()).getTime()-data.data_inicio.getTime())>(604800)){//seconds in a week
+            return false;
+        }
+        return true;
     }
 }
 

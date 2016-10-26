@@ -23,7 +23,7 @@ public class Leilao implements Serializable{
         this.descricao = new ArrayList<String>();
         this.descricao.add(descricao);
         this.precoMax = precoMax;
-        this,data_inicio=new Date();
+        this.data_inicio=new Date();
         this.data_termino = data_termino;
         System.out.println("data_termino: "+data_termino);
         System.out.println("this.data_termino: "+this.data_termino);
@@ -152,7 +152,7 @@ public class Leilao implements Serializable{
         this.licitacoes = licitacoes;
     }
 
-    private boolean lastWeek(){
+    public boolean lastWeek(){
         if (((new Date()).getTime()-this.data_inicio.getTime())>(604800)){//seconds in a week
             return false;
         }

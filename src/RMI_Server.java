@@ -153,7 +153,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return null;
     }
 
-
     public ArrayList <Leilao> search_auction(LinkedHashMap<String, String> data) throws RemoteException {
         System.out.println("[ SEARCH AUCTION ]");
         ArrayList<Leilao> leiloes_encontrados = new ArrayList<Leilao>();
@@ -168,7 +167,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return leiloes_encontrados;
 
     }
-
 
 
     public boolean edit_auction(LinkedHashMap<String, String> data, String username) throws RemoteException {
@@ -457,8 +455,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
     }
 
-
-
     // FicheirosObjetos
     private static void importObjLogged() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
@@ -644,7 +640,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
 
         try {
-            RMI_Interface h= (RMI_Interface) LocateRegistry.getRegistry(ip,7000).lookup("ibei");
+            System.setProperty("java.rmi.server.hostname", ip);
+            RMI_Interface h= (RMI_Interface) LocateRegistry.getRegistry(ip, 7000).lookup("ibei");
             verifica(h);
         } catch (RemoteException | NotBoundException re) {
             start();

@@ -24,13 +24,11 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
             System.out.println("insert port to listen, ip of Primary RMI and ip of Backup RMI");
             System.exit(0);
         }
-        System.out.println(args[0]+" "+ args[1]+" "+ args[2]+" "+ args[3]);
+        System.out.println(args[0]+" "+ args[1]+" "+ args[2]);
         String port = args[0];
         ip[0] = args[1];
         ip[1] = args[2];
         try{
-
-
             TCPServer.RMI = (RMI_Interface) LocateRegistry.getRegistry(ip[0], 7000).lookup("ibei");//RMI
             TCP_Interface tcpserver = new TCPServer();
 

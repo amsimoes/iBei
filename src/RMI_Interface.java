@@ -23,7 +23,7 @@ public interface RMI_Interface extends Remote {
     public boolean cancelAuction (long id) throws RemoteException;
     public User [] statsLeiloes() throws RemoteException;
     public User [] statsVitorias() throws RemoteException;
-    public int statsLastWeek();
+    public int statsLastWeek() throws RemoteException;
     public boolean banUser (String username) throws RemoteException;
 
     }

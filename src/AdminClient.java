@@ -21,20 +21,12 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
             System.out.println("insert serverport");
             System.exit(0);
         }
-        String port = args[0];
 
         try{
-            AdminClient.RMI = (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
+            AdminClient.RMI = (RMI_Interface) LocateRegistry.getRegistry("192.168.1.8",7000).lookup("ibei");
             AdminClient adminclient = new AdminClient();
 
             adminclient.menu();
-
-            int serverPort = Integer.parseInt(port);
-
-
-            InetAddress group = InetAddress.getByName("225.0.0.0");
-            MulticastSocket socket = new MulticastSocket(6789);
-            socket.joinGroup(group);
 
         } catch(IOException e) {
             System.out.println("Listen: " + e.getMessage());
@@ -77,7 +69,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
     }
 
     //displays stats (# logged users, #total auctions, #on going auctions, #ended auctions, #banned users, #total users, etc)
-    private static void getStatsLeiloes(){
+    private static void getStatsLeiloes() throws RemoteException{
     	try {
             User [] stats = AdminClient.RMI.statsLeiloes();
             //TODO print stats
@@ -90,7 +82,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
 
     }
 
-    private static void getStatsVitorias(){
+    private static void getStatsVitorias() throws RemoteException{
         try {
             User [] stats = AdminClient.RMI.statsVitorias();
         } catch (RemoteException e) {
@@ -101,13 +93,13 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
 
     }
 
-    private static void getStatsLastWeek(){
+    private static void getStatsLastWeek() throws RemoteException{
             int stats = AdminClient.RMI.statsLastWeek();
 
     } 
 
 
-    private static void getStats() {
+    private static void getStats() throws RemoteException{
         getStatsVitorias();
         getStatsLeiloes();
         getStatsLastWeek();
@@ -236,8 +228,13 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
     				banUser(username);
     				break;
     			case 3:
-    				getStats();
-    				break;
+                    try {
+                        getStats();
+                        break;
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+
     			case 4:
     				System.out.print("TCP Server <host> <port>: ");
                     testTCP(scan.nextLine().split(" "));

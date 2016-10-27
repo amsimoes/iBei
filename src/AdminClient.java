@@ -61,7 +61,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
             if(AdminClient.RMI.banUser(username)){
             	System.out.println("Utlizador "+username+" banido com sucesso.");
             }else{
-            	System.out.println("Não existe nenhum utilizador "+username+".");
+            	System.out.println("Utilizador nao banido.");
             }
         } catch (RemoteException e) {
             //e.printStackTrace();

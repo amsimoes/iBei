@@ -310,6 +310,7 @@ class Connection  extends Thread implements Serializable {
                     }
                 } else {
                     System.out.println("A espera do user...");
+                    System.out.println("Banido: "+u.isBanned());
                     String data= in.readLine();
                     LinkedHashMap<String, String> hashMap = parseData(data);
 

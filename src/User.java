@@ -25,7 +25,7 @@ public class User implements Serializable{
         return password;
     }
 
-    public Boolean getBanned() {
+    public Boolean isBanned() {
         return banned;
     }
 

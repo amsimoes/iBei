@@ -65,8 +65,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                             return false;
                         }
                     }
-                    if(u.getBanned()) {
-                        System.out.println("Utilizador banido.");
+                    if(user.isBanned()) {
+                        System.out.println("Utilizador "+u.username+"banido.");
                         return false;
                     }
                     System.out.println("Utilizador " + u.username + " loggado com sucesso!");
@@ -678,71 +678,76 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     public boolean banUser (String username) throws RemoteException{//remover a conta de user?
         Leilao current;
         User tempuser=null;
-        for (int u=0; u<registados.size(); u++){
-            tempuser=registados.get(u);
 
-            if (tempuser.getUsername().equals(username)){
-                if(tempuser.getBanned()){
+        for(User u : registados) {
+            if(u.getUsername().equals(username)) {
+                if(u.isBanned()) {
+                    System.out.println("User ja se encontra banido.");
                     return false;
-                }else{
-                    tempuser.setBanned(true);
-                    registados.set(u,tempuser);
-
-                    //dc user
-                    for (User temp : loggados){
-                        if(temp.getBanned()){
-                            loggados.remove(temp);
-                            break;
-                        }
-                    }
-
-                    //deleting auctions/bids
-                    for (int i=0; i<leiloes.size(); i++){
-                        current = leiloes.get(i);
-                        if ((current.getUsername_criador().equals(username))&&(current.getState()==0)){//não apaga concluidos?
-                            current.setState(1);
-                        }else{ //deletes bids
+                } else {
+                    u.setBanned(true);
+                    System.out.println("Username "+u.getUsername()+" Banido: "+u.isBanned());
+                    for(Leilao l : leiloes) {
+                        if(l.getUsername_criador().equals(username) && l.getState() == 0) {
+                            l.setState(1);
+                        } else {
                             String bid = null;
                             int pos = 0;
 
-                            //removing bids
-                            for (int k=0; k<current.licitacoes.size(); k++) {
-                                if (current.licitacoes.get(k).get("author").equals(username)) {
-                                    bid = current.licitacoes.get(k).get("bid");
-                                    current.licitacoes.remove(k);
-                                    pos = k;
-                                    k--;
+                            // Deleting bids
+                            for(int i=0;i<l.licitacoes.size();i++){
+                                if(l.licitacoes.get(i).get("author").equals(username)) {
+                                    bid = l.licitacoes.get(i).get("bid");
+                                    l.licitacoes.remove(i);
+                                    pos = i;
+                                    i--;
                                 }
                             }
 
-                            //changing last bid
-                            if (current.licitacoes.size()>0){
-                                LinkedHashMap <String,String> temp=current.licitacoes.get(current.licitacoes.size()-1);
+                            if(l.licitacoes.size()>0) {
+                                LinkedHashMap <String,String> temp=l.licitacoes.get(l.licitacoes.size()-1);
                                 if ((bid!=null)&&(Double.parseDouble(temp.get("bid"))<Double.parseDouble(bid))){
                                     temp.put("bid",bid);
-                                    current.licitacoes.set(pos,temp);
-                                    for (int k=current.licitacoes.size()-1; k>pos;k--){
-                                        current.licitacoes.remove(k);
+                                    l.licitacoes.set(pos,temp);
+                                    for (int i=l.licitacoes.size()-1; i>pos;i--){
+                                        l.licitacoes.remove(i);
                                     }
                                 }
                             }
-                        }
 
-                        //deleting messages
-                        for (int k=0; k<current.mensagens.size(); k++){
-                            if (current.mensagens.get(k).get("author").equals(username)){
-                                current.mensagens.remove(k);
-                                k--;
+                            for(int i=0;i<l.mensagens.size();i++) {
+                                if(l.mensagens.get(i).get("author").equals(username)){
+                                    l.mensagens.remove(i);
+                                    i--;
+                                }
                             }
                         }
+                    }
 
-                        leiloes.set(i, current);
+                    for(Leilao l : leiloes) {
+                        for(int i=0;i<l.mensagens.size();i++) {
+                            if(l.mensagens.get(i).get("author").equals(username)) {
+                                warnBanned(String.valueOf(l.getId_leilao()), username);
+                            }
+                        }
+                        for(int i=0;i<l.licitacoes.size();i++) {
+                            if(l.licitacoes.get(i).get("author").equals(username)) {
+                                warnBanned(String.valueOf(l.getId_leilao()), username);
+                            }
+                        }
                     }
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    private void warnBanned(String id, String username) throws RemoteException {
+        LinkedHashMap<String, String> admin_message = new LinkedHashMap<String, String>();
+        admin_message.put("id", id);
+        admin_message.put("text", "Lamentamos. O user "+username+" foi banido.");
+        this.write_message(admin_message, "Admin");
     }
 
     private static void start(){

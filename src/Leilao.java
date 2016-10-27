@@ -11,8 +11,8 @@ public class Leilao implements Serializable{
     public int state;//0 se estiver ativo, 1 se tiver cancelado, 2 se tiver terminado
     public Date data_inicio;
     public Date data_termino;
-    public ArrayList<LinkedHashMap <String, String >> mensagens;//key: author, message
-    public ArrayList<LinkedHashMap <String, String >> licitacoes;//key: author, bid
+    public ArrayList<LinkedHashMap <String, String >> mensagens;  //key: author, message
+    public ArrayList<LinkedHashMap <String, String >> licitacoes; //key: author, bid
 
 
     public Leilao(String username, String artigoId, String titulo, String descricao, double precoMax, Date data_termino){

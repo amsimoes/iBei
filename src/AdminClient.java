@@ -17,13 +17,13 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
     }
 
     public static void main(String args[]) {
-        if (args.length != 4) {
-            System.out.println("usage: RMI port, RMI ip, TCP port, TCP ip");
+        if (args.length != 2) {
+            System.out.println("usage: RMI IP, RMI port, TCP IP, TCP port");
             System.exit(0);
         }
 
         try{
-            AdminClient.RMI = (RMI_Interface) LocateRegistry.getRegistry(args[1],Integer.parseInt(args[0])).lookup("ibei");
+            AdminClient.RMI = (RMI_Interface) LocateRegistry.getRegistry(args[0],Integer.parseInt(args[1])).lookup("ibei");
             AdminClient adminclient = new AdminClient();
 
             adminclient.menu();
@@ -208,75 +208,68 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
         }
         return false;
 
-    } 
+    }
+
+    public static void clearScreen() {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+    }
+
+    public static void wait4user() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Prima para voltar ao menu.");
+        scanner.nextLine();
+        clearScreen();
+    }
 
     public static void menu(){
     	int slt;
     	Scanner scan = new Scanner(System.in);
     	do{
-    		System.out.println("Selecione uma das seguintes opções:\n1.Cancelar leilão\n2.Banir utilizador\n3.Consultar estatísticas\n4.Testar servidor TCP\n0.Sair\n");
-    		slt=scan.nextInt();
+    		System.out.println("Selecione uma das seguintes opções:\n" +
+                                "1.Cancelar leilão\n" +
+                                "2.Banir utilizador\n" +
+                                "3.Consultar estatísticas\n" +
+                                "4.Testar servidor TCP\n" +
+                                "0.Sair");
+            System.out.print("Opcao: ");
+            slt=scan.nextInt();
+            clearScreen();
     		switch(slt){
     			case 1:
-    				System.out.print("ID do leião: ");
+    				System.out.print("ID do leilao: ");
     				long id = scan.nextLong();
     				cancelAuction(id);
+                    wait4user();
     				break;
     			case 2:
-	    			System.out.print("Nome de utilizador: ");
-			    	String username = scan.nextLine();
-    				banUser(username);
+	    			System.out.print("Username: ");
+			    	String username = scan.next();
+                    System.out.println("Input: "+username);
+                    banUser(username);
+                    wait4user();
     				break;
     			case 3:
                     try {
                         getStats();
-                        break;
+                        wait4user();
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
-
+                    break;
     			case 4:
     				System.out.print("TCP Server <host> <port>: ");
                     testTCP(scan.nextLine().split(" "));
+                    wait4user();
     				break;
     			case 0:
+    			    slt = 0;
     				break;
     			default:
     				System.out.println("Seleção inválida.\n");
-    		}
+            }
     	}while(slt!=0);
     }
-
-    /*static public void checkMsg(String str, HashMap<Integer, Integer> info){
-        String [] fields = str.split(":");
-        int i=0;
-        for(i=0; i< fields.length;i++){
-            fields[i] = fields[i].trim();
-        }
-        info.put(Integer.parseInt(fields[0]), Integer.parseInt(fields[1]));
-
-
-    }
-    */
-    /*static public void sendClients(HashMap<Integer, Integer> info){
-        int i=0;
-        String text = "type: notification_load, server_list: "+info.size();
-        for (HashMap.Entry<Integer, Integer> entry : info.entrySet()) {
-            Integer key = entry.getKey();
-            Integer value = entry.getValue();
-            text += " server_"+i+"_hostname: localhost, server_"+i+"_port: " + key+", server_"+i+"_load: "+value;
-            i++;
-
-        }
-        for(Connection cnt : connections){
-            System.out.println(cnt.getUsername());
-            cnt.getOut().println(text);
-        }
-    }
-	*/
-
-
-
 
     public static void RMI_reconnection(){
         try {
@@ -300,77 +293,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
         }
     }
 
-    /*
-    public void sendMsg(String type, String username, String text, Leilao leilao, String author) throws RemoteException{
-        for(Connection ctn : connections){
-            if(ctn.getUsername().equals(username))
-                ctn.sendMessage("type",type,"id",String.valueOf(leilao.id_leilao),"user",author,"text",text);
-        }
-    }
-
-    public boolean checkUser(String username) throws RemoteException{
-        for(Connection cnt : connections){
-            if(cnt.getUsername().equals(username))
-                return true;
-        }
-        return false;
-    }
-
-
-    public static void addConnections(Connection cnt){
-        connections.add(cnt);
-    }
-	*/
-
-
 }
 
-/*class UDPSender{
-    private int numero;
-    private int port;
-    public UDPSender(int numero, int tcpPort){
-
-        this.numero = numero;
-        this.port = tcpPort;
-        try {
-            DatagramSocket socket = new DatagramSocket();
-
-
-            new Thread(){
-                public void run() {
-                    try {
-                        InputStreamReader input = new InputStreamReader(System.in);
-                        BufferedReader reader = new BufferedReader(input);
-                        while(true) {
-                            InetAddress group = InetAddress.getByName("225.0.0.0");
-                            String reply = String.valueOf(tcpPort)+": "+String.valueOf(getNumero());
-                            byte[] buf =  reply.getBytes();
-                            DatagramPacket msgOut = new DatagramPacket(buf, buf.length, group, 6789);
-                            socket.send(msgOut);
-                            Thread.sleep(30000);
-                        }
-                    } catch (InterruptedException | IOException e) {
-                        e.printStackTrace();
-                    }
-                    //while(true){
-                    //}
-                }
-            }.start();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public int getNumero() {
-        return numero;
-    }
-
-    public void setNumero(int numero) {
-        this.numero = numero;
-    }
-}
-*/
 
 

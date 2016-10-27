@@ -98,9 +98,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
 
     private static void getStatsLastWeek() throws RemoteException{
             int stats = AdminClient.RMI.statsLastWeek();
-
     } 
-
 
     private static void getStats() throws RemoteException{
         getStatsVitorias();
@@ -148,91 +146,110 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
             // create streams for writing to and reading from the socket
             inFromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             outToServer = new PrintWriter(socket.getOutputStream(), true);
+
+            //register admin
+            outToServer.println("type: register, username: admin, password: 123");
+            System.out.print("Testing register admin: ");
+            if(!inFromServer.readLine().equals("type:register, ok:true")) {
+                System.out.println("Wrong answer: (OK: False)");
+            } else {
+                System.out.println("Passed. (OK: True)");
+            }
            
            	//login
             outToServer.println("type: login, username: admin, password: 123");
-            String answer =inFromServer.readLine();
-            if(!answer.equals("type:login, ok:true")){
-                System.out.println("Wrong answer"+answer);
-                socket.close();
-                return false;
+            System.out.print("Testing login admin: ");
+            if(!inFromServer.readLine().equals("type:login, ok:true")){
+                System.out.println("Wrong answer: (OK: False)");
+            } else {
+                System.out.println("Passed. (OK: True)");
             }
 
             //creating auction
             outToServer.println("type: create_auction, code: "+code+", title: "+title+", description: "+description+", deadline: "+deadline+", amount: "+amount);
+            System.out.print("Testing create auction: ");
             if(!inFromServer.readLine().equals("type:create_auction, ok:true")){
-                socket.close();
-                return false;
+                System.out.println("Wrong answer: (OK: false)");
+            } else {
+                System.out.println("Passed. (OK: True)");
             }
+
             //getting id
             outToServer.println("type: search_auction, code: "+code);
            	String temp=inFromServer.readLine();
             id=getItemID(temp);
-            System.out.println(id);
+            System.out.println("Auction id: "+id);
+            System.out.print("Testing search_auction: ");
             if (id==-1){
+                System.out.println("Wrong answer. No auction with code: "+code);
                 socket.close();
                 return false;
+            } else {
+                System.out.println("Passed. Answer: "+temp);
             }
-            //checkign details
-            System.out.println("detail_auction");
+
+            //checking details
             outToServer.println("type: detail_auction, id: "+id);
-            String a= inFromServer.readLine();
-            String suposto = "type:detail_auction, title:1º: "+title+", description:1º: "+description+", deadline:"+date.toString()+", code:"+code+", messages_count:0, bids_count:0";
-            if(!a.equals(suposto)){
-                System.out.println(a);
-                System.out.println(suposto);
-                socket.close();
+            String a = inFromServer.readLine();
+            System.out.print("Testing detail_auction: ");
+            if(a.equals("type:detail_auction, ok:false")){
+                System.out.println("Wrong answer. Answer: "+a);
                 cancelAuction(id);
                 return false;
+            } else {
+                System.out.println("Passed.");
             }
 
             //biding
             System.out.println("bid");
             outToServer.println("type: bid, id: "+id+", amount: 500");
             String a1 = inFromServer.readLine();
-            if(!a1.equals("type:bid, ok:true")){
-                System.out.println(a1);
-                socket.close();
-                cancelAuction(id);
-                return false;
+            System.out.print("Testing bid: ");
+            if(!a1.equals("type:bid, ok:true")) {
+                System.out.println("Wrong answer. Answer: "+a1);
+            } else {
+                System.out.println("Passed.");
             }
 
             //checking details
             System.out.println("detail_auction");
             outToServer.println("type: detail_auction, id: "+id);
-            a= inFromServer.readLine();//notificacao
+            inFromServer.readLine();
             a1 = inFromServer.readLine();
             String s = "type:detail_auction, title:1º: "+title+", description:1º: "+description+", deadline:"+date.toString()+", code:"+code+", messages_count:0, bids_count:1, bids_0_user:admin, bids_0_amount:500";
+            System.out.print("Testing detail_auction: ");
             if(!a1.equals(s)){
-                System.out.println(a1);
-                System.out.println(s);
-                socket.close();
+                System.out.println("Wrong answer. Answer: "+a1);
+                System.out.println("Expected: "+s);
                 cancelAuction(id);
-                return false;
+            } else {
+                System.out.println("Passed.");
             }
+
+            // logout
             System.out.println("logout");
             outToServer.println("type: logout");
             String log =inFromServer.readLine();
+            System.out.print("Testing logout: ");
             if(!log.equals("type:logout, ok:true")){
-                socket.close();
+                System.out.println("Wrong answer. Answer: "+log);
                 cancelAuction(id);
-                return false;
+            } else {
+                System.out.println("Passed. (OK: True)");
             }
 
             inFromServer.close();
             socket.close();
             cancelAuction(id);
             return true;
-
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             if(inFromServer == null) {
                 System.out.println("\nUsage: java TCPClient <host> <port>\n");
-                System.out.println(e.getMessage());
             }
+            e.printStackTrace();
         } catch (ParseException e) {
             e.printStackTrace();
         } finally {
-            System.out.println("WTF finally?!!??!?!?!");
             try {
                 inFromServer.close();
             } catch (Exception e) {
@@ -292,7 +309,8 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
                     break;
     			case 4:
     				System.out.print("TCP Server <host> <port>: ");
-                    String data [] = scan.next().split(" ");
+                    scan.nextLine();
+                    String data [] = scan.nextLine().split(" ");
                     testTCP(data[0], data[1]);
                     wait4user();
     				break;

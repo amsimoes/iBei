@@ -117,7 +117,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
             //verificar se existe um leilao ao mesmo tempo, com o mesmo artigo e feito pelo mesmo cliente
             for (Leilao leilao : leiloes) {
-                if (username.equals(leilao.username_criador) && leilao.data_termino.equals(date) && code.equals(String.valueOf(leilao.artigoId))) {
+                if (username.equals(leilao.username_criador) && leilao.getState() != 1 && leilao.data_termino.equals(date) && code.equals(String.valueOf(leilao.artigoId))) {
                     System.out.println("[FALHA] Create auction - false.");
                     return false;
                 }
@@ -664,12 +664,9 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
     // Admin
     public boolean cancelAuction (long id) throws RemoteException{
-        Leilao current;
-        for (int i=0; i<leiloes.size(); i++){
-            current = leiloes.get(i);
-            if (id == current.getId_leilao()){
+        for (Leilao current : leiloes) {
+            if(current.id_leilao == id) {
                 current.setState(1);
-                //leiloes.set(i,current);
                 return true;
             }
         }
@@ -682,8 +679,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             current = leiloes.get(i);
             if ((current.getUsername_criador().equals(username))&&(current.getState()==0)){//não apaga concluidos?
                 current.setState(1);
-            }
-            else{ //deletes bids
+            } else { //deletes bids
                 String bid = null;
                 int pos = 0;
                 for (int k=0; k<current.licitacoes.size(); k++) {
@@ -694,25 +690,26 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                         k--;
                     }
                 }
-                    LinkedHashMap <String,String> temp=current.licitacoes.get(current.licitacoes.size()-1);
+                LinkedHashMap <String,String> temp=current.licitacoes.get(current.licitacoes.size()-1);
 
-                    temp.put("bid",bid);
-                    current.licitacoes.set(pos,temp);
-                    for (int k=current.licitacoes.size()-1; k>pos;k--){
-                        current.licitacoes.remove(k);
-                    }
+                temp.put("bid",bid);
+                current.licitacoes.set(pos,temp);
+                for (int k=current.licitacoes.size()-1; k>pos;k--){
+                    current.licitacoes.remove(k);
                 }
-                for (int k=0; k<current.mensagens.size(); k++){
-                    if (current.mensagens.get(k).get("author").equals(username)){
-                        current.mensagens.remove(k);
-                        k--;
-                    }
-                }
-
-                leiloes.set(i, current);
             }
-            return true;
+
+            for (int k=0; k<current.mensagens.size(); k++){
+                if (current.mensagens.get(k).get("author").equals(username)){
+                    current.mensagens.remove(k);
+                    k--;
+                }
+            }
+
+            leiloes.set(i, current);
         }
+            return true;
+    }
 
     private static void start(){
         try {

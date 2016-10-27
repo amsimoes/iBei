@@ -340,6 +340,17 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
     //falta mandar para a notificao para os que escreveram no mural e para o criador do leilao
     public Leilao write_message(LinkedHashMap<String, String> data, String username) throws RemoteException {
+        System.out.println("[ WRITE MESSAGE ] Username: "+username);
+
+        if(data.get("text") == null || data.get("id") == null) {
+            System.out.println("[WRITE_MESSAGE]\nProtocolo nao cumprido. Campo nulo.");
+            return null;
+        }
+
+        if(username.equals("Admin")) {
+            System.out.println("ADMIN a avisar pelo user banido.");
+        }
+
         long id = Long.parseLong(data.get("id"));
         String text = data.get("text");
 
@@ -412,7 +423,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                 }
                 i++;
             }
-            checkOwner(auc, username, text,"Notification_message");
+            checkOwner(auc, username, text,"notification_message");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -676,8 +687,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     public boolean banUser (String username) throws RemoteException{//remover a conta de user?
-        Leilao current;
-        User tempuser=null;
+        String lamento = "Lamentamos, o user "+username+" foi banido.";
+        boolean done = false;
 
         for(User u : registados) {
             if(u.getUsername().equals(username)) {
@@ -694,16 +705,43 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                             String bid = null;
                             int pos = 0;
 
-                            // Deleting bids
+                            // Admin escreve no mural
+                            if(l.mensagens.size()>0) {
+                                for (int i = 0; i < l.mensagens.size(); i++) {
+                                    //System.out.println("Leilao | Autor: "+l.getUsername_criador()+" Estado: "+l.getState());
+                                    LinkedHashMap<String, String> mensagem = l.mensagens.get(i);
+                                    System.out.println("Mensagem: " + mensagem);
+                                    if (mensagem.containsValue(username)) {
+                                        if (this.warnBanned(String.valueOf(l.getId_leilao()), username)) {
+                                            this.msgNotification(l, lamento, "Admin");
+                                            done = true;
+                                        }
+                                    }
+                                }
+                            }
+                            if(l.licitacoes.size()>0) {
+                                for(int i=0;i<l.licitacoes.size();i++) {
+                                    System.out.println(l.licitacoes.get(i).get("author"));
+                                    LinkedHashMap<String, String> licitacao = l.mensagens.get(i);
+                                    if(licitacao.containsValue(username) && !done) {
+                                        if(this.warnBanned(String.valueOf(l.getId_leilao()), username))
+                                            this.msgNotification(l,lamento,"Admin");
+                                    }
+                                }
+                            }
+
+                            // Deleting bids do user banido
                             for(int i=0;i<l.licitacoes.size();i++){
-                                if(l.licitacoes.get(i).get("author").equals(username)) {
-                                    bid = l.licitacoes.get(i).get("bid");
+                                LinkedHashMap<String, String> licitacao = l.licitacoes.get(i);
+                                if(licitacao.containsValue(username)) {
+                                    bid = licitacao.get("bid");
                                     l.licitacoes.remove(i);
                                     pos = i;
                                     i--;
                                 }
                             }
 
+                            // Ajustar bids
                             if(l.licitacoes.size()>0) {
                                 LinkedHashMap <String,String> temp=l.licitacoes.get(l.licitacoes.size()-1);
                                 if ((bid!=null)&&(Double.parseDouble(temp.get("bid"))<Double.parseDouble(bid))){
@@ -715,27 +753,18 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                                 }
                             }
 
+                            // Apagar mensagens do user banido
                             for(int i=0;i<l.mensagens.size();i++) {
-                                if(l.mensagens.get(i).get("author").equals(username)){
+                                LinkedHashMap<String, String> mensagem = l.mensagens.get(i);
+                                if(mensagem.containsValue(username)){
                                     l.mensagens.remove(i);
                                     i--;
                                 }
                             }
+                            done = false;
                         }
                     }
-
-                    for(Leilao l : leiloes) {
-                        for(int i=0;i<l.mensagens.size();i++) {
-                            if(l.mensagens.get(i).get("author").equals(username)) {
-                                warnBanned(String.valueOf(l.getId_leilao()), username);
-                            }
-                        }
-                        for(int i=0;i<l.licitacoes.size();i++) {
-                            if(l.licitacoes.get(i).get("author").equals(username)) {
-                                warnBanned(String.valueOf(l.getId_leilao()), username);
-                            }
-                        }
-                    }
+                    this.exportObjAuctions();
                     return true;
                 }
             }
@@ -743,11 +772,15 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return false;
     }
 
-    private void warnBanned(String id, String username) throws RemoteException {
+    private boolean warnBanned(String id, String username) throws RemoteException {
         LinkedHashMap<String, String> admin_message = new LinkedHashMap<String, String>();
         admin_message.put("id", id);
         admin_message.put("text", "Lamentamos. O user "+username+" foi banido.");
-        this.write_message(admin_message, "Admin");
+        if(this.write_message(admin_message, "Admin") == null) {
+            System.out.println("Erro no aviso do admin por user banido.");
+            return false;
+        }
+        return true;
     }
 
     private static void start(){

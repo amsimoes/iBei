@@ -295,7 +295,6 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
     			case 2:
 	    			System.out.print("Username: ");
 			    	String username = scan.next();
-                    System.out.println("Input: "+username);
                     banUser(username);
                     wait4user();
     				break;

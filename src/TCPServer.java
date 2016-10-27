@@ -553,8 +553,7 @@ class Connection  extends Thread implements Serializable {
             if(leilao != null){
                 sendMessage("type","message","ok","true");
                 TCPServer.RMI.msgNotification(leilao,data.get("text"),username);
-            }
-            else{
+            } else {
                 sendMessage("type","message","ok","false");
             }
         } catch (RemoteException e) {

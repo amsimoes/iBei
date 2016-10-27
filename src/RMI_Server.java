@@ -387,7 +387,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                         }
                     }
                     //users offline
-                    if (flag == false && !msg.get("author").equals(username) && !msg.get("author").equals(auc.getUsername_criador())) {
+                    if (!flag && !msg.get("author").equals(username) && !msg.get("author").equals(auc.getUsername_criador())) {
                         //mandar notificaçao offline
                         System.out.println("msg users offline");
                         String notification = "type: notification_message, id: " + String.valueOf(auc.id_leilao) + ", user: " + username + ", text: " + text;
@@ -406,7 +406,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                             s.sendMsg("notification_message",bid.get("author"), text, auc, username);
                         }
                     }
-
                 }
                 i++;
             }
@@ -584,18 +583,18 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         //top 10
         User current;
         User [] reply;
-        if (registados.size()<10){
+        if (registados.size()<10) {
             reply = new User[registados.size()];
             for (int i=1; i<registados.size(); i++){
                 reply[i] = registados.get(i);
             }
-        }else{
+        } else {
             reply = new User[10];
             reply[0] = registados.get(0);
             int min = 0;
             for (int i=0; i<reply.length; i++){
                 reply[i] = registados.get(i);
-                if (reply[i].getVitorias()<reply[min].getVitorias()){
+                if (reply[i].getVitorias() < reply[min].getVitorias()){
                     min=i;
                 }
             }
@@ -675,40 +674,72 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
     public boolean banUser (String username) throws RemoteException{//remover a conta de user?
         Leilao current;
-        for (int i=0; i<leiloes.size(); i++){
-            current = leiloes.get(i);
-            if ((current.getUsername_criador().equals(username))&&(current.getState()==0)){//não apaga concluidos?
-                current.setState(1);
-            } else { //deletes bids
-                String bid = null;
-                int pos = 0;
-                for (int k=0; k<current.licitacoes.size(); k++) {
-                    if (current.licitacoes.get(k).get("author").equals(username)) {
-                        bid = current.licitacoes.get(k).get("bid");
-                        current.licitacoes.remove(k);
-                        pos = k;
-                        k--;
+        User tempuser=null;
+        for (int u=0; u<registados.size(); u++){
+            tempuser=registados.get(u);
+
+            if (tempuser.getUsername().equals(username)){
+                if(tempuser.getBanned()){
+                    return false;
+                }else{
+                    tempuser.setBanned(true);
+                    registados.set(u,tempuser);
+
+                    //dc user
+                    for (User temp : loggados){
+                        if(temp.getBanned()){
+                            loggados.remove(temp);
+                            break;
+                        }
                     }
-                }
-                LinkedHashMap <String,String> temp=current.licitacoes.get(current.licitacoes.size()-1);
 
-                temp.put("bid",bid);
-                current.licitacoes.set(pos,temp);
-                for (int k=current.licitacoes.size()-1; k>pos;k--){
-                    current.licitacoes.remove(k);
+                    //deleting auctions/bids
+                    for (int i=0; i<leiloes.size(); i++){
+                        current = leiloes.get(i);
+                        if ((current.getUsername_criador().equals(username))&&(current.getState()==0)){//não apaga concluidos?
+                            current.setState(1);
+                        }else{ //deletes bids
+                            String bid = null;
+                            int pos = 0;
+
+                            //removing bids
+                            for (int k=0; k<current.licitacoes.size(); k++) {
+                                if (current.licitacoes.get(k).get("author").equals(username)) {
+                                    bid = current.licitacoes.get(k).get("bid");
+                                    current.licitacoes.remove(k);
+                                    pos = k;
+                                    k--;
+                                }
+                            }
+
+                            //changing last bid
+                            if (current.licitacoes.size()>0){
+                                LinkedHashMap <String,String> temp=current.licitacoes.get(current.licitacoes.size()-1);
+                                if ((bid!=null)&&(Double.parseDouble(temp.get("bid"))<Double.parseDouble(bid))){
+                                    temp.put("bid",bid);
+                                    current.licitacoes.set(pos,temp);
+                                    for (int k=current.licitacoes.size()-1; k>pos;k--){
+                                        current.licitacoes.remove(k);
+                                    }
+                                }
+                            }
+                        }
+
+                        //deleting messages
+                        for (int k=0; k<current.mensagens.size(); k++){
+                            if (current.mensagens.get(k).get("author").equals(username)){
+                                current.mensagens.remove(k);
+                                k--;
+                            }
+                        }
+
+                        leiloes.set(i, current);
+                    }
+                    return true;
                 }
             }
-
-            for (int k=0; k<current.mensagens.size(); k++){
-                if (current.mensagens.get(k).get("author").equals(username)){
-                    current.mensagens.remove(k);
-                    k--;
-                }
-            }
-
-            leiloes.set(i, current);
         }
-            return true;
+        return false;
     }
 
     private static void start(){

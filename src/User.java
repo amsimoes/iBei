@@ -49,11 +49,11 @@ public class User implements Serializable{
         this.banned = banned;
     }
 
-    public void setLeiloes() {
-        this.leiloes = leiloes;
+    public void setLeiloes(int n) {
+        this.leiloes = n;
     }
 
-    public void setvitorias() {
+    public void setvitorias(int vitorias) {
         this.vitorias = vitorias;
     }
 

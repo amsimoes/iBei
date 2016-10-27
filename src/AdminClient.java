@@ -73,10 +73,15 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
 
     //displays stats (# logged users, #total auctions, #on going auctions, #ended auctions, #banned users, #total users, etc)
     private static void getStatsLeiloes() throws RemoteException{
-    	try {
+        try {
+            int i=1;
             User [] stats = AdminClient.RMI.statsLeiloes();
             //TODO print stats
-
+            System.out.println("\n\nTop 10 users com mais leiloes criados");
+            for(User user: stats) {
+                System.out.println(i+"º: "+user.getUsername()+"->"+user.getLeiloes());
+                i++;
+            }
         } catch (RemoteException e) {
             //e.printStackTrace();
             AdminClient.RMI_reconnection();
@@ -87,7 +92,12 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
 
     private static void getStatsVitorias() throws RemoteException{
         try {
+            int i=1;
             User [] stats = AdminClient.RMI.statsVitorias();
+            System.out.println("\n\nTop 10 users com mais Vitorias");
+            for(User user: stats){
+                System.out.println(i+"º: "+user.getUsername()+"->"+user.getVitorias());
+                i++;}
         } catch (RemoteException e) {
             //e.printStackTrace();
             AdminClient.RMI_reconnection();
@@ -97,8 +107,10 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
     }
 
     private static void getStatsLastWeek() throws RemoteException{
-            int stats = AdminClient.RMI.statsLastWeek();
-    } 
+        int stats = AdminClient.RMI.statsLastWeek();
+        System.out.println("\n\nNumero total de leiloes nos ultimos 10 dias");
+        System.out.println(stats+" leilões");
+    }
 
     private static void getStats() throws RemoteException{
         getStatsVitorias();

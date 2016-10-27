@@ -289,7 +289,10 @@ class Connection  extends Thread implements Serializable {
                     try {
                         String data= in.readLine();
                         LinkedHashMap<String, String> hashMap = parseData(data);
-
+                        while(hashMap == null) {
+                            data = in.readLine();
+                            hashMap = parseData(data);
+                        }
                         String type = hashMap.get("type");
 
                         if (type.equals("register")) {
@@ -313,7 +316,10 @@ class Connection  extends Thread implements Serializable {
                     System.out.println("Banido: "+u.isBanned());
                     String data= in.readLine();
                     LinkedHashMap<String, String> hashMap = parseData(data);
-
+                    while(hashMap == null) {
+                        data = in.readLine();
+                        hashMap = parseData(data);
+                    }
                     System.out.println("T["+thread_number + "] Received: ");
                     //list elements
                     for (String key : hashMap.keySet()) {
@@ -352,14 +358,20 @@ class Connection  extends Thread implements Serializable {
     }
 
     public LinkedHashMap<String, String> parseData(String data){
-        LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();    // {type: login, type : login}
-        String [] aux = data.split(",");
 
-        for(String field : aux){
-            String [] aux1 = field.trim().split(":", 2);    // 2, pq hora:minutos
-            aux1[0] = aux1[0].trim();
-            aux1[1] = aux1[1].trim();
-            hashMap.put(aux1[0], aux1[1]);
+        LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();    // {type: login, type : login}
+        try {
+            String[] aux = data.split(",");
+
+            for (String field : aux) {
+                String[] aux1 = field.trim().split(":", 2);    // 2, pq hora:minutos
+                aux1[0] = aux1[0].trim();
+                aux1[1] = aux1[1].trim();
+                hashMap.put(aux1[0], aux1[1]);
+            }
+        } catch(ArrayIndexOutOfBoundsException e){
+            System.out.println("Operaçao Invalida");
+            return null;
         }
         return hashMap;
     }
@@ -535,7 +547,7 @@ class Connection  extends Thread implements Serializable {
             Leilao leilao = TCPServer.RMI.make_bid(data, username);
             if(leilao != null){
                 sendMessage("type","bid","ok","true");
-                TCPServer.RMI.bidNotification(leilao,Double.parseDouble(data.get("amount")),username);
+                TCPServer.RMI.bidNotification(leilao,data.get("amount"),username,"Notification_bid");
             }
             else{
                 sendMessage("type","bid","ok","false");

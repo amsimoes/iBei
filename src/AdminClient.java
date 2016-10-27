@@ -7,6 +7,9 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.io.*;
 import java.rmi.server.UnicastRemoteObject;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*/{
@@ -45,7 +48,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
             	System.out.println("Não existe nenhum leilão com ID: "+id+".");
             }
         } catch (RemoteException e) {
-            //e.printStackTrace();
+            e.printStackTrace();
             AdminClient.RMI_reconnection();
             cancelAuction(id);
         }
@@ -130,16 +133,18 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
         try {
             // connect to the specified address:port (default is localhost:12345)
             if(args.length == 2)
-                socket = new Socket(args[2], Integer.parseInt(args[3]));
+                socket = new Socket(args[0], Integer.parseInt(args[1]));
             else
                 return false;
 
             //test values
-            long code=9001;
+            String code="9133";
             long id;
             String title = "Test auction please don't bid";
             String description = "The unseen auction is the deadliest";
-            String deadline = "3000-09-19 16:20";
+            String deadline = "3002-09-19 16-20";
+            DateFormat d1 = new SimpleDateFormat("yyyy-MM-dd HH-mm");
+            Date date = d1.parse(deadline);
             int amount=666;
             int count=0;
 
@@ -149,60 +154,89 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
            
            	//login
             outToServer.println("type: login, username: admin, password: 123");
-            if(!inFromServer.readLine().equals("type: login, ok: true")){
+            String answer =inFromServer.readLine();
+            if(!answer.equals("type:login, ok:true")){
+                System.out.println("Wrong answer"+answer);
                 socket.close();
                 return false;
             }
 
             //creating auction
             outToServer.println("type: create_auction, code: "+code+", title: "+title+", description: "+description+", deadline: "+deadline+", amount: "+amount);
-            if(!inFromServer.readLine().equals("type: create_auction, ok: true")){
+            if(!inFromServer.readLine().equals("type:create_auction, ok:true")){
                 socket.close();
                 return false;
             }
-
             //getting id
             outToServer.println("type: search_auction, code: "+code);
            	String temp=inFromServer.readLine();
             id=getItemID(temp);
-            if (id!=-1){
+            System.out.println(id);
+            if (id==-1){
                 socket.close();
                 return false;
             }
-
             //checkign details
+            System.out.println("detail_auction");
             outToServer.println("type: detail_auction, id: "+id);
-            if(!inFromServer.readLine().equals("type: detail_auction, title: "+title+", description: "+description+", deadline: "+deadline+" , messages_count: 0, bids_count : 0")){
+            String a= inFromServer.readLine();
+            String suposto = "type:detail_auction, title:1º: "+title+", description:1º: "+description+", deadline:"+date.toString()+", code:"+code+", messages_count:0, bids_count:0";
+            if(!a.equals(suposto)){
+                System.out.println(a);
+                System.out.println(suposto);
                 socket.close();
                 cancelAuction(id);
                 return false;
             }
 
             //biding
-            outToServer.println("type: bid, id: "+id+", amount: "+amount);
-            if(!inFromServer.readLine().equals("type: bid, ok: true")){
+            System.out.println("bid");
+            outToServer.println("type: bid, id: "+id+", amount: 500");
+            String a1 = inFromServer.readLine();
+            if(!a1.equals("type:bid, ok:true")){
+                System.out.println(a1);
                 socket.close();
                 cancelAuction(id);
                 return false;
             }
 
             //checking details
+            System.out.println("detail_auction");
             outToServer.println("type: detail_auction, id: "+id);
-            if(!inFromServer.readLine().equals("type: detail_auction, title: "+title+", description: "+description+", deadline: "+deadline+", messages_count: 0, bids_count: 1")){
+            a= inFromServer.readLine();//notificacao
+            a1 = inFromServer.readLine();
+            String s = "type:detail_auction, title:1º: "+title+", description:1º: "+description+", deadline:"+date.toString()+", code:"+code+", messages_count:0, bids_count:1, bids_0_user:admin, bids_0_amount:500";
+            if(!a1.equals(s)){
+                System.out.println(a1);
+                System.out.println(s);
                 socket.close();
                 cancelAuction(id);
                 return false;
             }
+            System.out.println("logout");
+            outToServer.println("type: logout");
+            String log =inFromServer.readLine();
+            if(!log.equals("type:logout, ok:true")){
+                socket.close();
+                cancelAuction(id);
+                return false;
+            }
+
             inFromServer.close();
             socket.close();
             cancelAuction(id);
             return true;
+
+
+
 
         } catch (IOException e) {
             if(inFromServer == null)
             System.out.println("\nUsage: java TCPClient <host> <port>\n");
             System.out.println(e.getMessage());
             
+        } catch (ParseException e) {
+            e.printStackTrace();
         } finally {
             try { inFromServer.close(); } catch (Exception e) {}
         }
@@ -259,6 +293,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
                     break;
     			case 4:
     				System.out.print("TCP Server <host> <port>: ");
+                    scan.nextLine();
                     testTCP(scan.nextLine().split(" "));
                     wait4user();
     				break;

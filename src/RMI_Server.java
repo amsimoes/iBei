@@ -13,9 +13,9 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     private static ArrayList<User> loggados;
     private ArrayList<Connection> conns;
     ArrayList<TCP_Interface> tcpServers;
-    public static String primaryRmi [] = new String[1];
-    public static String backupRmi [] = new String[1];
-
+    public static String primaryRmi [] = new String[2];
+    public static String backupRmi [] = new String[2];
+    static int count = 0;
 
     public RMI_Server() throws RemoteException {
         super();
@@ -667,16 +667,16 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         Leilao current;
         for (int i=0; i<leiloes.size(); i++){
             current = leiloes.get(i);
-            if (Long.parseLong(current.getArtigoId())==id){
+            if (id == current.getId_leilao()){
                 current.setState(1);
-                leiloes.set(i,current);
+                //leiloes.set(i,current);
                 return true;
             }
         }
         return false;
     }
 
-    public boolean banUser (String username) throws RemoteException{
+    public boolean banUser (String username) throws RemoteException{//remover a conta de user?
         Leilao current;
         for (int i=0; i<leiloes.size(); i++){
             current = leiloes.get(i);
@@ -694,7 +694,12 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                         k--;
                     }
                 }
-                    LinkedHashMap <String,String> temp=current.licitacoes.get(current.licitacoes.size()-1);
+                    LinkedHashMap <String,String> temp;
+                    if(current.licitacoes.size() > 0)
+                        temp=current.licitacoes.get(current.licitacoes.size()-1);
+                    else
+                        temp=current.licitacoes.get(0);
+
                     temp.put("bid",bid);
                     current.licitacoes.set(pos,temp);
                     for (int k=current.licitacoes.size()-1; k>pos;k--){
@@ -752,6 +757,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
     private static void verifica(RMI_Interface h) {
         try {
+         //   h= (RMI_Interface) LocateRegistry.getRegistry(primaryRmi[0], 7000).lookup("ibei");
             String teste = h.teste();
             System.out.println(teste);
             try {
@@ -760,11 +766,27 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } catch (RemoteException e){    // Server primario vai abaixo
-            start();
-            importObjLogged();
-            System.out.println("[Base dados] Users loggados importados: "+loggados);
-        }
+        } catch (RemoteException e){
+            //if(count > 30) {
+                start();
+                importObjLogged();
+                System.out.println("[Base dados] Users loggados importados: " + loggados);
+             /*   count = 0;
+            }
+            else{
+                try {
+                    System.out.println("Waiting for Primary RMI be up again");
+                    Thread.sleep(3000);
+                    count += 3;
+                    verifica(h);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+
+            }
+        } catch (NotBoundException e) {
+            e.printStackTrace();
+        */}
     }
     
     public static void main(String args[]) {

@@ -12,7 +12,7 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     public static RMI_Interface RMI;
     public static int count=0;
     public static ArrayList<Connection> connections;
-    private static String [] ipRmi = new String[1];
+    private static String [] ipRmi = new String[2];
     public static int currentIp = 1;
     protected TCPServer() throws RemoteException {
         connections = new ArrayList<Connection>();
@@ -439,8 +439,8 @@ class Connection  extends Thread implements Serializable {
                 reply.put("description", descricoes.substring(0, descricoes.length() - 2));
 
                 reply.put("deadline", leilao.data_termino.toString());
-                reply.put("messages_count", String.valueOf(leilao.mensagens.size()));
                 reply.put("code", leilao.getArtigoId());
+                reply.put("messages_count", String.valueOf(leilao.mensagens.size()));
                 //mandar mensagens
                 for (i = 0; i < leilao.mensagens.size(); i++) {
                     reply.put("messages_" + String.valueOf(i) + "_user", leilao.mensagens.get(i).get("author"));
@@ -450,8 +450,8 @@ class Connection  extends Thread implements Serializable {
                 reply.put("bids_count", String.valueOf(leilao.licitacoes.size()));
                 //mandar licitacoes
                 for (i = 0; i < leilao.licitacoes.size(); i++) {
-                    reply.put("messages_" + String.valueOf(i) + "_user", leilao.licitacoes.get(i).get("author"));
-                    reply.put("messages_" + String.valueOf(i) + "_text", leilao.licitacoes.get(i).get("bid"));
+                    reply.put("bids_" + String.valueOf(i) + "_user", leilao.licitacoes.get(i).get("author"));
+                    reply.put("bids_" + String.valueOf(i) + "_amount", leilao.licitacoes.get(i).get("bid"));
                 }
 
             } else {

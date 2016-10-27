@@ -125,17 +125,14 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
         return r;
     }
 
-    private static boolean testTCP(String [] args){
+    private static boolean testTCP(String ipTCP, String portTCP){
     	//TODO add tcp client code
         Socket socket;
         PrintWriter outToServer;
         BufferedReader inFromServer = null;
         try {
             // connect to the specified address:port (default is localhost:12345)
-            if(args.length == 2)
-                socket = new Socket(args[0], Integer.parseInt(args[1]));
-            else
-                return false;
+            socket = new Socket(ipTCP, Integer.parseInt(portTCP));
 
             //test values
             String code="9133";
@@ -227,18 +224,20 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
             cancelAuction(id);
             return true;
 
-
-
-
         } catch (IOException e) {
-            if(inFromServer == null)
-            System.out.println("\nUsage: java TCPClient <host> <port>\n");
-            System.out.println(e.getMessage());
-            
+            if(inFromServer == null) {
+                System.out.println("\nUsage: java TCPClient <host> <port>\n");
+                System.out.println(e.getMessage());
+            }
         } catch (ParseException e) {
             e.printStackTrace();
         } finally {
-            try { inFromServer.close(); } catch (Exception e) {}
+            System.out.println("WTF finally?!!??!?!?!");
+            try {
+                inFromServer.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return false;
 
@@ -259,7 +258,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
     public static void menu(){
     	int slt;
     	Scanner scan = new Scanner(System.in);
-    	do{
+    	while(true) {
     		System.out.println("Selecione uma das seguintes opções:\n" +
                                 "1.Cancelar leilão\n" +
                                 "2.Banir utilizador\n" +
@@ -293,17 +292,17 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
                     break;
     			case 4:
     				System.out.print("TCP Server <host> <port>: ");
-                    scan.nextLine();
-                    testTCP(scan.nextLine().split(" "));
+                    String data [] = scan.next().split(" ");
+                    testTCP(data[0], data[1]);
                     wait4user();
     				break;
     			case 0:
-    			    slt = 0;
+    			    System.exit(0);
     				break;
     			default:
-    				System.out.println("Seleção inválida.\n");
+    				//System.out.println("Seleção inválida.\n");
             }
-    	}while(slt!=0);
+    	}
     }
 
     public static void RMI_reconnection(){

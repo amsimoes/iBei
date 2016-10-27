@@ -20,7 +20,7 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
 
     public static void main(String args[]) {
         String rmiPort = "7000";    // default porta 7000
-        if (args.length < 3 || args.length > 4 || !checkIp(args[1])) {
+        if (args.length < 3 || args.length > 4) {
             System.out.println("Usage: <localport> <Primary RMI ip> <RMI Port>");
             System.out.println("Optional: <localport> <Primary RMI ip> <Backup RMI Server ip> <RMI Port>");
             System.exit(0);
@@ -106,7 +106,7 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     }
 
     public static boolean checkIp(String ip) {
-        if(ip.matches(".*\\..*\\..*\\..*"))
+        if(ip.matches(".*\\..*\\..*\\..*") && !ip.equals("localhost"))
             return true;
         return false;
     }

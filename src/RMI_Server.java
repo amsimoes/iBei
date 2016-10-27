@@ -694,11 +694,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                         k--;
                     }
                 }
-                    LinkedHashMap <String,String> temp;
-                    if(current.licitacoes.size() > 0)
-                        temp=current.licitacoes.get(current.licitacoes.size()-1);
-                    else
-                        temp=current.licitacoes.get(0);
+                    LinkedHashMap <String,String> temp=current.licitacoes.get(current.licitacoes.size()-1);
 
                     temp.put("bid",bid);
                     current.licitacoes.set(pos,temp);

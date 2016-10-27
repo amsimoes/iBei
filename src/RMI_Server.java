@@ -65,10 +65,12 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                             return false;
                         }
                     }
-                    //System.out.println("Utilizador não se encontra loggado.");
+                    if(u.getBanned()) {
+                        System.out.println("Utilizador banido.");
+                        return false;
+                    }
                     System.out.println("Utilizador " + u.username + " loggado com sucesso!");
                     loggados.add(u);
-                    //this.export_logged();
                     this.exportObjLogged();
                     return true;
                 }
@@ -330,6 +332,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                 }
                 i++;
             }
+            checkOwner(auc, username, String.valueOf(amount),"Notification_bid");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -410,14 +413,14 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                 }
                 i++;
             }
-            checkOwner(auc, username, text);
+            checkOwner(auc, username, text,"Notification_message");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     //verifica se o criador do leilao esta online e manda a notificaçao
-    public void checkOwner(Leilao leilao, String username, String text) {
+    public void checkOwner(Leilao leilao, String username, String text, String type) {
         boolean criador = false;
         TCP_Interface owner = null;
         try {
@@ -429,12 +432,12 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                 }
             }
             if (!criador) {
-                String notification = "type: notification_message, id: " + String.valueOf(leilao.id_leilao) + ", user: " + username + ", text: " + text;
+                String notification = "type: "+type+", id: " + String.valueOf(leilao.id_leilao) + ", user: " + username + ", text: " + text;
 
                 addNotification(leilao.getUsername_criador(), notification);
 
             } else {
-                owner.sendMsg("notification_message",leilao.getUsername_criador(), text, leilao, username);
+                owner.sendMsg(type,leilao.getUsername_criador(), text, leilao, username);
             }
 
 

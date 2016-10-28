@@ -16,6 +16,7 @@ Admin Client
 Usage: $ java -jar admin <RMI host ip> <RMI host port>
 
 # Compilation
+Inside src folder:
 
 jar cvfm dataserver.jar manifest_rmi.mf .
 

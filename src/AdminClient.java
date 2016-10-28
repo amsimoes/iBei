@@ -21,7 +21,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
 
     public static void main(String args[]) {
         if (args.length != 2) {
-            System.out.println("usage: RMI IP, RMI port, TCP IP, TCP port");
+            System.out.println("usage: RMI IP, RMI port");
             System.exit(0);
         }
 

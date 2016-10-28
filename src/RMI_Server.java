@@ -331,12 +331,12 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                         //mandar notificaçao offline
                         System.out.println("bid users offline");
 
-                        if(type.equals("Notification_bid")) {
-                            String notification = "type: Notification_bid, id: " + String.valueOf(auc.id_leilao) + ", user: " + username + ", amount: " + amount;
+                        if(type.equals("notification_bid")) {
+                            String notification = "type: notification_bid, id: " + String.valueOf(auc.id_leilao) + ", user: " + username + ", amount: " + amount;
                             addNotification(bid.get("author"), notification);
                         }
                         else{
-                            String notification = "type: Notification_message, id: " + String.valueOf(auc.id_leilao) + ", user: " + username + ", text: " + amount;
+                            String notification = "type: notification_message, id: " + String.valueOf(auc.id_leilao) + ", user: " + username + ", text: " + amount;
                             addNotification(bid.get("author"), notification);
                         }
                     }
@@ -345,8 +345,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                 }
                 i++;
             }
-            if(type.equals("Notification_bid"))
-                checkOwner(auc, username, String.valueOf(amount),"Notification_bid");
+            if(type.equals("notification_bid"))
+                checkOwner(auc, username, String.valueOf(amount),"notification_bid");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -400,14 +400,14 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                         if (s.checkUser(msg.get("author")) /*&& !msg.get("author").equals(username)*/ && !msg.get("author").equals(auc.getUsername_criador())) {
                             flag = true;
                             System.out.println("msg users online");
-                            s.sendMsg("Notification_message",msg.get("author"), text, auc, username);
+                            s.sendMsg("notification_message",msg.get("author"), text, auc, username);
                         }
                     }
                     //users offline
                     if (flag == false && !msg.get("author").equals(username) && !msg.get("author").equals(auc.getUsername_criador())) {
                         //mandar notificaçao offline
                         System.out.println("msg users offline");
-                        String notification = "type: Notification_message, id: " + String.valueOf(auc.id_leilao) + ", user: " + username + ", text: " + text;
+                        String notification = "type: notification_message, id: " + String.valueOf(auc.id_leilao) + ", user: " + username + ", text: " + text;
                         addNotification(msg.get("author"), notification);
                     }
                     flag = false;
@@ -415,8 +415,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                 }
                 i++;
             }
-            this.bidNotification(auc,text,username,"Notification_message");
-            checkOwner(auc, username, text,"Notification_message");
+            this.bidNotification(auc,text,username,"notification_message");
+            checkOwner(auc, username, text,"notification_message");
 
 
         } catch (Exception e) {
@@ -438,7 +438,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             }
             String notification;
             if (!criador) {
-                if(type.equals("Notification_message"))
+                if(type.equals("notification_message"))
                     notification = "type: "+type+", id: " + String.valueOf(leilao.id_leilao) + ", user: " + username + ", text: " + text;
                 else{
                     notification = "type: "+type+", id: " + String.valueOf(leilao.id_leilao) + ", user: " + username + ", amount: " + text;
@@ -550,7 +550,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         for(User user: registados){
             if(user.getUsername().equals(username)){
                 user.addNotification(text);
-                System.out.println("Notification: "+text+"added");
+                System.out.println("notification: "+text+"added");
                 exportObjRegisted();
             }
         }

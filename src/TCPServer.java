@@ -165,7 +165,7 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     public void sendMsg(String type, String username, String text, Leilao leilao, String author) throws RemoteException{
         for(Connection ctn : connections){
             if(ctn.getUsername().equals(username)) {
-                if (type.equals("Notification_bid"))
+                if (type.equals("notification_bid"))
                     ctn.sendMessage("type", type, "id", String.valueOf(leilao.id_leilao), "user", author, "amount", text);
 
                 else {
@@ -547,7 +547,7 @@ class Connection  extends Thread implements Serializable {
             Leilao leilao = TCPServer.RMI.make_bid(data, username);
             if(leilao != null){
                 sendMessage("type","bid","ok","true");
-                TCPServer.RMI.bidNotification(leilao,data.get("amount"),username,"Notification_bid");
+                TCPServer.RMI.bidNotification(leilao,data.get("amount"),username,"notification_bid");
             }
             else{
                 sendMessage("type","bid","ok","false");

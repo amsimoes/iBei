@@ -1,7 +1,7 @@
 # iBei
 [Java] Reverse Auctioning Project for Distributed Systems course
 
-# Running:
+# Running
 
 RMI Server 
 Usage: $ java -jar dataserver <rmi host ip> <rmi host port>

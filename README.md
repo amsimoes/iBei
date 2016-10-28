@@ -18,5 +18,7 @@ Usage: $ java -jar admin <RMI host ip> <RMI host port>
 # Compilation
 
 jar cvfm dataserver.jar manifest_rmi.mf .
+
 jar cvfm server.jar manifest_tcpserver.mf .
+
 jar cvfm admin.jar manifest_admin.mf .

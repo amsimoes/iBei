@@ -311,7 +311,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return auc;
     }
 
-
     public void bidNotification(Leilao auc, String amount, String username, String type) throws RemoteException {
         boolean flag = false;
         try {
@@ -386,7 +385,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
         return auc;
     }
-
 
     public void msgNotification(Leilao auc, String text, String username) throws RemoteException {
         try {
@@ -598,7 +596,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     //ADMIN
-    public static User [] statsVitorias() throws RemoteException{
+    // top 10 users com mais vitorias
+    public User [] statsVitorias() throws RemoteException{
         //top 10
         User current;
         User [] reply;
@@ -634,7 +633,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return reply;
     }
 
-    public static User [] statsLeiloes() throws RemoteException{
+    // top 10 users com mais leiloes criados
+    public User [] statsLeiloes() throws RemoteException{
         //top 10
         User current;
         User [] reply;
@@ -670,7 +670,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return reply;
     }
 
-    public static int statsLastWeek(){
+    // numero de leiloes nos ultimos 10 dias
+    public int statsLastWeek(){
         int count=0;
         for (int i=0; i<leiloes.size(); i++){
             if(leiloes.get(i).lastWeek()){
@@ -838,26 +839,10 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                 e.printStackTrace();
             }
         } catch (RemoteException e){
-            //if(count > 30) {
-                start();
-                importObjLogged();
-                System.out.println("[Base dados] Users loggados importados: " + loggados);
-             /*   count = 0;
-            }
-            else{
-                try {
-                    System.out.println("Waiting for Primary RMI be up again");
-                    Thread.sleep(3000);
-                    count += 3;
-                    verifica(h);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
-
-            }
-        } catch (NotBoundException e) {
-            e.printStackTrace();
-        */}
+            start();
+            importObjLogged();
+            System.out.println("[Base dados] Users loggados importados: " + loggados);
+        }
     }
 
     public static void main(String args[]) {

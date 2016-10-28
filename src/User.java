@@ -6,15 +6,18 @@ import java.util.List;
 public class User implements Serializable{
     public String username;
     public String password;
-    public boolean banned=false;
+    public boolean banned;
     public List<String> notifications;
-    public int leiloes=0;
-    public int vitorias=0;
+    public int leiloes;
+    public int vitorias;
 
     public User(String username, String password){
         this.username = username;
         this.password = password;
         this.notifications = Collections.synchronizedList(new ArrayList<String>());
+        this.leiloes = 0;
+        this.vitorias = 0;
+        this.banned =false;
     }
 
     public String getUsername() {

@@ -598,7 +598,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     //ADMIN
-    public User [] statsVitorias() throws RemoteException{
+    public static User [] statsVitorias() throws RemoteException{
         //top 10
         User current;
         User [] reply;
@@ -634,7 +634,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return reply;
     }
 
-    public User [] statsLeiloes() throws RemoteException{
+    public static User [] statsLeiloes() throws RemoteException{
         //top 10
         User current;
         User [] reply;
@@ -670,7 +670,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return reply;
     }
 
-    public int statsLastWeek(){
+    public static int statsLastWeek(){
         int count=0;
         for (int i=0; i<leiloes.size(); i++){
             if(leiloes.get(i).lastWeek()){

@@ -12,7 +12,7 @@ public interface RMI_Interface extends Remote {
     public ArrayList <Leilao> my_auctions(LinkedHashMap<String, String> data, String username) throws RemoteException;
     public Leilao make_bid(LinkedHashMap<String, String> data, String username) throws RemoteException;
     public Leilao write_message(LinkedHashMap<String, String> data, String username) throws java.rmi.RemoteException;
-    public ArrayList<User> listOnlineUsers() throws RemoteException;
+    public List<User> listOnlineUsers() throws RemoteException;
     public LinkedHashMap<String, String> logoutClient(String username) throws RemoteException;
     public void data(TCP_Interface tcp) throws RemoteException;
     public List<String> getNotifications(String username) throws RemoteException;

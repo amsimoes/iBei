@@ -6,16 +6,17 @@ import java.rmi.registry.Registry;
 import java.io.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     public static int numero=0;//numero de clientes online
     public static RMI_Interface RMI;
     public static int count=0;
-    public static ArrayList<Connection> connections;
+    public static List<Connection> connections;
     private static String [] ipRmi = new String[2];
     public static int currentIp = 1;
     protected TCPServer() throws RemoteException {
-        connections = new ArrayList<Connection>();
+        connections = Collections.synchronizedList(new ArrayList<Connection>());
     }
 
     public static void main(String args[]) {
@@ -120,7 +121,7 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
         info.put(Integer.parseInt(fields[0]), Integer.parseInt(fields[1]));
     }
 
-    public static void sendClients(HashMap<Integer, Integer> info){
+    public synchronized static void sendClients(HashMap<Integer, Integer> info){
         int i=0;
         String text = "type: notification_load, server_list: "+info.size()+",";
         for (HashMap.Entry<Integer, Integer> entry : info.entrySet()) {
@@ -137,7 +138,7 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     }
 
 
-    public static void RMI_reconnection(){
+    public synchronized static void RMI_reconnection(){
         try {
             Thread.sleep(2000);
             System.out.println(count);
@@ -162,7 +163,7 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
         }
     }
 
-    public void sendMsg(String type, String username, String text, Leilao leilao, String author) throws RemoteException{
+    public synchronized void sendMsg(String type, String username, String text, Leilao leilao, String author) throws RemoteException{
         for(Connection ctn : connections){
             if(ctn.getUsername().equals(username)) {
                 if (type.equals("notification_bid"))
@@ -175,7 +176,7 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
         }
     }
 
-    public boolean checkUser(String username) throws RemoteException{
+    public synchronized boolean checkUser(String username) throws RemoteException{
         for(Connection cnt : connections){
             if(cnt.getUsername().equals(username))
                 return true;
@@ -184,18 +185,18 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     }
 
 
-    public static void addConnections(Connection cnt){
+    public synchronized static void addConnections(Connection cnt){
         connections.add(cnt);
     }
 
 }
 
 class UDPSender{
-    private int numero;
+    private AtomicInteger numero;
     private int port;
     public UDPSender(int numero, int tcpPort){
 
-        this.numero = numero;
+        this.numero = new AtomicInteger(numero);
         this.port = tcpPort;
         try {
             DatagramSocket socket = new DatagramSocket();
@@ -228,12 +229,12 @@ class UDPSender{
 
     }
 
-    public int getNumero() {
+    public AtomicInteger getNumero() {
         return numero;
     }
 
     public void setNumero(int numero) {
-        this.numero = numero;
+        this.numero = new AtomicInteger(numero);
     }
 }
 
@@ -258,17 +259,13 @@ class Connection  extends Thread implements Serializable {
         }
     }
 
-    public boolean isLogged() {
-        return logged;
-    }
+
     public String getUsername() {
         return u.username;
     }
-    public User getUser() {
-        return u;
-    }
 
-    public void sendMessage(String... args) {
+
+    public synchronized void sendMessage(String... args) {
         if (args.length % 2 != 0) { // Se o numero de campos não for par
             System.out.println("Erro ao registar campos de envio da mensagem.");
             return;
@@ -347,7 +344,7 @@ class Connection  extends Thread implements Serializable {
         }
     }
     //remove connection from Connections array
-    public boolean removeConection(User user){
+    public synchronized boolean removeConection(User user){
         for(Connection cnt : TCPServer.connections) {
             if (cnt.getUsername().equals(user.getUsername())) {
                 TCPServer.connections.remove(cnt);
@@ -590,7 +587,7 @@ class Connection  extends Thread implements Serializable {
         LinkedHashMap <String, String> reply = new LinkedHashMap<>();
 
         try {
-            ArrayList <User> loggados = TCPServer.RMI.listOnlineUsers();
+            List <User> loggados = TCPServer.RMI.listOnlineUsers();
 
             System.out.println("[ LIST ONLINE USERS ]");
             reply.put("type", "online_users");
@@ -680,7 +677,7 @@ class Connection  extends Thread implements Serializable {
         }
     }
 
-    public PrintWriter getOut() {
+    public synchronized PrintWriter getOut() {
         return out;
     }
 }

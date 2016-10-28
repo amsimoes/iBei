@@ -8,28 +8,27 @@ import java.util.*;
 
 
 public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
-    private ArrayList<Leilao> leiloes;
-    private ArrayList<User> registados;
-    private static ArrayList<User> loggados;
-    private ArrayList<Connection> conns;
-    ArrayList<TCP_Interface> tcpServers;
+    private List<Leilao> leiloes;
+    private List<User> registados;
+    private static List<User> loggados;
+    List<TCP_Interface> tcpServers;
     public static String primaryRmi [] = new String[2];
     public static String backupRmi [] = new String[2];
     static int count = 0;
 
     public RMI_Server() throws RemoteException {
         super();
-        leiloes = new ArrayList<Leilao>();
-        registados = new ArrayList<User>();
-        loggados = new ArrayList<User>();
-        tcpServers = new ArrayList<TCP_Interface>();
+        leiloes = Collections.synchronizedList(new ArrayList<Leilao>());
+        registados = Collections.synchronizedList(new ArrayList<User>());
+        loggados = Collections.synchronizedList(new ArrayList<User>());
+        tcpServers = Collections.synchronizedList(new ArrayList<TCP_Interface>());
     }
 
     public void data(TCP_Interface tcp) throws RemoteException {
         tcpServers.add(tcp);
     }
 
-    public boolean register_client(LinkedHashMap<String, String> data) throws RemoteException {
+    public synchronized boolean register_client(LinkedHashMap<String, String> data) throws RemoteException {
         System.out.println("[ REGISTER CLIENT ]");
         try {
             User u = new User(data.get("username"), data.get("password"));
@@ -48,7 +47,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return true;
     }
 
-    public boolean login_client(LinkedHashMap<String, String> data) throws RemoteException {
+    public synchronized boolean login_client(LinkedHashMap<String, String> data) throws RemoteException {
         System.out.println("[ LOGIN CLIENT ] ");
         try {
             User u = new User(data.get("username"), data.get("password"));
@@ -84,7 +83,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         }
     }
 
-    public LinkedHashMap<String, String> logoutClient(String username) throws RemoteException {
+    public synchronized LinkedHashMap<String, String> logoutClient(String username) throws RemoteException {
         LinkedHashMap<String, String> reply = new LinkedHashMap<>();
         reply.put("type", "logout");
         for (User user : loggados) {
@@ -100,7 +99,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return reply;
     }
 
-    public boolean create_auction(LinkedHashMap<String, String> data, String username) throws RemoteException {
+    public synchronized boolean create_auction(LinkedHashMap<String, String> data, String username) throws RemoteException {
         System.out.println("[ CREATE AUCTION ]");
         String code = data.get("code");
 
@@ -148,7 +147,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return false;
     }
 
-    public Leilao detail_auction(LinkedHashMap<String, String> data) {
+    public synchronized Leilao detail_auction(LinkedHashMap<String, String> data) {
         long id = Long.parseLong(data.get("id"));
 
         int i;
@@ -163,7 +162,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return null;
     }
 
-    public ArrayList <Leilao> search_auction(LinkedHashMap<String, String> data) throws RemoteException {
+    public synchronized ArrayList <Leilao> search_auction(LinkedHashMap<String, String> data) throws RemoteException {
         System.out.println("[ SEARCH AUCTION ]");
         ArrayList<Leilao> leiloes_encontrados = new ArrayList<Leilao>();
         for (Leilao leilao : leiloes) {
@@ -179,7 +178,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
 
-    public boolean edit_auction(LinkedHashMap<String, String> data, String username) throws RemoteException {
+    public synchronized boolean edit_auction(LinkedHashMap<String, String> data, String username) throws RemoteException {
         System.out.println("[ EDIT AUCTION ]");
         try {
             long id2edit = Long.parseLong(data.get("id"));
@@ -217,12 +216,12 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return false;
     }
 
-    public ArrayList<User> listOnlineUsers() throws RemoteException {
+    public synchronized List<User> listOnlineUsers() throws RemoteException {
         return loggados;
     }
 
     //temos que excluir os leiloes que ja acabaram?
-    public ArrayList <Leilao> my_auctions(LinkedHashMap<String, String> data, String username) throws RemoteException{
+    public synchronized ArrayList <Leilao> my_auctions(LinkedHashMap<String, String> data, String username) throws RemoteException{
         System.out.println("[ MY AUCTIONS ]");
         ArrayList<Leilao> leiloes_encontrados = new ArrayList<Leilao>();
 
@@ -255,7 +254,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     //falta mandar para os restantes licitadores a notificacao
-    public Leilao make_bid(LinkedHashMap<String, String> data, String username) throws RemoteException {
+    public synchronized Leilao make_bid(LinkedHashMap<String, String> data, String username) throws RemoteException {
         System.out.println("[ BID ]");
         long id = Long.parseLong(data.get("id"));
         double amount = Double.parseDouble(data.get("amount"));
@@ -313,7 +312,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
 
-    public void bidNotification(Leilao auc, String amount, String username, String type) throws RemoteException {
+    public synchronized void bidNotification(Leilao auc, String amount, String username, String type) throws RemoteException {
         boolean flag = false;
         try {
             int i = 0;
@@ -353,7 +352,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
 
-    public Leilao write_message(LinkedHashMap<String, String> data, String username) throws RemoteException {
+    public synchronized Leilao write_message(LinkedHashMap<String, String> data, String username) throws RemoteException {
         long id = Long.parseLong(data.get("id"));
         String text = data.get("text");
 
@@ -389,7 +388,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
 
-    public void msgNotification(Leilao auc, String text, String username) throws RemoteException {
+    public synchronized void msgNotification(Leilao auc, String text, String username) throws RemoteException {
         try {
             int i = 0;
             boolean flag = false;
@@ -424,8 +423,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         }
     }
 
-    //verifica se o criador do leilao esta online e manda a notificaçao
-    public void checkOwner(Leilao leilao, String username, String text, String type) {
+
+    public synchronized void checkOwner(Leilao leilao, String username, String text, String type) {
         boolean criador = false;
         TCP_Interface owner = null;
         try {
@@ -458,7 +457,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 }
 
 
-    public static boolean checkPrevious( ArrayList<LinkedHashMap<String, String>> messages, String username, int i){
+    public static boolean checkPrevious( List<LinkedHashMap<String, String>> messages, String username, int i){
         int j=0;
         for(LinkedHashMap <String, String > msg : messages){
             if(j>=i)
@@ -473,11 +472,11 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     // FicheirosObjetos
-    private static void importObjLogged() {
+    private synchronized static void importObjLogged() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
             file.abreLeitura("loggados.ser");
-            loggados = (ArrayList<User>) file.leObjeto();
+            loggados = (List<User>) file.leObjeto();
             file.fechaLeitura();
         } catch (IOException e) {
             System.out.println("Ficheiro dos loggados vazio.");
@@ -485,7 +484,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             System.out.println("Classe ArrayList/User not found.");
         }
     }
-    private void exportObjLogged() {
+    private synchronized void exportObjLogged() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
             file.abreEscrita("loggados.ser");
@@ -496,11 +495,11 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         }
     }
 
-    private void importObjRegisted() {
+    private synchronized void importObjRegisted() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
             file.abreLeitura("registados.ser");
-            this.registados = (ArrayList<User>) file.leObjeto();
+            this.registados = (List<User>) file.leObjeto();
             file.fechaLeitura();
         } catch (IOException e) {
             //System.out.println("Erro ao importar registados de fobj.");
@@ -510,7 +509,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             System.out.println("Classe ArrayList/User not found.");
         }
     }
-    private void exportObjRegisted() {
+    private synchronized void exportObjRegisted() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
             file.abreEscrita("registados.ser");
@@ -521,11 +520,11 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         }
     }
 
-    private void importObjAuctions() {
+    private synchronized void importObjAuctions() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
             file.abreLeitura("leiloes.ser");
-            this.leiloes = (ArrayList<Leilao>) file.leObjeto();
+            this.leiloes = (List<Leilao>) file.leObjeto();
             file.fechaLeitura();
         } catch (IOException e) {
             System.out.println("Ficheiro dos leiloes vazio.");
@@ -534,7 +533,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             System.out.println("Classe ArrayList/Leilao not found.");
         }
     }
-    private void exportObjAuctions() {
+    private synchronized void exportObjAuctions() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
             file.abreEscrita("leiloes.ser");
@@ -557,7 +556,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
     }
     //retorna lista de notificaçoes do user
-    synchronized public List<String> getNotifications(String username) throws RemoteException{
+    public synchronized List<String> getNotifications(String username) throws RemoteException{
         for(User user: registados){
             if(user.getUsername().equals(username)){
                 return user.getNotifications();
@@ -567,7 +566,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return null;
     }
     //limpa lista de notificaçoes do user
-    public void cleanNotifications(String username) throws RemoteException{
+    public synchronized void cleanNotifications(String username) throws RemoteException{
         for(User user: registados){
             if(user.getUsername().equals(username)){
                 user.notifications = new ArrayList<String>();
@@ -576,7 +575,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         }
     }
 
-    private void verifica_terminoLeiloes(){
+    private synchronized void verifica_terminoLeiloes(){
         for(Leilao leilao: leiloes){
             if(new Date().after(leilao.data_termino) && leilao.state == 0){
                 Date now = new Date();
@@ -600,7 +599,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     //ADMIN
-    public User [] statsVitorias() throws RemoteException{
+    public synchronized User [] statsVitorias() throws RemoteException{
         //top 10
         User current;
         User [] reply;
@@ -637,7 +636,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return reply;
     }
 
-    public User [] statsLeiloes() throws RemoteException{
+    public synchronized User [] statsLeiloes() throws RemoteException{
         //top 10
         User current;
         User [] reply;
@@ -673,7 +672,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return reply;
     }
 
-    public int statsLastWeek(){
+    public synchronized int statsLastWeek(){
         int count=0;
         for (int i=0; i<leiloes.size(); i++){
             if(leiloes.get(i).lastWeek()){
@@ -684,7 +683,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     // Admin
-    public boolean cancelAuction (long id) throws RemoteException{
+    public synchronized boolean cancelAuction (long id) throws RemoteException{
         for (Leilao current : leiloes) {
             if(current.id_leilao == id) {
                 current.setState(1);
@@ -694,7 +693,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return false;
     }
 
-    public boolean banUser (String username) throws RemoteException{//remover a conta de user?
+    public synchronized boolean banUser (String username) throws RemoteException{//remover a conta de user?
         String lamento = "Lamentamos, o user "+username+" foi banido.";
         boolean done = false;
 
@@ -825,13 +824,13 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         }
     }
 
-    public String teste() throws RemoteException {
+    public synchronized String teste() throws RemoteException {
         return "A verificar Servidor RMI Primario";
     }
 
-    private static void verifica(RMI_Interface h) {
+    private synchronized static void verifica(RMI_Interface h) {
         try {
-         //   h= (RMI_Interface) LocateRegistry.getRegistry(primaryRmi[0], 7000).lookup("ibei");
+            h= (RMI_Interface) LocateRegistry.getRegistry(primaryRmi[0], 7000).lookup("ibei");
             String teste = h.teste();
             System.out.println(teste);
             try {
@@ -841,11 +840,11 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                 e.printStackTrace();
             }
         } catch (RemoteException e){
-            //if(count > 30) {
+            if(count > 30) {
                 start();
                 importObjLogged();
                 System.out.println("[Base dados] Users loggados importados: " + loggados);
-             /*   count = 0;
+               count = 0;
             }
             else{
                 try {
@@ -860,7 +859,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             }
         } catch (NotBoundException e) {
             e.printStackTrace();
-        */}
+        }
     }
 
     public static void main(String args[]) {

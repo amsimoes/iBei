@@ -21,9 +21,9 @@ public interface RMI_Interface extends Remote {
     public void msgNotification(Leilao auc, String text, String username) throws RemoteException;
     public void bidNotification(Leilao auc, String amount, String username, String type) throws RemoteException;
     public boolean cancelAuction (long id) throws RemoteException;
-    public User [] statsLeiloes() throws RemoteException;
-    public User [] statsVitorias() throws RemoteException;
-    public int statsLastWeek() throws RemoteException;
+    public static User [] statsLeiloes() throws RemoteException;
+    public static User [] statsVitorias() throws RemoteException;
+    public static int statsLastWeek() throws RemoteException;
     public boolean banUser (String username) throws RemoteException;
 
     }

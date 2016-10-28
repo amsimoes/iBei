@@ -14,10 +14,7 @@ public class User implements Serializable{
     public User(String username, String password){
         this.username = username;
         this.password = password;
-        this.notifications = Collections.synchronizedList(new ArrayList<String>());;
-        this.leiloes=0;
-        this.vitorias=0;
-        this.banned=false;
+        this.notifications = Collections.synchronizedList(new ArrayList<String>());
     }
 
     public String getUsername() {

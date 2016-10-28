@@ -65,6 +65,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                             return false;
                         }
                     }
+
                     if(user.isBanned()) {
                         System.out.println("Utilizador "+u.username+"banido.");
                         return false;
@@ -726,7 +727,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                             if(l.licitacoes.size()>0) {
                                 for(int i=0;i<l.licitacoes.size();i++) {
                                     System.out.println(l.licitacoes.get(i).get("author"));
-                                    LinkedHashMap<String, String> licitacao = l.mensagens.get(i);
+                                    LinkedHashMap<String, String> licitacao = l.licitacoes.get(i);
                                     if(licitacao.containsValue(username) && !done) {
                                         if(this.warnBanned(String.valueOf(l.getId_leilao()), username))
                                             this.msgNotification(l,lamento,"Admin");
@@ -769,6 +770,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                         }
                     }
                     this.exportObjAuctions();
+                    this.exportObjRegisted();
                     return true;
                 }
             }

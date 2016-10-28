@@ -71,17 +71,22 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
         return true;
     }
 
-    //displays stats (# logged users, #total auctions, #on going auctions, #ended auctions, #banned users, #total users, etc)
+
     private static void getStatsLeiloes() throws RemoteException{
         try {
-            int i=1;
-            User [] stats = AdminClient.RMI.statsLeiloes();
-            //TODO print stats
+            int j;
+            boolean check = false;
+            User [] stats = Arrays.copyOf(AdminClient.RMI.statsLeiloes(), AdminClient.RMI.statsLeiloes().length);
             System.out.println("\n\nTop 10 users com mais leiloes criados");
-            for(User user: stats) {
-                System.out.println(i+"º: "+user.getUsername()+"->"+user.getLeiloes());
-                i++;
+
+            for(j=stats.length-1; j >= 0; j--){
+                if(stats[j].getLeiloes() != 0) {
+                    System.out.println(stats.length-j + "º: " + stats[j].getUsername() + "->" + stats[j].getLeiloes());
+                    check = true;
+                }
             }
+            if(!check)
+                System.out.println("Nao houve leilões criados\n");
         } catch (RemoteException e) {
             //e.printStackTrace();
             AdminClient.RMI_reconnection();
@@ -92,12 +97,20 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
 
     private static void getStatsVitorias() throws RemoteException{
         try {
-            int i=1;
-            User [] stats = AdminClient.RMI.statsVitorias();
+
+            boolean check = false;
+            int j;
+            User [] stats = Arrays.copyOf(AdminClient.RMI.statsVitorias(), AdminClient.RMI.statsVitorias().length);
             System.out.println("\n\nTop 10 users com mais Vitorias");
-            for(User user: stats){
-                System.out.println(i+"º: "+user.getUsername()+"->"+user.getVitorias());
-                i++;}
+            for(j=stats.length-1; j >= 0; j--){
+                if(stats[j].getVitorias() != 0) {
+                    System.out.println(stats.length-j + "º: " + stats[j].getUsername() + "->" + stats[j].getVitorias());
+                    check = true;
+                }
+            }
+            if(!check)
+                System.out.println("Nao houve leiloes ganhos");
+
         } catch (RemoteException e) {
             //e.printStackTrace();
             AdminClient.RMI_reconnection();
@@ -272,19 +285,19 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
 
     }
 
-    public static void clearScreen() {
+    private static void clearScreen() {
         System.out.print("\033[H\033[2J");
         System.out.flush();
     }
 
-    public static void wait4user() {
+    private static void wait4user() {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Prima para voltar ao menu.");
         scanner.nextLine();
         clearScreen();
     }
 
-    public static void menu(){
+    private static void menu(){
     	int slt;
     	Scanner scan = new Scanner(System.in);
     	while(true) {

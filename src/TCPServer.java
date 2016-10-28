@@ -165,7 +165,7 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     public void sendMsg(String type, String username, String text, Leilao leilao, String author) throws RemoteException{
         for(Connection ctn : connections){
             if(ctn.getUsername().equals(username)) {
-                if (type.equals("notification_bid"))
+                if (type.equals("Notification_bid"))
                     ctn.sendMessage("type", type, "id", String.valueOf(leilao.id_leilao), "user", author, "amount", text);
 
                 else {
@@ -559,7 +559,6 @@ class Connection  extends Thread implements Serializable {
         }
     }
     public void write_message(LinkedHashMap<String, String> data, String username){
-        //falta mandar para a notificao para os que escreveram no mural e para o criador do leilao
         try {
             Leilao leilao = TCPServer.RMI.write_message(data, username);
             if(leilao != null){

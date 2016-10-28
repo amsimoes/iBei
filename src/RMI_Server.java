@@ -138,6 +138,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
             //this.export_auctions();
             this.exportObjAuctions();
+            this.exportObjRegisted();
             return true;
         } catch (Exception e) {
             System.out.println("[EXCEPTION] Failed to create auction");
@@ -351,7 +352,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         }
     }
 
-    //falta mandar para a notificao para os que escreveram no mural e para o criador do leilao
+
     public Leilao write_message(LinkedHashMap<String, String> data, String username) throws RemoteException {
         long id = Long.parseLong(data.get("id"));
         String text = data.get("text");
@@ -592,6 +593,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                             user.setvitorias(user.getVitorias()+1);
                     }
                 }
+                exportObjRegisted();
                 exportObjAuctions();
             }
         }
@@ -604,14 +606,15 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         User [] reply;
         if (registados.size()<10) {
             reply = new User[registados.size()];
-            for (int i=1; i<registados.size(); i++){
+            for (int i=0; i<registados.size(); i++){
                 reply[i] = registados.get(i);
             }
+
         } else {
             reply = new User[10];
             reply[0] = registados.get(0);
             int min = 0;
-            for (int i=0; i<reply.length; i++){
+            for (int i=1; i<reply.length; i++){
                 reply[i] = registados.get(i);
                 if (reply[i].getVitorias() < reply[min].getVitorias()){
                     min=i;

@@ -18,15 +18,15 @@ Creating jar files using .class generated:
 # Running
 
 RMI Server   
-Usage: `$ java -jar dataserver.jar \<rmi host ip> \<rmi host port>`
+Usage: `$ java -jar dataserver.jar <rmi host ip> <rmi host port>`
 
 TCP Server  
-Usage: `$ java -jar server.jar \<localport> \<RMI host ip> \<RMI host port>`
+Usage: `$ java -jar server.jar <localport> <RMI host ip> <RMI host port>`
 
 TCP Client  
-Usage: `$ java TCPClient \<TCP server ip> \<TCP server port>`
+Usage: `$ java TCPClient <TCP server ip> <TCP server port>`
 
 Admin Client  
-Usage: `$ java -jar admin.jar \<RMI host ip> \<RMI host port>`
+Usage: `$ java -jar admin.jar <RMI host ip> <RMI host port>`
 
 

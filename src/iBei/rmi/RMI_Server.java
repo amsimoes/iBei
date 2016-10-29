@@ -3,6 +3,7 @@ package iBei.rmi;
 import iBei.server.*;
 import iBei.aux.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
@@ -16,10 +17,11 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     private List<Leilao> leiloes;
     private List<User> registados;
     private static List<User> loggados;
-    List<TCP_Interface> tcpServers;
+    private List<TCP_Interface> tcpServers;
     public static String primaryRmi [] = new String[2];
     public static String backupRmi [] = new String[2];
-    static int count = 0;
+    private static int count = 0;
+    private static String home_path = "~"+File.separator+"SD-iBei"+File.separator+"src"+File.separator;
 
     public RMI_Server() throws RemoteException {
         super();
@@ -480,7 +482,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     private synchronized static void importObjLogged() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
-            file.abreLeitura("loggados.ser");
+            file.abreLeitura("iBei"+File.separator+"aux"+File.separator+"loggados.ser");
             loggados = (List<User>) file.leObjeto();
             file.fechaLeitura();
         } catch (IOException e) {
@@ -492,7 +494,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     private synchronized void exportObjLogged() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
-            file.abreEscrita("loggados.ser");
+            file.abreLeitura("iBei"+File.separator+"aux"+File.separator+"loggados.ser");
             file.escreveObjeto(loggados);
             file.fechaEscrita();
         } catch (IOException e) {
@@ -503,7 +505,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     private synchronized void importObjRegisted() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
-            file.abreLeitura("registados.ser");
+            file.abreLeitura("iBei"+File.separator+"aux"+File.separator+"registados.ser");
             this.registados = (List<User>) file.leObjeto();
             file.fechaLeitura();
         } catch (IOException e) {
@@ -517,7 +519,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     private synchronized void exportObjRegisted() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
-            file.abreEscrita("registados.ser");
+            file.abreLeitura("iBei"+File.separator+"aux"+File.separator+"registados.ser");
             file.escreveObjeto(this.registados);
             file.fechaEscrita();
         } catch (IOException e) {
@@ -528,12 +530,11 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     private synchronized void importObjAuctions() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
-            file.abreLeitura("leiloes.ser");
+            file.abreLeitura("iBei"+File.separator+"aux"+File.separator+"leiloes.ser");
             this.leiloes = (List<Leilao>) file.leObjeto();
             file.fechaLeitura();
         } catch (IOException e) {
             System.out.println("Ficheiro dos leiloes vazio.");
-            //e.printStackTrace();
         } catch (ClassNotFoundException e) {
             System.out.println("Classe ArrayList/Leilao not found.");
         }
@@ -541,7 +542,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     private synchronized void exportObjAuctions() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
-            file.abreEscrita("leiloes.ser");
+            file.abreLeitura("iBei"+File.separator+"aux"+File.separator+"leiloes.ser");
             file.escreveObjeto(this.leiloes);
             file.fechaEscrita();
         } catch (IOException e) {

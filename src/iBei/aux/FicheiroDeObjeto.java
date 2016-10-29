@@ -13,6 +13,7 @@ public class FicheiroDeObjeto {
             return true;
         } catch (IOException e) {
             File f = new File(nomeDoFicheiro);
+            f.getParentFile().mkdirs();
             f.createNewFile();
             iS = new ObjectInputStream(new FileInputStream(nomeDoFicheiro));
             return false;

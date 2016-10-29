@@ -1,6 +1,5 @@
 package iBei.aux;
 
-
 import java.io.*;
 
 public class FicheiroDeObjeto {

@@ -1,3 +1,8 @@
+package iBei.admin;
+
+import iBei.aux.*;
+import iBei.rmi.*;
+
 //java Server_TCP <porto>
 import java.net.*;
 import java.rmi.*;

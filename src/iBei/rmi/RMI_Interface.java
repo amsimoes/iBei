@@ -1,3 +1,8 @@
+package iBei.rmi;
+
+import iBei.server.*;
+import iBei.aux.*;
+
 import java.io.Serializable;
 import java.util.*;
 import java.rmi.*;

@@ -1,3 +1,8 @@
+package iBei.server;
+
+import iBei.rmi.*;
+import iBei.aux.*;
+
 import java.net.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;

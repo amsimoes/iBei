@@ -272,7 +272,9 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         int i;
         for (i = 0; i < leiloes.size(); i++) {
             if (leiloes.get(i).id_leilao == id) {
-                System.out.println("Existing auction.");
+                System.out.println("Existing auction. Deadline: "+leiloes.get(i).getData_termino());
+                Date now = new Date();
+                System.out.println("Date NOW: "+now);
                 break;
             }
         }
@@ -285,7 +287,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
         Leilao auc = leiloes.get(i);
         System.out.println("[INFO LEILAO]");
-        System.out.println(auc.toString());
         if (auc.precoMax <= amount) {
             System.out.println("Bid higher than preco Max");
             System.out.println("[ END ]");
@@ -300,7 +301,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             }
         }
 
-        if (auc.state == 1 || auc.state == 2) {
+        if (new Date().after(auc.getData_termino()) || auc.state == 1 || auc.state == 2) {
             System.out.println("[BID] The auction already ended or was canceled");
             System.out.println("Auction deadline: "+auc.getData_termino().toString());
             System.out.println("[ END ]");

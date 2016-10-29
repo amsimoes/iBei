@@ -1,8 +1,4 @@
-package iBei.rmi;
-
-import iBei.aux.*;
-import iBei.server.*;
-
+import java.io.Serializable;
 import java.util.*;
 import java.rmi.*;
 
@@ -18,7 +14,7 @@ public interface RMI_Interface extends Remote {
     public Leilao write_message(LinkedHashMap<String, String> data, String username) throws java.rmi.RemoteException;
     public List<User> listOnlineUsers() throws RemoteException;
     public LinkedHashMap<String, String> logoutClient(String username) throws RemoteException;
-    public void data(TCP_Interface tcp) throws RemoteException;
+    public void addTCP(TCP_Interface tcp) throws RemoteException;
     public List<String> getNotifications(String username) throws RemoteException;
     public void cleanNotifications(String username) throws RemoteException;
     public String teste() throws RemoteException;

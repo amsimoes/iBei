@@ -1,8 +1,3 @@
-package iBei.server;
-
-import iBei.rmi.*;
-import iBei.aux.*;
-
 import java.net.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -49,7 +44,7 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
             TCP_Interface tcpserver = new TCPServer();
 
             int serverPort = Integer.parseInt(port);
-            TCPServer.RMI.data(tcpserver);
+            TCPServer.RMI.addTCP(tcpserver);
 
             InetAddress group = InetAddress.getByName("225.0.0.0");
             MulticastSocket socket = new MulticastSocket(6789);
@@ -81,7 +76,7 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
                 public void run(){
                     try {
                         while (true) {
-                            //sendClients(info);
+                            sendClients(info);
                             Thread.sleep(60000);
                         }
                     } catch (InterruptedException e) {
@@ -146,7 +141,6 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     public synchronized static void RMI_reconnection(){
         try {
             Thread.sleep(2000);
-            System.out.println(count);
             if (currentIp == 0)
                 currentIp = 1;
             else if(currentIp == 1)
@@ -157,12 +151,11 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
             count = 0;
         } catch (RemoteException | NotBoundException e) {
             count += 2;
-            if(count >= 30) {
+            if(count >= 30 && count < 32) {
                 System.out.println(ipRmi[currentIp]);
                 System.out.println("RMI Servers with problems...");
             }
             TCPServer.RMI_reconnection();
-            //e.printStackTrace();
         } catch (InterruptedException e) {
             //e.printStackTrace();
         }
@@ -210,21 +203,18 @@ class UDPSender{
             new Thread(){
                 public void run() {
                     try {
-                        InputStreamReader input = new InputStreamReader(System.in);
-                        BufferedReader reader = new BufferedReader(input);
                         while(true) {
                             InetAddress group = InetAddress.getByName("225.0.0.0");
                             String reply = String.valueOf(tcpPort)+": "+String.valueOf(getNumero());
                             byte[] buf =  reply.getBytes();
                             DatagramPacket msgOut = new DatagramPacket(buf, buf.length, group, 6789);
                             socket.send(msgOut);
-                            Thread.sleep(30000);
+                            Thread.sleep(20000);
                         }
                     } catch (InterruptedException | IOException e) {
                         e.printStackTrace();
                     }
-                    //while(true){
-                    //}
+
                 }
             }.start();
 
@@ -248,7 +238,6 @@ class UDPSender{
 class Connection  extends Thread implements Serializable {
     private PrintWriter out;
     private BufferedReader in= null;
-    //private Socket clientSocket;
     private int thread_number;
     private boolean logged = false;
     private User u;
@@ -272,7 +261,7 @@ class Connection  extends Thread implements Serializable {
 
     public synchronized void sendMessage(String... args) {
         if (args.length % 2 != 0) { // Se o numero de campos não for par
-            System.out.println("Erro ao registar campos de envio da mensagem.");
+            System.out.println("\n" + "Error registering message sending fields.");
             return;
         }
         LinkedHashMap<String, String> reply = new LinkedHashMap<String, String>();
@@ -287,7 +276,6 @@ class Connection  extends Thread implements Serializable {
         try{
             while(true) {
                 if(!logged) {
-                    //System.out.println("NAO ESTA LOGGADO...");
                     try {
                         String data= in.readLine();
                         LinkedHashMap<String, String> hashMap = parseData(data);
@@ -309,7 +297,7 @@ class Connection  extends Thread implements Serializable {
                         e.printStackTrace();
                         out.println("You must follow the protocol.");
                     } catch (NullPointerException e) {
-                        System.out.println("Desligado a bruta.");
+                        System.out.println("Enforced end session.");
                         this.removeConection(u);
                         break;
                     }
@@ -339,10 +327,10 @@ class Connection  extends Thread implements Serializable {
             TCPServer.numero--;
             try {
                 TCPServer.RMI.logoutClient(u.username);
-                System.out.println("User "+u.username+" desligado a bruta.");
+                System.out.println("User "+u.username+" Enforced end session.");
                 this.removeConection(u);
             } catch (RemoteException e1) {
-                System.out.println("Erro ao desconnectar a forca o user: "+u.username);
+                System.out.println("Error forcing end session: "+u.username);
             }
         } catch(IOException e) {
             System.out.println("IO:" + e);
@@ -361,18 +349,18 @@ class Connection  extends Thread implements Serializable {
 
     public LinkedHashMap<String, String> parseData(String data){
 
-        LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();    // {type: login, type : login}
+        LinkedHashMap<String, String> hashMap = new LinkedHashMap<String, String>();
         try {
             String[] aux = data.split(",");
 
             for (String field : aux) {
-                String[] aux1 = field.trim().split(":", 2);    // 2, pq hora:minutos
+                String[] aux1 = field.trim().split(":", 2);// 2, pq hora:minutos
                 aux1[0] = aux1[0].trim();
                 aux1[1] = aux1[1].trim();
                 hashMap.put(aux1[0], aux1[1]);
             }
         } catch(ArrayIndexOutOfBoundsException e){
-            System.out.println("Operaçao Invalida");
+            this.out.println("Invalid operation");
             return null;
         }
         return hashMap;
@@ -544,7 +532,6 @@ class Connection  extends Thread implements Serializable {
 
     }
     public void make_bid(LinkedHashMap<String, String> data, String username){
-        //falta mandar para os restantes licitadores a notificacao
         try {
             Leilao leilao = TCPServer.RMI.make_bid(data, username);
             if(leilao != null){
@@ -555,7 +542,6 @@ class Connection  extends Thread implements Serializable {
                 sendMessage("type","bid","ok","false");
             }
         } catch (RemoteException e) {
-            //e.printStackTrace();
             TCPServer.RMI_reconnection();
             make_bid(data, username);
         }
@@ -583,7 +569,6 @@ class Connection  extends Thread implements Serializable {
             }
             else{sendMessage("type","edit_auction","ok","true");}
         } catch (RemoteException e) {
-            //e.printStackTrace();
             TCPServer.RMI_reconnection();
             edit_auction(data, username);
         }
@@ -605,7 +590,6 @@ class Connection  extends Thread implements Serializable {
             String r = reply.toString().replaceAll("=",":");
             out.println(r.substring(1, r.length() - 1));
         } catch (RemoteException e) {
-            //e.printStackTrace();
             TCPServer.RMI_reconnection();
             OnlineUsers();
         }
@@ -620,7 +604,6 @@ class Connection  extends Thread implements Serializable {
             logged = false;
             this.removeConection(this.u);
         } catch (RemoteException e) {
-            //e.printStackTrace();
             TCPServer.RMI_reconnection();
             Logout(username);
         }

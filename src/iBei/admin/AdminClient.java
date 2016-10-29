@@ -1,9 +1,4 @@
-package iBei.admin;
-
-import iBei.aux.*;
-import iBei.rmi.*;
-
-
+//java Server_TCP <porto>
 import java.net.*;
 import java.rmi.*;
 import java.rmi.NotBoundException;
@@ -39,8 +34,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
         } catch(IOException e) {
             System.out.println("Listen: " + e.getMessage());
         } catch(Exception ex){
-            System.out.println("NULL ???");
-            ex.printStackTrace();
+            System.out.println("Some error ocurred...");
         }
     }
 
@@ -48,9 +42,9 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
     private static boolean cancelAuction(long id){
         try {
             if(AdminClient.RMI.cancelAuction(id)){
-            	System.out.println("Leilão cancelado com sucesso.");
+            	System.out.println("Auction canceled with sucess.");
             }else{
-            	System.out.println("Não existe nenhum leilão com ID: "+id+".");
+            	System.out.println("\n" + "There is no auction with ID: "+id+".");
             }
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -64,12 +58,11 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
     private static boolean banUser(String username){
     	try {
             if(AdminClient.RMI.banUser(username)){
-            	System.out.println("Utlizador "+username+" banido com sucesso.");
+            	System.out.println("User "+username+" baned with sucess.");
             }else{
-            	System.out.println("Utilizador nao banido.");
+            	System.out.println("\n" + "User not banned.");
             }
         } catch (RemoteException e) {
-            //e.printStackTrace();
             AdminClient.RMI_reconnection();
             banUser(username);
         }
@@ -82,7 +75,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
             int j;
             boolean check = false;
             User [] stats = Arrays.copyOf(AdminClient.RMI.statsLeiloes(), AdminClient.RMI.statsLeiloes().length);
-            System.out.println("\n\nTop 10 users com mais leiloes criados");
+            System.out.println("\n\nTop 10 users with more auctions created");
 
             for(j=stats.length-1; j >= 0; j--){
                 if(stats[j].getLeiloes() != 0) {
@@ -91,9 +84,8 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
                 }
             }
             if(!check)
-                System.out.println("Nao houve leilões criados\n");
+                System.out.println("\n" + "There were no auctions created\n");
         } catch (RemoteException e) {
-            //e.printStackTrace();
             AdminClient.RMI_reconnection();
             getStatsLeiloes();
         }
@@ -106,7 +98,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
             boolean check = false;
             int j;
             User [] stats = Arrays.copyOf(AdminClient.RMI.statsVitorias(), AdminClient.RMI.statsVitorias().length);
-            System.out.println("\n\nTop 10 users com mais Vitorias");
+            System.out.println("\n\nTop 10 users with more victories in auctions");
             for(j=stats.length-1; j >= 0; j--){
                 if(stats[j].getVitorias() != 0) {
                     System.out.println(stats.length-j + "º: " + stats[j].getUsername() + "->" + stats[j].getVitorias());
@@ -114,10 +106,9 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
                 }
             }
             if(!check)
-                System.out.println("Nao houve leiloes ganhos");
+                System.out.println("There were no gains auctions");
 
         } catch (RemoteException e) {
-            //e.printStackTrace();
             AdminClient.RMI_reconnection();
             getStatsVitorias();
         }
@@ -126,8 +117,8 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
 
     private static void getStatsLastWeek() throws RemoteException{
         int stats = AdminClient.RMI.statsLastWeek();
-        System.out.println("\n\nNumero total de leiloes nos ultimos 10 dias");
-        System.out.println(stats+" leilões");
+        System.out.println("\n\n\n" + "Total number of auctions in the last 10 days");
+        System.out.println(stats+" auctions");
     }
 
     private static void getStats() throws RemoteException{
@@ -171,7 +162,6 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
             DateFormat d1 = new SimpleDateFormat("yyyy-MM-dd HH-mm");
             Date date = d1.parse(deadline);
             int amount=666;
-            int count=0;
 
             // create streams for writing to and reading from the socket
             inFromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -185,7 +175,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
             } else {
                 System.out.println("Passed. (OK: True)");
             }
-
+           
            	//login
             outToServer.println("type: login, username: admin, password: 123");
             System.out.print("Testing login admin: ");
@@ -283,7 +273,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
             try {
                 inFromServer.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println("Error closing Stream Input");
             }
         }
         return false;
@@ -297,7 +287,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
 
     private static void wait4user() {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Prima para voltar ao menu.");
+        System.out.println("Press to return to the menu.");
         scanner.nextLine();
         clearScreen();
     }
@@ -306,18 +296,18 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
     	int slt;
     	Scanner scan = new Scanner(System.in);
     	while(true) {
-    		System.out.println("Selecione uma das seguintes opções:\n" +
-                                "1.Cancelar leilão\n" +
-                                "2.Banir utilizador\n" +
-                                "3.Consultar estatísticas\n" +
-                                "4.Testar servidor TCP\n" +
-                                "0.Sair");
-            System.out.print("Opcao: ");
+    		System.out.println("Select one of the following options:\n" +
+                                "1.Cancel auction\n" +
+                                "2.Ban user\n" +
+                                "3.Consult statistics\n" +
+                                "4.Test TCP server\n" +
+                                "0.Exit");
+            System.out.print("Option: ");
             slt=scan.nextInt();
             clearScreen();
     		switch(slt){
     			case 1:
-    				System.out.print("ID do leilao: ");
+    				System.out.print("Auction ID: ");
     				long id = scan.nextLong();
     				cancelAuction(id);
                     wait4user();
@@ -347,7 +337,7 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
     			    System.exit(0);
     				break;
     			default:
-    				//System.out.println("Seleção inválida.\n");
+                    System.out.println("Invalid operation");
             }
     	}
     }
@@ -355,23 +345,23 @@ public class AdminClient extends UnicastRemoteObject /*implements TCP_Interface*
     public static void RMI_reconnection(){
         try {
             Thread.sleep(2000);
-            System.out.println(count);
             AdminClient.RMI = (RMI_Interface) LocateRegistry.getRegistry(7000).lookup("connection");
             count = 0;
         } catch (RemoteException | NotBoundException e) {
             count += 2;
-            if(count >= 30) {
+            if(count >= 30 && count < 32) {
                 System.out.println("RMI Servers with problems...");
             }
             AdminClient.RMI_reconnection();
-            //e.printStackTrace();
         } catch (InterruptedException e) {
             count += 2;
-            if(count >= 30) {
+            if(count >= 30 && count < 32) {
                 System.out.println("RMI Servers with problems...");
             }
-            //e.printStackTrace();
         }
     }
 
 }
+
+
+

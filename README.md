@@ -2,7 +2,7 @@
 [Java] Reverse Auctioning Project for Distributed Systems course
 
 # Compilation
-Inside src folder:
+Below commands must be run inside src folder:
 
 Compiling java files to create .class files:  
 $ javac iBei/aux/\*.java  

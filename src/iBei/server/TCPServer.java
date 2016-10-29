@@ -328,7 +328,7 @@ class Connection  extends Thread implements Serializable {
                 }
             }
         } catch(EOFException | NullPointerException | SocketException e){
-            System.out.println("The client["+thread_number+"] ("+u.username+") ended the connection: EOF:"+e);
+            System.out.println("The client["+thread_number+"] ("+u.username+") ended the connection.");
             TCPServer.numero--;
             try {
                 TCPServer.RMI.logoutClient(u.username);
@@ -410,6 +410,7 @@ class Connection  extends Thread implements Serializable {
     }
     public void create_auction(LinkedHashMap <String, String> data, String username){
         try {
+            System.out.println("CREATE_AUCTION: Title:"+data.get("title")+ "| Description:"+data.get("description"));
             if(TCPServer.RMI.create_auction(data,username)){
                 sendMessage("type", "create_auction", "ok", "true");
             }
@@ -431,21 +432,18 @@ class Connection  extends Thread implements Serializable {
 
             if (leilao != null) {
                 reply.put("type", "detail_auction");
-                String titulos = "";
-                i=0;
-                for (String titulo : leilao.titulo) {
-                    i++;
-                    titulos += i + "º: "+titulo + ", ";
+                reply.put("title", leilao.titulo.get(leilao.titulo.size()-1));  // last title
+                if(leilao.titulo.size() > 1) {
+                    for(i=0;i<leilao.titulo.size()-1;i++) {
+                        reply.put("title_"+String.valueOf(i+1),leilao.titulo.get(i));
+                    }
                 }
-                i=0;
-                reply.put("title", titulos.substring(0, titulos.length() - 2));
-                String descricoes = "";
-                for (String descricao : leilao.descricao) {
-                    i++;
-                    descricoes += i+"º: " + descricao + ", ";
+                reply.put("description", leilao.descricao.get(leilao.descricao.size()-1));  // last description
+                if(leilao.descricao.size() > 1) {
+                    for(i=0;i<leilao.descricao.size()-1;i++) {
+                        reply.put("description_"+String.valueOf(i+1),leilao.descricao.get(i));
+                    }
                 }
-                reply.put("description", descricoes.substring(0, descricoes.length() - 2));
-
                 reply.put("deadline", leilao.data_termino.toString());
                 reply.put("code", leilao.getArtigoId());
                 reply.put("messages_count", String.valueOf(leilao.mensagens.size()));
@@ -539,6 +537,7 @@ class Connection  extends Thread implements Serializable {
     public void make_bid(LinkedHashMap<String, String> data, String username){
         try {
             Leilao leilao = TCPServer.RMI.make_bid(data, username);
+            System.out.println("makebid result: "+leilao);
             if(leilao != null){
                 sendMessage("type","bid","ok","true");
                 TCPServer.RMI.bidNotification(leilao,data.get("amount"),username,"notification_bid");

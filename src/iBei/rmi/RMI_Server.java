@@ -137,6 +137,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             }
 
             System.out.println("[DATE]"+date);
+            System.out.println("[TITLE]"+data.get("title"));
             Leilao l = new Leilao(username, code, data.get("title"), data.get("description"), amount, date);
 
             leiloes.add(l);

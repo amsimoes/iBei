@@ -5,7 +5,7 @@
 Below commands must be run inside src folder:
 
 Compiling java files to create .class files:  
-$ javac iBei/aux/\*.java  
+`$ javac iBei/aux/\*.java`  
 $ javac iBei/rmi/\*.java  
 $ javac iBei/server/\*.java  
 $ javac iBei/admin/\*.java  

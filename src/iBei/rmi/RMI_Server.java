@@ -17,7 +17,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     private List<Leilao> leiloes;
     private List<User> registados;
     private static List<User> loggados;
-    List<TCP_Interface> tcpServers;
+    private static List<TCP_Interface> tcpServers;
     public static String primaryRmi [] = new String[2];
     public static String backupRmi [] = new String[2];
     static int count = 0;
@@ -32,6 +32,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
     public void addTCP(TCP_Interface tcp) throws RemoteException {
         tcpServers.add(tcp);
+        this.exportObjTCPServers();
     }
 
     public synchronized boolean register_client(LinkedHashMap<String, String> data) throws RemoteException {
@@ -484,6 +485,33 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     // FicheirosObjetos
+
+    private synchronized static void importObjTCPServers(){
+        FicheiroDeObjeto file = new FicheiroDeObjeto();
+        try {
+            file.abreLeitura("iBei"+File.separator+"aux"+File.separator+"tcpServers.ser");
+            tcpServers = (List<TCP_Interface>) file.leObjeto();
+            file.fechaLeitura();
+        } catch (IOException e) {
+            System.out.println("File with TCPServers in users empty.");
+        } catch (ClassNotFoundException e1) {
+            System.out.println("Classe ArrayList/User not found.");
+        }
+    }
+
+    private synchronized void exportObjTCPServers() {
+        FicheiroDeObjeto file = new FicheiroDeObjeto();
+        try {
+            file.abreEscrita("iBei"+File.separator+"aux"+File.separator+"tcpServers.ser");
+            file.escreveObjeto(tcpServers);
+            file.fechaEscrita();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
     private synchronized static void importObjLogged() {
         FicheiroDeObjeto file = new FicheiroDeObjeto();
         try {
@@ -811,7 +839,10 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             System.out.println("[Base dados] Registados imported: "+h.registados);
             h.importObjAuctions();
             System.out.println("[Base dados] Leiloes imported: "+h.leiloes);
-
+            importObjTCPServers();
+            System.out.println("[Base de dados TCPServers added: ] "+tcpServers);
+            importObjLogged();
+            System.out.println("[Base de dados loggados added: ] "+loggados);
 
             System.out.println("RMI Server ready.");
 
@@ -853,6 +884,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             if(count > 30) {
                 start();
                 importObjLogged();
+                importObjTCPServers();
                 System.out.println("[Base dados] Users loggados imported: " + loggados);
                count = 0;
             }

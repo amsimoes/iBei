@@ -1,0 +1,32 @@
+body {
+  background-color: #eee;
+  margin: auto;
+  text-align:center;
+  margin-top: 15vh;
+}
+
+#submit{
+ margin-top: 2vh;
+}
+
+p{
+	font-size: 4vw;
+	font-family: Arial
+}
+
+.input{
+	
+	height: 4vh;
+	width: 18vw;
+	text-align: center;
+}
+
+.btn{
+	height: 4vh;
+	width: 8vw;
+	border: 1px solid;
+	border-radius: 5px;
+	cursor: pointer;
+	margin-top: 2vh;
+	
+}

@@ -15,6 +15,7 @@ public class MyAction extends ActionSupport implements SessionAware {
 	private static final long serialVersionUID = 4L;
 	private Map<String, Object> session;
 	public ArrayList <Leilao> leiloes = new ArrayList<Leilao>();
+	public String message;
 	
 	@Override
 	public String execute() {
@@ -24,6 +25,10 @@ public class MyAction extends ActionSupport implements SessionAware {
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		if(leiloes.size() == 0){
+			message = "You havent participate in any auction";
+			return "failure";
 		}
 		return SUCCESS;
 		

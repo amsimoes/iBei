@@ -6,15 +6,26 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<link href="bootstrap-3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="css/menu.css">
 </head>
 <body>
-	<p>Logged with success!</p>
 	
-	<a href="cancelAuction.jsp">Cancel auction<br></a>
-	<a href="BanUser.jsp">Ban User<br></a>
-	<a href="<s:url action="stats" />">See statistics<br></a>
-	<a href="<s:url action="logoutAction" />">Logout</a>
 	<h2 style="text-align:center;" ><s:property value="message"/></h2>
+	
+	<form action="cancelAuction.jsp">
+	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Cancel auction" />
+	</form>
+	<form action="BanUser.jsp">
+	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Ban user" />
+	</form>
+	<form action="stats">
+	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="See statistics" />
+	</form>
+	<form action="logoutAction">
+	    	<input style="margin-top: 8vh;" class="btn btn-lg btn-primary btn-block" type="submit" value="Logout" />
+	</form>
+	
 
 </body>
 </html>

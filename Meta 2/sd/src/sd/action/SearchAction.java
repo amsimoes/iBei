@@ -16,6 +16,7 @@ public class SearchAction extends ActionSupport implements SessionAware {
 	private Map<String, Object> session;
 	public String code;
 	public ArrayList <Leilao> leiloes = new ArrayList<Leilao>();
+	public String message;
 	@Override
 	public String execute() {
 		// any username is accepted without confirmation (should check using RMI)
@@ -24,6 +25,10 @@ public class SearchAction extends ActionSupport implements SessionAware {
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		if(leiloes.size() == 0){
+			message = "There is no auction with that code article";
+			return "failure";
 		}
 		return SUCCESS;
 	

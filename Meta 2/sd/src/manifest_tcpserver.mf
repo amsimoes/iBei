@@ -1,4 +1,3 @@
 Manifest-Version: 1.0
-Main-Class: iBei.rmi.RMI_Server
+Main-Class: iBei.server.TCPServer
 Class-Path: lib/mysql-connector-java-5.1.40-bin.jar
-

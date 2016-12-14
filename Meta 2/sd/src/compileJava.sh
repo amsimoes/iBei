@@ -1,6 +1,6 @@
 #! /bin/bash
 
-javac iBei/aux/*.java
+javac -cp "lib/*" iBei/aux/*.java
 javac iBei/rmi/*.java
 javac iBei/server/*.java
 #javac iBei/admin/*.java

@@ -1,5 +1,6 @@
 package iBei.rmi;
 
+import iBei.aux.FacebookRest;
 import iBei.aux.FicheiroDeObjeto;
 import iBei.aux.Leilao;
 import iBei.aux.User;
@@ -54,7 +55,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         super();
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            String connectionString = "jdbc:mysql://"+dbHost+":3306/bd";
+            String connectionString = "jdbc:mysql://"+dbHost+":3306/BD";
             //System.out.println("Connecting to BD on host: "+dbHost);
             int i;
             for(i=0; i< 5; i++){
@@ -345,8 +346,19 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                     System.out.println("Error doing rollback!");
                 }
                 e.printStackTrace();
+        }
 
-
+        // Facebook aqui
+        try {
+            String fb_query = "SELECT facebook FROM user u WHERE u.username = ?";
+            statement = connection.prepareStatement(fb_query);
+            statement.setString(1, username);
+            ResultSet response = statement.executeQuery();
+            String token = response.getString("facebook");
+            FacebookRest fb = new FacebookRest(username, token);
+            fb.postAuction("TEST FROM RMIIIII");
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
         }
 
         releaseConnection(c);
@@ -549,8 +561,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
         return users;
     }
-
-
 
     public boolean edit_auction(LinkedHashMap<String, String> data, String username) throws RemoteException {
         //TRATAR DE AUTO INCREMENT NA VERSAO
@@ -1359,7 +1369,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             statement = connection.prepareStatement(msg_query);
             statement.setString(1,username);
             statement.execute();
-
 
             statement = connection.prepareStatement(bid_query);
             statement.setString(1,username);

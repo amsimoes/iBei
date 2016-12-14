@@ -143,8 +143,6 @@ public class TCPServer extends UnicastRemoteObject implements TCP_Interface{
     }
 
 
-
-
     public synchronized static void RMI_reconnection(){
         try {
             Thread.sleep(2000);

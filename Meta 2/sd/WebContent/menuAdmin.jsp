@@ -14,6 +14,7 @@
 	<a href="BanUser.jsp">Ban User<br></a>
 	<a href="<s:url action="stats" />">See statistics<br></a>
 	<a href="<s:url action="logoutAction" />">Logout</a>
+	<h2 style="text-align:center;" ><s:property value="message"/></h2>
 
 </body>
 </html>

@@ -15,10 +15,16 @@ public class BidAction extends ActionSupport implements SessionAware {
 	private Map<String, Object> session;
 	public String Id;
 	public String amount;
-	public Leilao leilao;
+	public Leilao leilao =null;
+	public String message;
 	@Override
 	public String execute() {
 		leilao = this.getBean().bidAuction(Id, amount);
+		if(leilao == null){
+			message = "Erro making bid";
+			return "failure";
+		}
+		message = "Bid created";
 		return SUCCESS;
 	
 	}

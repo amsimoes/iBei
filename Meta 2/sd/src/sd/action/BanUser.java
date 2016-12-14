@@ -15,6 +15,7 @@ public class BanUser extends ActionSupport implements SessionAware {
 	private static final long serialVersionUID = 4L;
 	private Map<String, Object> session;
 	public String username;
+	public String message;
 	boolean result = false;
 	@Override
 	public String execute() {
@@ -28,8 +29,10 @@ public class BanUser extends ActionSupport implements SessionAware {
 		}
 		if(!result){
 			System.out.println("null returned");
+			message = "Error baning user";
 			return "failure";
 		}
+		message = "User banned successfully";
 		return SUCCESS;
 	
 	}

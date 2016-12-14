@@ -16,11 +16,15 @@ public class CreateAuction extends ActionSupport implements SessionAware {
 	public String deadline;
 	public String code;
 	public String amount;
+	public String message;
 	@Override
 	public String execute() {
 		boolean result = this.getBean().createAuction(title,description,deadline,code,amount);
-		if(!result)
+		if(!result){
+			message = "Error creating auction";
 			return "failure";
+		}
+		message = "Auction created successfully";
 		return SUCCESS;
 	
 	}

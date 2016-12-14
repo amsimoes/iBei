@@ -18,6 +18,7 @@
 	<a href="bidAuction.jsp">Make Bid<br></a>
 	<a href="msgAuction.jsp">Write message<br></a>
 	<a href="<s:url action="logoutAction" />">Logout</a>
+	<h2 style="text-align:center;" ><s:property value="message"/></h2>
 
 </body>
 </html>

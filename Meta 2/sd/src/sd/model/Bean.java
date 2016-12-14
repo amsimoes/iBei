@@ -247,7 +247,6 @@ public ArrayList <Leilao> leiloes;
 			return result;
 		}
 		//System.out.println("Encontrou o leilao");
-		loginMsg="";
 		return result;
 	}
 	
@@ -259,7 +258,6 @@ public ArrayList <Leilao> leiloes;
 			return result;
 		}
 		System.out.println("Encontrou o leilao");
-		loginMsg="";
 		return result;
 	}
 	

@@ -67,12 +67,12 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
     </action>
 
     <action name="bidAction" class="sd.action.BidAction" method="execute">
-      <result name="success">/bidPrint.jsp</result>
-      <result name="listar">/menu.jsp</result>
+      <result name="success">/menu.jsp</result>
+      <result name="failure">/menu.jsp</result>
     </action>
 
     <action name="msgAction" class="sd.action.MessageAction" method="execute">
-      <result name="success">/messagePrint.jsp</result>
+      <result name="success">/menu.jsp</result>
       <result name="failure">/menu.jsp</result>
     </action>
     
@@ -87,17 +87,17 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
     </action>
     
     <action name="createAction" class="sd.action.CreateAuction" method="execute">
-      <result name="success">/createAuctionPrint.jsp</result>
+      <result name="success">/menu.jsp</result>
       <result name="failure">/menu.jsp</result>
     </action>
 
     <action name="cancelAction" class="sd.action.CancelAuction" method="execute">
-      <result name="success">/createAuctionPrint.jsp</result>
+      <result name="success">/menuAdmin.jsp</result>
       <result name="failure">/menuAdmin.jsp</result>
     </action>
 
-    <action name="banAction" class="sd.action.BanUser" method="execute">
-      <result name="success">/createAuctionPrint.jsp</result>
+    <action name="banUser" class="sd.action.BanUser" method="execute">
+      <result name="success">/menuAdmin.jsp</result>
       <result name="failure">/menuAdmin.jsp</result>
     </action>
 

@@ -14,6 +14,7 @@ public class CancelAuction extends ActionSupport implements SessionAware {
 	private static final long serialVersionUID = 4L;
 	private Map<String, Object> session;
 	public int id;
+	public String message;
 	public boolean result = false;
 	@Override
 	public String execute() {
@@ -25,9 +26,10 @@ public class CancelAuction extends ActionSupport implements SessionAware {
 			e.printStackTrace();
 		}
 		if(!result){
-			System.out.println("null returned");
+			message = "Error canceling auction";
 			return "failure";
 		}
+		message = "Auction canceled successfully";
 		return SUCCESS;
 	
 	}

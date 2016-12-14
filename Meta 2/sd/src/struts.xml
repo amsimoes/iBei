@@ -58,7 +58,7 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
 
     <action name="myAuctions" class="sd.action.MyAction" method="execute">
       <result name="success">/printAuctions.jsp</result>
-      <result name="listar">/menu.jsp</result>
+      <result name="failure">/menu.jsp</result>
     </action>
   
     <action name="OnlineUserAction" class="sd.action.OnlineUsersAction" method="execute">
@@ -78,7 +78,7 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
     
     <action name="searchAction" class="sd.action.SearchAction" method="execute">
       <result name="success">/printAuctions.jsp</result>
-      <result name="listar">/menu.jsp</result>
+      <result name="failure">/menu.jsp</result>
     </action>
     
     <action name="logoutAction" class="sd.action.Logout" method="execute">

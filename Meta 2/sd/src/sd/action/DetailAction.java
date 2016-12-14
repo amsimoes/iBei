@@ -15,6 +15,7 @@ public class DetailAction extends ActionSupport implements SessionAware {
 	private Map<String, Object> session;
 	public String Id;
 	public Leilao leilao;
+	public String message;
 	@Override
 	public String execute() {
 		// any username is accepted without confirmation (should check using RMI)
@@ -27,6 +28,7 @@ public class DetailAction extends ActionSupport implements SessionAware {
 		}
 		if(leilao == null){
 			System.out.println("null returned");
+			message = "Auction not found";
 			return "failure";
 		}
 		return SUCCESS;

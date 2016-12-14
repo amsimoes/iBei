@@ -6,19 +6,39 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<link href="bootstrap-3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="css/menu.css">
+
 </head>
 <body>
-	<p>Logged with success!</p>
 	
-	<a href="<s:url action="myAuctions" />">My auctions<br></a>
-	<a href="detailAuction.jsp">Detail auction<br></a>
-	<a href="editAuction.jsp">Edit Auction<br></a>
-	<a href="searchAuction.jsp">Search Auction<br></a>
-    <a href="createAuction.jsp">Create Auction<br></a>
-	<a href="bidAuction.jsp">Make Bid<br></a>
-	<a href="msgAuction.jsp">Write message<br></a>
-	<a href="<s:url action="logoutAction" />">Logout</a>
 	<h2 style="text-align:center;" ><s:property value="message"/></h2>
+	
+	<form action="myAuctions">
+	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="My auctions" />
+	</form>
+	<form action="detailAuction.jsp">
+	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Detail Auction" />
+	</form>
+	<form action="editAuction.jsp">
+	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Edit Auction" />
+	</form>
+	<form action="searchAuction.jsp">
+	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Search Auction" />
+	</form>
+	<form action="createAuction.jsp">
+	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Create Auction" />
+	</form>
+	<form action="bidAuction.jsp">
+	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Make bid" />
+	</form>
+	<form action="msgAuction.jsp">
+	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Write Message" />
+	</form>
+	<form action="logoutAction">
+	    	<input style="margin-top: 8vh;" class="btn btn-lg btn-primary btn-block" type="submit" value="Logout" />
+	</form>
+	
 
 </body>
 </html>

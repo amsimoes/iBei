@@ -31,8 +31,13 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
       <result>/menu.jsp</result>
     </action>
 
+    <action name="indexAdmin">
+      <result>/menuAdmin.jsp</result>
+    </action>
+
     <action name="Login" class="sd.action.Autentication" method="login">
       <result name="success">/menu.jsp</result>
+      <result name="adminUser">/menuAdmin.jsp</result>
       <result name="failure">/autentication.jsp</result>
     </action>
 
@@ -86,6 +91,20 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
       <result name="failure">/menu.jsp</result>
     </action>
 
+    <action name="cancelAction" class="sd.action.CancelAuction" method="execute">
+      <result name="success">/createAuctionPrint.jsp</result>
+      <result name="failure">/menuAdmin.jsp</result>
+    </action>
+
+    <action name="banAction" class="sd.action.BanUser" method="execute">
+      <result name="success">/createAuctionPrint.jsp</result>
+      <result name="failure">/menuAdmin.jsp</result>
+    </action>
+
+    <action name="stats" class="sd.action.Stats" method="execute">
+      <result name="success">/statsPrint.jsp</result>
+      <result name="failure">/menuAdmin.jsp</result>
+    </action>
 
 
   </package>

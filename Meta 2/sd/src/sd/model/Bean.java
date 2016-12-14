@@ -7,6 +7,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -236,6 +237,54 @@ public ArrayList <Leilao> leiloes;
 		
 		return null;
 	}
+	
+	
+	public boolean banUser(String username) throws RemoteException {
+		//exemplo de input
+		Boolean result = server.banUser(username);
+		
+		if(!result){
+			return result;
+		}
+		//System.out.println("Encontrou o leilao");
+		loginMsg="";
+		return result;
+	}
+	
+	public boolean cancelAuction(long id) throws RemoteException {
+		//exemplo de input
+		Boolean result = server.cancelAuction(id);
+		
+		if(!result){
+			return result;
+		}
+		System.out.println("Encontrou o leilao");
+		loginMsg="";
+		return result;
+	}
+	
+	public User[] getStatsLeiloes() throws RemoteException{
+		User[] stats = Arrays.copyOf(server.statsLeiloes(), server.statsLeiloes().length);
+		
+		return stats;
+		
+	}
+	
+	public User[] getStatsVitorias() throws RemoteException{
+		User[] stats = Arrays.copyOf(server.statsVitorias(), server.statsVitorias().length);
+		
+		return stats;
+		
+	}
+	
+	public int getStatsLastWeek() throws RemoteException{
+		int stats = server.statsLastWeek();
+		
+		return stats;
+		
+	}
+	
+	
 	public void setUsername(String username){
 		this.username = username;
 	}

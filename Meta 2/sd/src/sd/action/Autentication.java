@@ -57,7 +57,8 @@ public class Autentication extends ActionSupport implements SessionAware {
 			print="Username or Password wrong";
 			return "failure";
 		}
-		
+		if(username.equals("admin"))
+			return "adminUser";
 		return SUCCESS;
 		
 	}

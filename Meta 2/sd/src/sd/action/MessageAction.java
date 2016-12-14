@@ -16,11 +16,15 @@ public class MessageAction extends ActionSupport implements SessionAware {
 	public String Id;
 	public String text;
 	public Leilao leilao;
+	public String message;
 	@Override
 	public String execute() {
 		leilao = this.getBean().msgAuction(Id, text);
-		if(leilao == null)
+		if(leilao == null){
+			message = "Error writting message";
 			return "failure";
+		}
+		message = "Message written successfully";
 		return SUCCESS;
 	
 	}

@@ -10,21 +10,26 @@ import java.rmi.RemoteException;
 import java.util.Map;
 import sd.model.Bean;
 
-public class BidAction extends ActionSupport implements SessionAware {
+public class CancelAuction extends ActionSupport implements SessionAware {
 	private static final long serialVersionUID = 4L;
 	private Map<String, Object> session;
-	public String Id;
-	public String amount;
-	public Leilao leilao =null;
+	public int id;
 	public String message;
+	public boolean result = false;
 	@Override
 	public String execute() {
-		leilao = this.getBean().bidAuction(Id, amount);
-		if(leilao == null){
-			message = "Erro making bid";
+		// any username is accepted without confirmation (should check using RMI)
+		try {
+			result = this.getBean().cancelAuction(id);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(!result){
+			message = "Error canceling auction";
 			return "failure";
 		}
-		message = "Bid created";
+		message = "Auction canceled successfully";
 		return SUCCESS;
 	
 	}
@@ -32,15 +37,18 @@ public class BidAction extends ActionSupport implements SessionAware {
 	public Bean getBean() {
 		if(!session.containsKey("RMIBean"))
 			this.setBean(new Bean());
+		
 		return (Bean) session.get("RMIBean");
 	}
 
 	public void setBean(Bean Bean) {
+		System.out.println("novo bean");
 		this.session.put("RMIBean", Bean);
 	}
 
 	@Override
 	public void setSession(Map<String, Object> session) {
+		System.out.println("acede ao Bean");
 		this.session = session;
 	}
 }

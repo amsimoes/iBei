@@ -10,13 +10,9 @@
 <body>
 	<p>Logged with success!</p>
 	
-	<a href="<s:url action="myAuctions" />">My auctions<br></a>
-	<a href="detailAuction.jsp">Detail auction<br></a>
-	<a href="editAuction.jsp">Edit Auction<br></a>
-	<a href="searchAuction.jsp">Search Auction<br></a>
-    <a href="createAuction.jsp">Create Auction<br></a>
-	<a href="bidAuction.jsp">Make Bid<br></a>
-	<a href="msgAuction.jsp">Write message<br></a>
+	<a href="cancelAuction.jsp">Cancel auction<br></a>
+	<a href="BanUser.jsp">Ban User<br></a>
+	<a href="<s:url action="stats" />">See statistics<br></a>
 	<a href="<s:url action="logoutAction" />">Logout</a>
 	<h2 style="text-align:center;" ><s:property value="message"/></h2>
 

@@ -46,7 +46,7 @@ public class Autentication extends ActionSupport implements SessionAware {
 		Boolean result = false;
 		try {
 			result = this.getBean().login(username, password);
-			System.out.println(this.getBean().getUsername());
+			System.out.println("Bean username: "+this.getBean().getUsername());
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -57,7 +57,8 @@ public class Autentication extends ActionSupport implements SessionAware {
 			print="Username or Password wrong";
 			return "failure";
 		}
-		
+		if(username.equals("admin"))
+			return "adminUser";
 		return SUCCESS;
 		
 	}

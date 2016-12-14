@@ -10,7 +10,7 @@
 <body>
 	<p>Make Bid</p>
 	<s:form action="bidAction" method="post">
-		<s:textfield cssClass="input" name="Id" placeholder="Id do leilao:"/><br>
+		<s:textfield cssClass="input" name="Id" placeholder="Auction Id"/><br>
 				
 		<s:textfield cssClass="input" name="amount" placeholder="Amount:" style="margin-top: 1vh;"/><br>
 		

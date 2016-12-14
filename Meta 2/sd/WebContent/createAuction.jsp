@@ -5,26 +5,23 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<link rel="stylesheet" type="text/css" href="css/model.css">
 </head>
 <body>
+	<p>Create Auction</p>
 	<s:form action="createAction" method="post">
 		
-		<s:text name="Code:" />
-		<s:textfield name="code" /><br>
+		<s:textfield cssClass="input" name="code" placeholder="Code" /><br>
 		
-		<s:text name="Deadline:" />
-		<s:textfield name="deadline" placeholder="ex: 2017-1-1 10:00:00"/><br>
+		<s:textfield cssClass="input" name="deadline" placeholder="ex: 2017-1-1 10:00:00"/><br>
 		
-		<s:text name="Title:" />
-		<s:textfield name="title" /><br>
+		<s:textfield cssClass="input" name="title" placeholder="Title" /><br>
 		
-		<s:text name="Description:" />
-		<s:textfield name="description" /><br>
+		<s:textfield cssClass="input" name="description" placeholder="Description" /><br>
 		
-		<s:text name="Amount:" />
-		<s:textfield name="amount" /><br>
+		<s:textfield cssClass="input" name="amount" placeholder="Amount" /><br>
 		
-		<s:submit />
+		<s:submit cssClass="btn"/>
 	</s:form>
 </body>
 </html>

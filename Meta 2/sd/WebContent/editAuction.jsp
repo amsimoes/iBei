@@ -6,22 +6,20 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<link rel="stylesheet" type="text/css" href="css/model.css">
 </head>
 <body>
+	<p>Edit Auction</p>
 	<s:form action="editAction" method="post">
-		<s:text name="Id do leilao:" />
-		<s:textfield name="Id" /><br>
+		<s:textfield cssClass="input" name="Id" placeholder="Auction Id"/><br>
 		
-		<s:text name="Deadline:" />
-		<s:textfield name="deadline" placeholder="ex: 2017-1-1 10:00:00"/><br>
+		<s:textfield cssClass="input" name="deadline" placeholder="ex: 2017-1-1 10:00:00"/><br>
 		
-		<s:text name="Title:" />
-		<s:textfield name="title" /><br>
+		<s:textfield cssClass="input" name="title" placeholder="Title"/><br>
 		
-		<s:text name="Description:" />
-		<s:textfield name="description" /><br>
+		<s:textfield cssClass="input" name="description" placeholder="Description"/><br>
 		
-		<s:submit />
+		<s:submit cssClass="btn" />
 	</s:form>
 </body>
 </html>

@@ -11,7 +11,7 @@
 <body>
 	<p>Detail Auction</p>
 	<s:form action="detailAuction" method="post">
-		<s:textfield cssClass="input" name="Id" placeholder="Id do leilao:" /><br>
+		<s:textfield cssClass="input" name="Id" placeholder="Auction Id:" /><br>
 		<s:submit cssClass="btn" />
 	</s:form>
 </body>

@@ -10,7 +10,7 @@
 <body>
 	<p>Search Auction</p>
 	<s:form action="searchAction" method="post">
-		<s:textfield cssClass="input" name="code" placeholder="Codigo do artigo"/><br>
+		<s:textfield cssClass="input" name="code" placeholder="Article Code"/><br>
 		<div id="submit">
 			<s:submit cssClass="btn" type="submit"/>
 		</div>

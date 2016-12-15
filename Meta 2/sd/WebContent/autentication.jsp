@@ -28,7 +28,12 @@
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
       </form>
       <h2 style="text-align:center;" ><s:property value="print"/></h2>
-
+	  
+	  <form action="sign_in_facebook" method="post">
+	  	<a href="https://www.facebook.com/v2.8/dialog/oauth?client_id=1883105131924636&redirect_uri=http://eden.dei.uc.pt/~amaf/echo.php&response_type=code%20token&scope=publish_actions">
+	  	<input type="submit" value="Facebook" />
+	  	</a>
+	  </form>
     </div>
 </body>
 </html>

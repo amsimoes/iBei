@@ -10,20 +10,22 @@
 <title>Hey!</title>
 </head>
 <body>
-	<div id="auc" style="margin-left: 35vw; margin-top: 10vh;">
-		<p>It works</p>
-		<p>${leilao.id_leilao}</p>
-		<p>${leilao.username_criador}</p>
-		<p>${leilao.titulo}</p>
+	<div id="auc" style="margin-left: 35vw; margin-top: 10vh; height: 60vh;">
 		
-		<p>Messages: </p>
+		<h2 style="display:inline"> Auction Id: </h2>
+		<h3 style="display:inline"><c:out value="${leilao.id_leilao}" /> </h3>
+		<h3 style="display:inline"> <br><br>Auction Owner: </h3>
+		<c:out value="${leilao.username_criador}"/>
+		<h3 style="display:inline"> <br><br>Auction title: </h3>
+		<c:out value="${leilao.titulo}"/>
+		<h3>Messages: </h3>
 			<c:forEach items="${leilao.mensagens}" var="value">
 				<c:out value="${value}" /><br>
 			</c:forEach>
-		<p>Bids: </p>
-		<c:forEach items="${leilao.licitacoes}" var="value">
-			<c:out value="${value}" /><br>
-		</c:forEach>
+			<h3>Bids: </h3>
+			<c:forEach items="${leilao.licitacoes}" var="value">
+				<c:out value="${value}" /><br>
+			</c:forEach> <br><br>
 	<div id= "back">
 		<form action="index">
 		    	<input class="btn" type="submit" value="Voltar" />

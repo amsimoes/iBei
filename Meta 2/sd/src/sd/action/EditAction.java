@@ -15,11 +15,15 @@ public class EditAction extends ActionSupport implements SessionAware {
 	public String title;
 	public String description;
 	public String deadline;
+	public String message;
 	@Override
 	public String execute() {
 		boolean result = this.getBean().editAuction(Id,title,description,deadline);
-		if(!result)
+		if(!result){
+			message = "Error editing auction";
 			return "failure";
+		}
+		message = "Auction edited successfully";
 		return SUCCESS;
 	
 	}

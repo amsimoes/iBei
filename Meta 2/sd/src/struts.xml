@@ -52,8 +52,8 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
     </action>
 
     <action name="editAction" class="sd.action.EditAction" method="execute">
-      <result name="success">/editPrint.jsp</result>
-      <result name="listar">/menu.jsp</result>
+      <result name="success">/menu.jsp</result>
+      <result name="failure">/menu.jsp</result>
     </action>
 
     <action name="myAuctions" class="sd.action.MyAction" method="execute">

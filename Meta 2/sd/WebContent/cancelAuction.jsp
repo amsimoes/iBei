@@ -10,7 +10,7 @@
 <body>
 	<p>Cancel Auction</p>
 	<s:form action="cancelAction" method="post">
-		<s:textfield cssClass="input" name="id" placeholder="Id do leilao:" /><br>
+		<s:textfield cssClass="input" name="id" placeholder="Auction Id" /><br>
 		<s:submit cssClass="btn" />
 	</s:form>
 </body>

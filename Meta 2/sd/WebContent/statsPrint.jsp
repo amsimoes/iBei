@@ -8,26 +8,26 @@
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 
 </head>
-<body>
+<body style="text-align: center;">
 	
-	<h3>Top 10 Victories:</h3>
-	<c:forEach items="${statsVitorias}" var="u">
-	<c:if test="${u.vitorias > 0}">
-		<p style="display:inline" > <c:out value="${u.username}"/> ---- </p>
-		<p style="display:inline">  <c:out value="${u.vitorias}" /> </p><br>
-	</c:if>
-	</c:forEach>
-
-	<h3>Top 10 Users:</h3>
+	<h1>Top 10 Users:</h1>
 	<c:forEach items="${statsLeiloes}" var="u">
 		<c:if test="${u.leiloes > 0}">
-			<p style="display:inline" > <c:out value="${u.username}"/> ---- </p>
-			<p style="display:inline">  <c:out value="${u.leiloes}" /> </p><br>
+			<h2 style="display:inline" > <c:out value="${u.username}"/> ---- </h2>
+			<h2 style="display:inline">  <c:out value="${u.leiloes}" /> </h2><br>
 		</c:if>
 	</c:forEach>
 	
-	<h3>Top 10 Auctions:</h3>
-	<p>${statsLastWeek}</p>
+	<h1>Top 10 Victories:</h1>
+	<c:forEach items="${statsVitorias}" var="u">
+	<c:if test="${u.vitorias > 0}">
+		<h2 style="display:inline" > <c:out value="${u.username}"/> ---- </h2>
+		<h2 style="display:inline">  <c:out value="${u.vitorias}" /> </h2><br>
+	</c:if>
+	</c:forEach>
+
+	<h1>Top 10 Auctions:</h1>
+	<h2>${statsLastWeek}</h2>
 	
 
 	<form action="indexAdmin">

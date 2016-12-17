@@ -49,6 +49,7 @@ var websocket = null;
         	 else if(message.data.startsWith("[USERS ONLINE]")){
         		 var counter = document.getElementById('online_users');
         		 console.log(message.data);
+        		 if(message.data !== conter.innerHTML)
         		 counter.innerHTML = message.data;
         	 }
         	else{

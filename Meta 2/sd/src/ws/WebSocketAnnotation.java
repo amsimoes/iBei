@@ -45,6 +45,7 @@ public class WebSocketAnnotation {
         String message = "*" + username + "* connected.";
         users.add(this);
         System.out.println(this.username+" added");
+        //sendOnlineUsers();
         for(WebSocketAnnotation w:users)
         	System.out.println("for: "+w.username);
         System.out.println("tamanho: "+users.size());

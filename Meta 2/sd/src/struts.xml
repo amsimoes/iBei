@@ -48,6 +48,39 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
       <result name="failure">/autentication.jsp</result>
     </action>
 
+	<action name="inputDetail">
+      <result>/detailAuction.jsp</result>
+    </action>
+    
+    <action name="inputSearch">
+      <result>/searchAuction.jsp</result>
+    </action>
+
+	<action name="inputEdit">
+      <result>/editAuction.jsp</result>
+    </action>
+    
+    <action name="inputCreate">
+      <result>/createAuction.jsp</result>
+    </action>
+    
+    <action name="inputBid">
+      <result>/bidAuction.jsp</result>
+    </action>
+    
+    <action name="inputMessage">
+      <result>/msgAuction.jsp</result>
+    </action>
+    
+    <action name="inputCancel">
+      <result>/cancelAuction.jsp</result>
+    </action>
+    
+    <action name="inputBan">
+      <result>/BanUser.jsp</result>
+    </action>
+    
+
     <action name="detailAuction" class="sd.action.DetailAction" method="execute">
       <result name="success">/printAuction.jsp</result>
       <result name="failure">/menu.jsp</result>
@@ -63,11 +96,6 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
       <result name="failure">/menu.jsp</result>
     </action>
   
-    <action name="OnlineUserAction" class="sd.action.OnlineUsersAction" method="execute">
-      <result name="success">/printUsers.jsp</result>
-      <result name="listar">/menu.jsp</result>
-    </action>
-
     <action name="bidAction" class="sd.action.BidAction" method="execute">
       <result name="success">/menu.jsp</result>
       <result name="failure">/menu.jsp</result>

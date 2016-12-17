@@ -34,5 +34,7 @@ public interface RMI_Interface extends Remote {
     public boolean banUser (String username) throws RemoteException;
     public void checkBidNotf_clients() throws RemoteException;
     public void checkMsgNotf_clients() throws RemoteException;
+    public ArrayList<ArrayList<Object>> checkBidNotf_clientsWebSockets() throws RemoteException;
+    public ArrayList<ArrayList<Object>> checkMsgNotf_clientsWebSockets() throws RemoteException;
 
     }

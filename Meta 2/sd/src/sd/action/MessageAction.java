@@ -25,6 +25,7 @@ public class MessageAction extends ActionSupport implements SessionAware {
 			return "failure";
 		}
 		message = "Message written successfully";
+		
 		return SUCCESS;
 	
 	}

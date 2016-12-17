@@ -5,9 +5,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+<script type="text/javascript" src="websocket.js"></script>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <link href="bootstrap-3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="css/menu.css">
+
 
 </head>
 <body>
@@ -39,6 +41,7 @@
 	    	<input style="margin-top: 8vh;" class="btn btn-lg btn-primary btn-block" type="submit" value="Logout" />
 	</form>
 	
-
+	
+	
 </body>
 </html>

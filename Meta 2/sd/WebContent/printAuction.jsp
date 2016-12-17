@@ -10,7 +10,7 @@
 <title>Hey!</title>
 </head>
 <body>
-	<div id="auc" style="margin-left: 35vw; margin-top: 10vh; height: 60vh;">
+	<div id="auc" style="margin-left: 35vw; margin-top: 10vh;">
 		
 		<h2 style="display:inline"> Auction Id: </h2>
 		<h3 style="display:inline"><c:out value="${leilao.id_leilao}" /> </h3>

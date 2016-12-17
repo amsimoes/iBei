@@ -1,0 +1,14 @@
+body{
+	width: 25vw;
+	margin: auto;
+	margin-top: 8vh;
+}
+input{
+	
+	cursor: pointer;
+	width: 30vw;
+	height: 8vh;
+	margin-top: 1vw;
+	
+    border-radius: 4px;
+}

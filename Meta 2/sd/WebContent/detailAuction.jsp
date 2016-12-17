@@ -6,10 +6,13 @@
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="css/model.css">
+<script type="text/javascript" src="websocket.js"></script>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 </head>
+
 <body>
 	<p>Detail Auction</p>
+	<p id="count">1</p>
 	<s:form action="detailAuction" method="post">
 		<s:textfield cssClass="input" name="Id" placeholder="Auction Id:" /><br>
 		<s:submit cssClass="btn" />

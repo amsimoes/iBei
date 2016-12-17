@@ -2,6 +2,7 @@ package ws;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -26,7 +27,6 @@ public class WebSocketAnnotation {
     private Session session;
     public Bean bean;
     private HttpSession httpSession;
-    public String location;
     private static final Set<WebSocketAnnotation> users = new CopyOnWriteArraySet<>();
 
     public WebSocketAnnotation() {
@@ -61,8 +61,10 @@ public class WebSocketAnnotation {
     public void receiveMessage(String message) {
 		// one should never trust the client, and sensitive HTML
         // characters should be replaced with &lt; &gt; &quot; &amp;
-    	
-    	sendMessage(message);
+    	if(message.equals("detail"))
+    		sendDetail(message);
+    	else
+    		sendMessage(message);
     }
     
     @OnError
@@ -70,8 +72,56 @@ public class WebSocketAnnotation {
     	t.printStackTrace();
     }
     
-    public void updateLocation(){
-    	this.location = ""; 
+    public void sendURL(String message){
+    	System.out.println("check url");
+    	for(WebSocketAnnotation websocket : users ){
+			try {
+				websocket.session.getBasicRemote().sendText(message);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+    	}
+    	
+    }
+    
+    public void sendDetail(String message){
+    	Map<Integer,Integer> counter  = new HashMap<>();
+    	int current_id = (int) httpSession.getAttribute("detail_id");
+    	
+	        for(WebSocketAnnotation websocket : users ){
+	            int id = (Integer) websocket.httpSession.getAttribute("detail_id");
+	            if( id != 0){
+	            	if(counter.containsKey(id)){
+	                    int count = counter.get(id) + 1;
+	                    counter.put(id, count);
+	                }else{
+	                    counter.put(id, 1);
+	                }
+	            
+	            }
+	        }
+	        
+	        
+	        for (WebSocketAnnotation websocket : users){
+	            int id = (Integer) websocket.httpSession.getAttribute("detail_id");
+	            
+	            if(id != 0){
+	            	int count = counter.get(id);
+	            	try {
+	                	System.out.println("DETAIL "+websocket.username);
+	                    websocket.session.getBasicRemote().sendText("[COUNTER] " + String.valueOf(count));
+	                } catch (IOException e) {
+	                    e.printStackTrace();
+	                }
+	            }
+	        }
+        
+    
+        
+        
+        
     }
     
     private void sendMessage(String text) {
@@ -86,10 +136,11 @@ public class WebSocketAnnotation {
     		String message = "";
     		if(text.equals("bid"))
     			result = this.bean.notificationsBid();
-    		else
+    		else if(text.equals("message"))
     			result = this.bean.notificationsMsg();
     		
-    		
+    		if(result == null)
+    			return;
     		for(ArrayList <Object> data : result){
     			for(Object d: data)
     				System.out.println("element: "+d);

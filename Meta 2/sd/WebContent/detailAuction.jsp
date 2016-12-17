@@ -12,7 +12,6 @@
 
 <body>
 	<p>Detail Auction</p>
-	<p id="count">1</p>
 	<s:form action="detailAuction" method="post">
 		<s:textfield cssClass="input" name="Id" placeholder="Auction Id:" /><br>
 		<s:submit cssClass="btn" />

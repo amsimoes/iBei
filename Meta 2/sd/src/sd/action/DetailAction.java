@@ -33,6 +33,8 @@ public class DetailAction extends ActionSupport implements SessionAware {
 			message = "Auction not found";
 			return "failure";
 		}
+		
+		this.session.put("detail_id", Integer.parseInt(Id));
 		return SUCCESS;
 	
 	}

@@ -1,11 +1,13 @@
 package iBei.rmi;
 
+
 import iBei.aux.FacebookRest;
 import iBei.aux.FicheiroDeObjeto;
 import iBei.aux.Leilao;
 import iBei.aux.User;
 import iBei.server.TCP_Interface;
 
+import javax.xml.transform.Result;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.NotBoundException;
@@ -14,6 +16,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -47,6 +51,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     private static String primaryRmi [] = new String[2];
     private static String backupRmi [] = new String[2];
     public static String dbHost;
+    public static String dbName;
     static int count = 0;
     public static ArrayList <dbConnection> connections = new ArrayList<>();
 
@@ -55,7 +60,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         super();
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            String connectionString = "jdbc:mysql://"+dbHost+":3306/BD";
+            String connectionString = "jdbc:mysql://"+dbHost+":3306/"+dbName;
             //System.out.println("Connecting to BD on host: "+dbHost);
             int i;
             for(i=0; i< 5; i++){
@@ -173,6 +178,137 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return true;
     }
 
+    public boolean associateFacebook(LinkedHashMap<String, String> data) throws RemoteException {
+        System.out.println("[ASSOCIATE FACEBOOK]");
+        ArrayList<User> users = new ArrayList<>();
+        dbConnection c = getConnection();
+        Connection connection = c.connection;
+
+        PreparedStatement statement;
+        String user_id = data.get("user_id");
+        String username = data.get("username");
+        String query = "SELECT user_id FROM user u WHERE u.user_id = ? AND u.logado = true";
+        try {
+            statement = connection.prepareStatement(query);
+            statement.setString(1, user_id);
+            ResultSet response = statement.executeQuery();
+            //users = getArraylistUsers(response, connection);
+            if(response.next()) {   // works: users.size()!=0
+                System.out.println("User account already associated with facebook.");
+                releaseConnection(c);
+                return false;
+            }
+        } catch(SQLException e) {
+            System.out.println("[FB ASSOCIATE] ROLLBACK");
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                System.out.println("Error doing rollback!");
+            }
+            e.printStackTrace();
+            releaseConnection(c);
+            return false;
+        }
+
+        query = "UPDATE user SET user_id = ? WHERE username = ?";
+        try {
+            statement = connection.prepareStatement(query);
+            statement.setString(1, user_id);
+            statement.setString(2, username);
+            Boolean result = statement.execute();
+            connection.commit();
+        } catch (SQLException e) {
+            System.out.println("[FB Associate] ROLLBACK");
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                System.out.println("Error doing rollback!");
+            }
+            e.printStackTrace();
+            releaseConnection(c);
+            return false;
+        }
+
+        releaseConnection(c);
+        return true;
+    }
+
+    public String login_facebook(LinkedHashMap<String, String> data) throws RemoteException {
+        System.out.println("[LOGIN FACEBOOK]");
+        ArrayList<User> users = new ArrayList<>();
+
+        dbConnection c = getConnection();
+        Connection connection = c.connection;
+
+        PreparedStatement statement = null;
+        String user_id = data.get("user_id");
+        String query = "SELECT * FROM user WHERE user_id = ? AND banido = false AND logado = false";
+        try {
+            statement = connection.prepareStatement(query);
+            statement.setString(1, user_id);
+            ResultSet response = statement.executeQuery();
+            users = getArraylistUsers(response, connection);
+            if(users.size()!=1) {
+                System.out.println("User account not associated with facebook.");
+                releaseConnection(c);
+                return null;
+            }
+        } catch (SQLException e) {
+            System.out.println("[FB LOGIN] ROLLBACK");
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                System.out.println("Error doing rollback!");
+            }
+            e.printStackTrace();
+            releaseConnection(c);
+            return null;
+        }
+
+        query = "UPDATE user SET logado = TRUE WHERE user_id = ?";
+        try {
+            statement = connection.prepareStatement(query);
+            statement.setString(1, user_id);
+            Boolean result = statement.execute();
+            connection.commit();
+        } catch (SQLException e) {
+            System.out.println("[FB Login Set] ROLLBACK");
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                System.out.println("Error doing rollback!");
+            }
+            e.printStackTrace();
+            releaseConnection(c);
+            return null;
+        }
+
+        query = "SELECT username FROM user WHERE user_id = ?";
+        try {
+            statement = connection.prepareStatement(query);
+            statement.setString(1, user_id);
+            ResultSet response = statement.executeQuery();
+            System.out.println(response.next());
+            String username = response.getString(1);
+            System.out.println(username);
+            connection.commit();
+            releaseConnection(c);
+            return username;
+        } catch (SQLException e) {
+            System.out.println("[Getting username from user_id] ROLLBACK");
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                System.out.println("Error doing rollback!");
+            }
+            e.printStackTrace();
+            releaseConnection(c);
+        }
+        releaseConnection(c);
+        System.out.println("WTF FODASSE????");
+        return null;
+    }
+
     
     //TODO: TEMOS DE VER EM QUE CASOS TEMOS DE FAZER SELECT ... FOR UPDATE(slides)
     public boolean login_client(LinkedHashMap<String, String> data) throws RemoteException {
@@ -194,11 +330,10 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             ResultSet response = statement.executeQuery();
             users = getArraylistUsers(response, connection);
             if(users.size()!=1){
+                System.out.println("No users registed.");
                 releaseConnection(c);
                 return false;
             }
-
-
 
         } catch (SQLException e) {
             System.out.println("Rollback");
@@ -282,7 +417,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         return true;
     }
 
-    public boolean create_auction(LinkedHashMap<String, String> data, String username) throws RemoteException{
+    public int create_auction(LinkedHashMap<String, String> data, String username) throws RemoteException{
         System.out.println("[ CREATE_AUCTION ]");
         //parse data
         String query;
@@ -290,7 +425,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         dbConnection c = getConnection();
         Connection connection = c.connection;
 
-        PreparedStatement statement = null;
+        PreparedStatement statement;
+        int leilaoId = 0;
         try {
             String code = data.get("code");
             double amount = Double.parseDouble(data.get("amount"));
@@ -301,17 +437,19 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
             query = "INSERT into leilao (username, artigoid, leilaoid, titulo, descricao, data, data_inicio, precomax, estado) VALUES (?, ?, null, ?, ?, ?, NOW(), ?, 0)";
 
-
-            statement = connection.prepareStatement(query);
+            statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             statement.setString(1,username);
             statement.setString(2,code);
             statement.setString(3,titulo);
             statement.setString(4,descricao);
             statement.setTimestamp(5, new Timestamp(date.getTime()));
             statement.setDouble(6,amount);
-            statement.execute();//return true or false
+            statement.executeUpdate();//return true or false
+            ResultSet rs = statement.getGeneratedKeys();
+            System.out.println(rs.getMetaData());
+            rs.next();
+            leilaoId = rs.getInt("GENERATED_KEY");
             connection.commit();
-
         } catch (SQLException e) {
             System.out.println("Rollback");
             try {
@@ -321,12 +459,12 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             }
             e.printStackTrace();
             releaseConnection(c);
-            return false;
+            return 0;
         } catch (ParseException e) {
             //e.printStackTrace();
             System.out.println("Date format invalid, it must be like: yyyy-MM-dd HH:mm:ss");
             releaseConnection(c);
-            return false;
+            return 0;
         }
 
 
@@ -348,21 +486,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                 e.printStackTrace();
         }
 
-        // Facebook aqui
-        try {
-            String fb_query = "SELECT facebook FROM user u WHERE u.username = ?";
-            statement = connection.prepareStatement(fb_query);
-            statement.setString(1, username);
-            ResultSet response = statement.executeQuery();
-            String token = response.getString("facebook");
-            FacebookRest fb = new FacebookRest(username, token);
-            fb.postAuction("TEST FROM RMIIIII");
-        } catch (SQLException | IOException e) {
-            e.printStackTrace();
-        }
-
         releaseConnection(c);
-        return true;
+        return leilaoId;
     }
 
     public ArrayList <Leilao> search_auction(LinkedHashMap<String, String> data) throws RemoteException {
@@ -1327,8 +1452,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
                 System.out.println("Error doing rollback!");
             }
             e.printStackTrace();
-
-
         }
         releaseConnection(c);
         return true;
@@ -1404,6 +1527,31 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
     }
 
+    public boolean removeFacebook (String username) throws RemoteException {
+        dbConnection c = getConnection();
+        Connection connection = c.connection;
+
+        String query = "UPDATE user SET user_id = ? WHERE username = ?";
+        try {
+            PreparedStatement statement = connection.prepareStatement(query);
+            System.out.println(username);
+            statement.setString(1, "NULL");
+            statement.setString(2, username);
+            int rows = statement.executeUpdate();
+            connection.commit();
+            if(rows == 0)
+                return false;
+        } catch (SQLException e) {
+            System.out.println("[FbRemove] Rollback");
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                System.out.println("Error doing rollback!");
+            }
+            e.printStackTrace();
+        }
+        return true;
+    }
 
     private static void start(){
         try {
@@ -1473,14 +1621,15 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     public static void main(String args[]) {
-        if (args.length != 3 && args.length != 4) {
-            System.out.println("Usage: <Primary RMI Host> <RMI Port> <DB Host>");
+        if (args.length != 4 && args.length != 6) {
+            System.out.println("Usage: <Primary RMI Host> <RMI Port> <DB Host> <DB name>");
             System.out.println("Optional (Secondary RMI on other machine): ... <secondary RMI server ip> <secondary RMI port>");
             System.exit(0);
-        } else if (args.length == 3) {
+        } else if (args.length == 4) {
             primaryRmi[0] = args[0];
             primaryRmi[1] = args[1];
             dbHost = args[2];
+            dbName = args[3];
         } else {
             primaryRmi[0] = args[0];
             primaryRmi[1] = args[1];

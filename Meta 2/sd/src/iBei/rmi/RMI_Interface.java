@@ -15,7 +15,9 @@ public interface RMI_Interface extends Remote {
     public boolean edit_auction(LinkedHashMap<String, String> data, String username) throws RemoteException;
     public boolean register_client(LinkedHashMap<String, String> data) throws RemoteException;
     public boolean login_client(LinkedHashMap<String, String> data) throws RemoteException;
-    public boolean create_auction(LinkedHashMap<String, String> data, String username) throws RemoteException;
+    public String login_facebook(LinkedHashMap<String, String> data) throws RemoteException;
+    public boolean associateFacebook(LinkedHashMap<String, String> data) throws RemoteException;
+    public int create_auction(LinkedHashMap<String, String> data, String username) throws RemoteException;
     public Leilao detail_auction(LinkedHashMap<String, String> data) throws RemoteException;
     public ArrayList <Leilao> search_auction(LinkedHashMap<String, String> data) throws RemoteException;
     public ArrayList <Leilao> my_auctions(LinkedHashMap<String, String> data, String username) throws RemoteException;
@@ -32,6 +34,7 @@ public interface RMI_Interface extends Remote {
     public User [] statsVitorias() throws RemoteException;
     public int statsLastWeek() throws RemoteException;
     public boolean banUser (String username) throws RemoteException;
+    public boolean removeFacebook (String username) throws RemoteException;
     public void checkBidNotf_clients() throws RemoteException;
     public void checkMsgNotf_clients() throws RemoteException;
 

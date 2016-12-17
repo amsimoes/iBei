@@ -26,7 +26,7 @@ public class facebook extends ActionSupport implements SessionAware {
 	public final String apiId = "1883105131924636";
 	public final String apiSecret = "bfd4694e120a2e380b0135fda678c846";
 	public final String secretState = "secret" + new Random().nextInt(999_999);
-	public final String callBack = "http://eden.dei.uc.pt/~amaf/echo.php";
+	public final String callBack = "http://localhost:8080/";
 	private Map<String, Object> session;
 	
 	public String execute() {
@@ -37,7 +37,6 @@ public class facebook extends ActionSupport implements SessionAware {
                 .state(this.secretState)
                 .callback(this.callBack)
                 .build(FacebookApi.instance());
-		
 		session.put("service",service);
 		return SUCCESS;
 	}

@@ -22,6 +22,10 @@
 	<form action="stats">
 	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="See statistics" />
 	</form>
+	<form action="removeFacebook.jsp">
+		<input class="btn btn-lg btn-primary btn-block" type="submit" value="Deassociate Facebook" />
+	</form>
+
 	<form action="logoutAction">
 	    	<input style="margin-top: 8vh;" class="btn btn-lg btn-primary btn-block" type="submit" value="Logout" />
 	</form>

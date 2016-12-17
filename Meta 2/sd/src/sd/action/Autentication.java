@@ -34,12 +34,9 @@ public class Autentication extends ActionSupport implements SessionAware {
 		else{
 			print="Registered successfully";
 		}
-			
-		
+
 		return SUCCESS;
-		
 	}
-	
 	
 	public String login() {
 		// any username is accepted without confirmation (should check using RMI)
@@ -59,8 +56,9 @@ public class Autentication extends ActionSupport implements SessionAware {
 		}
 		if(username.equals("admin"))
 			return "adminUser";
+		session.put("loggado", true);
+		session.put("username", username);
 		return SUCCESS;
-		
 	}
 	
 	

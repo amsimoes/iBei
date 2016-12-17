@@ -4,6 +4,7 @@ import iBei.aux.*;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
@@ -47,16 +48,49 @@ public ArrayList <Leilao> leiloes;
 		loginMsg="";
 		return result;
 	}
-	
+
+	public boolean associate(String username, String user_id) throws RemoteException {
+		LinkedHashMap<String, String> data = new LinkedHashMap<>();
+
+		data.put("type", "associate");
+		data.put("username", username);
+		data.put("user_id", user_id);
+		Boolean result = server.associateFacebook(data);
+
+		if(!result){
+			System.out.println("ERROR Associating facebook");
+			return result;
+		}
+
+		return true;
+	}
+
+	public boolean loginFacebook(String user_id) throws RemoteException {
+		LinkedHashMap<String, String> data = new LinkedHashMap<String, String>();
+		data.put("user_id", user_id);
+		String username = server.login_facebook(data);
+		System.out.println("[ BEAN ] Returned from RMI login_facebook = "+username);
+		if(username == null) {
+			System.out.println("[loginFacebook] Error logging in with facebook.");
+			return false;
+		}
+		//FALTA GUARDAR O USERNAME !!!
+		this.username = username;
+		return true;
+	}
 	
 	public boolean login(String username, String password) throws RemoteException {
 		LinkedHashMap<String, String> data = new LinkedHashMap<String, String>();
-		//exemplo de input
+
+		Boolean result;
+
 		data.put("type", "login");
 		data.put("username", username);
 		data.put("password", password);
-		Boolean result = server.login_client(data);
-		
+		result = server.login_client(data);
+
+		System.out.println("Result do login_client= "+result);
+		System.out.println(username+" | "+password);
 		if(!result){
 			System.out.println("Login: Wrong username or password");
 			loginMsg = "Wrong username or password.";
@@ -83,8 +117,7 @@ public ArrayList <Leilao> leiloes;
 	}
 
 
-	public boolean createAuction(String title, String description, String deadline, String code, String amount){
-		boolean result = false;
+	public int createAuction(String title, String description, String deadline, String code, String amount){
 		LinkedHashMap<String, String> data = new LinkedHashMap<String, String>();
 		data.put("type", "create_auction");
 		data.put("code", code);
@@ -94,19 +127,18 @@ public ArrayList <Leilao> leiloes;
 		data.put("amount", amount);
 
 		if(title.equals("") || deadline.equals("") || code.equals("") || description.equals("") || amount.equals("")){
-			System.out.println("missing parameters");
-			return false;
+			System.out.println("[Create Auction] Missing parameters");
+			return 0;
 		}
-		
+
+		int res = 0;
 		try {
-			result= server.create_auction(data,username);
+			res = server.create_auction(data, username);
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println(result);
 		System.out.println(data);
-		return result;
+		return res;
 	}
 	
 	public Leilao bidAuction(String id, String amount){
@@ -238,7 +270,6 @@ public ArrayList <Leilao> leiloes;
 		return null;
 	}
 	
-	
 	public boolean banUser(String username) throws RemoteException {
 		//exemplo de input
 		Boolean result = server.banUser(username);
@@ -248,6 +279,16 @@ public ArrayList <Leilao> leiloes;
 		}
 		//System.out.println("Encontrou o leilao");
 		return result;
+	}
+
+	public boolean removeFacebook(String username) throws RemoteException {
+		Boolean result = server.removeFacebook(username);
+		if(!result){
+			System.out.println("Bean - Error deassociating fb account of user:"+ username);
+			return result;
+		}
+		System.out.println();
+		return true;
 	}
 	
 	public boolean cancelAuction(long id) throws RemoteException {

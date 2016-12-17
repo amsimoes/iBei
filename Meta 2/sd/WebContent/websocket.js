@@ -1,7 +1,8 @@
 var websocket = null;
 
-        window.onload = function() { // URI = ws://10.16.0.165:8080/WebSocket/ws
-            connect('ws://' + window.location.host + '/sd/ws');
+        window.onload = function() {
+            //connect('ws://192.168.1.7:8080/sd/ws');
+        	connect('ws://' + window.location.host + '/sd/ws');
            console.log("conectado");
             //document.getElementById("chat").focus();
         }
@@ -49,7 +50,7 @@ var websocket = null;
         	 else if(message.data.startsWith("[USERS ONLINE]")){
         		 var counter = document.getElementById('online_users');
         		 console.log(message.data);
-        		 if(message.data !== conter.innerHTML)
+        		 if(message.data !== counter.innerHTML)
         		 counter.innerHTML = message.data;
         	 }
         	else{

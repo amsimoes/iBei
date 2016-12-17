@@ -6,7 +6,6 @@
 <head>
 <script type="text/javascript" src="websocket.js"></script>
 <link rel="stylesheet" type="text/css" href="css/model.css">
-<script type="text/javascript" src="websocket.js"></script>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 </head>
 <body>

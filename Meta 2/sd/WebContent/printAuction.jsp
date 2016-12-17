@@ -10,7 +10,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 </head>
 <body>
-	<div id="c" style="margin-left: 70vw; width: 17vw; border: 1px solid black; border-radius: 5px; text-align: center; height: 10vh;">
+	<div id="c" >
 		<p>Users in this page</p>
 		<p id="count"></p>
 	</div>

@@ -19,8 +19,10 @@
 	</s:form>
 	<!-- button type="submit" onClick="NotfBid()">Enviar Bid notificacoes</button-->
 	
-	<form action="index">
-		    	<input class="btn" type="submit" value="Voltar" />
-	</form>	
+	<div style="margin-top: 5vh;">
+		<form action="index">
+	    	<input style="width: 5vw;" class="btn" type="submit" value="Voltar" />
+		</form>	
+	</div>	
 </body>
 </html>

@@ -13,10 +13,10 @@
 	
 	<h2 style="text-align:center;" ><s:property value="message"/></h2>
 	
-	<form action="cancelAuction.jsp">
+	<form action="inputCancel">
 	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Cancel auction" />
 	</form>
-	<form action="BanUser.jsp">
+	<form action="inputBan">
 	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Ban user" />
 	</form>
 	<form action="stats">

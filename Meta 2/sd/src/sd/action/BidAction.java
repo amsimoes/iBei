@@ -21,7 +21,7 @@ public class BidAction extends ActionSupport implements SessionAware {
 	public String execute() {
 		leilao = this.getBean().bidAuction(Id, amount);
 		if(leilao == null){
-			message = "Erro making bid";
+			message = "Erro making bid, check if the auction is not canceled or terminated and if your bid is the lowest";
 			return "failure";
 		}
 		message = "Bid created";

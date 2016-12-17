@@ -30,9 +30,11 @@
 	<h2>${statsLastWeek}</h2>
 	
 
-	<form action="indexAdmin">
-	    	<input type="submit" value="Voltar" />
-	</form>
+	<div style="margin-top: 5vh;">
+		<form action="indexAdmin">
+	    	<input style="width: 5vw;" class="btn" type="submit" value="Voltar" />
+		</form>	
+	</div>
 
 </body>
 </html>

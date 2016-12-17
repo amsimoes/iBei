@@ -13,5 +13,10 @@
 		<s:textfield cssClass="input" name="username" placeholder="Username:" /><br>
 		<s:submit cssClass="btn" />
 	</s:form>
+	<div style="margin-top: 5vh;">
+		<form action="indexAdmin">
+	    	<input style="width: 5vw;" class="btn" type="submit" value="Voltar" />
+		</form>	
+	</div>
 </body>
 </html>

@@ -21,7 +21,7 @@ public class MessageAction extends ActionSupport implements SessionAware {
 	public String execute() {
 		leilao = this.getBean().msgAuction(Id, text);
 		if(leilao == null){
-			message = "Error writting message";
+			message = "Error writting message, check if the auction is not canceled or terminated";
 			return "failure";
 		}
 		message = "Message written successfully";

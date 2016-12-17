@@ -15,28 +15,28 @@
 <body>
 	
 	<h2 style="text-align:center;" ><s:property value="message"/></h2>
-	<div style=" width: 15vw; border: 1px solid black; border-radius: 5px; position: absolute; margin-left: 35vw; margin-top: 7vh;" >
+	<div id = "box">
 		<p id="online_users" style="text-align: center"></p>
 	</div>
 	<form action="myAuctions">
 	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="My auctions" />
 	</form>
-	<form action="detailAuction.jsp">
+	<form action="inputDetail">
 	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Detail Auction" />
 	</form>
-	<form action="editAuction.jsp">
+	<form action="inputEdit">
 	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Edit Auction" />
 	</form>
-	<form action="searchAuction.jsp">
+	<form action="inputSearch">
 	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Search Auction" />
 	</form>
-	<form action="createAuction.jsp">
+	<form action="inputCreate">
 	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Create Auction" />
 	</form>
-	<form action="bidAuction.jsp">
+	<form action="inputBid">
 	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Make bid" />
 	</form>
-	<form action="msgAuction.jsp">
+	<form action="inputMessage">
 	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Write Message" />
 	</form>
 	<form action="logoutAction">

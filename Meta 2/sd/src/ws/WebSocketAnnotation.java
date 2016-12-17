@@ -55,6 +55,7 @@ public class WebSocketAnnotation {
     	// clean up once the WebSocket connection is closed
     	System.out.println(this.username+" removed");
     	users.remove(this);
+    	sendOnlineUsers();
     }
 
     @OnMessage
@@ -63,6 +64,8 @@ public class WebSocketAnnotation {
         // characters should be replaced with &lt; &gt; &quot; &amp;
     	if(message.equals("detail"))
     		sendDetail(message);
+    	else if(message.equals("list"))
+    		sendOnlineUsers();
     	else
     		sendMessage(message);
     }
@@ -72,23 +75,26 @@ public class WebSocketAnnotation {
     	t.printStackTrace();
     }
     
-    public void sendURL(String message){
-    	System.out.println("check url");
+    public void sendOnlineUsers(){
+    	String msg = "[USERS ONLINE]"+"<br />";
     	for(WebSocketAnnotation websocket : users ){
-			try {
-				websocket.session.getBasicRemote().sendText(message);
+    		msg += websocket.username+"<br />";
+    	}
+    	System.out.println("USERS TAMANHO: "+users.size());
+    	for(WebSocketAnnotation ws : users ){
+    		try {
+				ws.session.getBasicRemote().sendText(msg);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		
     	}
     	
+    	
     }
-    
+
     public void sendDetail(String message){
     	Map<Integer,Integer> counter  = new HashMap<>();
-    	int current_id = (int) httpSession.getAttribute("detail_id");
     	
 	        for(WebSocketAnnotation websocket : users ){
 	            int id = (Integer) websocket.httpSession.getAttribute("detail_id");

@@ -15,7 +15,9 @@
 <body>
 	
 	<h2 style="text-align:center;" ><s:property value="message"/></h2>
-	
+	<div style=" width: 15vw; border: 1px solid black; border-radius: 5px; position: absolute; margin-left: 35vw; margin-top: 7vh;" >
+		<p id="online_users" style="text-align: center"></p>
+	</div>
 	<form action="myAuctions">
 	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="My auctions" />
 	</form>

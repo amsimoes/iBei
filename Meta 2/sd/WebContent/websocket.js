@@ -26,10 +26,11 @@ var websocket = null;
 
         function onOpen(event) {
         	 
-                console.log("notificaoca");
+                console.log("notificoes");
                 NotfMessage();
                 NotfBid();
                 increaseCounter();
+                onlineUsers();
         
         
             
@@ -45,6 +46,11 @@ var websocket = null;
         		 var counter = document.getElementById('count');
         		 counter.innerHTML = info[1];
         	 }
+        	 else if(message.data.startsWith("[USERS ONLINE]")){
+        		 var counter = document.getElementById('online_users');
+        		 console.log(message.data);
+        		 counter.innerHTML = message.data;
+        	 }
         	else{
         		alert(message.data);
         	}
@@ -56,6 +62,10 @@ var websocket = null;
         
         function increaseCounter(){
         	doSend("detail");
+        }
+        
+        function onlineUsers(){
+        	doSend("list");
         }
         
 
@@ -84,4 +94,3 @@ var websocket = null;
         }
 
   
-

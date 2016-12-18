@@ -33,17 +33,14 @@ public class EbayAPI {
                 "paginationInput.entriesPerPage=1" +
                 "&" + "keywords=";
 
-        ArrayList<String> words = new ArrayList<String>(Arrays.asList(item_title.split(" ")));
-        int i=0;
-        int n_words = words.size();
+        ArrayList<String> words = new ArrayList<String>(Arrays.asList(item_title.replace("-", " ").replace("_", " ").replaceAll(":",  "").split(" ")));
+        String pattern= "^[a-zA-Z0-9]+$";
         for (String word : words){
-            url_with_params += word;
-            if (i<n_words-1){
-                url_with_params +="%20";
+            if (word.matches(pattern)){
+                url_with_params += word + "%20";
             }
-            i++;
         }
-
+        
         try{
             URL eBayFindingAPI = new URL(url_with_params);
             HttpURLConnection conn = (HttpURLConnection) eBayFindingAPI.openConnection();

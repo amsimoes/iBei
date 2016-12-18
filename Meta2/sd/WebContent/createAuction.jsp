@@ -23,5 +23,10 @@
 		
 		<s:submit cssClass="btn"/>
 	</s:form>
+	<div style="margin-top: 5vh;">
+		<form action="index">
+	    	<input style="width: 5vw;" class="btn" type="submit" value="Voltar" />
+		</form>	
+	</div>
 </body>
 </html>

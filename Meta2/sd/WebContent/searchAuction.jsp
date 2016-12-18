@@ -5,6 +5,7 @@
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="css/model.css">
+<script type="text/javascript" src="websocket.js"></script>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 </head>
 <body>
@@ -15,5 +16,10 @@
 			<s:submit cssClass="btn" type="submit"/>
 		</div>
 	</s:form>
+	<div style="margin-top: 5vh;">
+		<form action="index">
+	    	<input style="width: 5vw;" class="btn" type="submit" value="Voltar" />
+		</form>	
+	</div>
 </body>
 </html>

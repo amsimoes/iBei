@@ -6,20 +6,22 @@
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="css/answer.css">
+<script type="text/javascript" src="websocket.js"></script>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Hey!</title>
 </head>
 <body>
-	<div id="auc" style="margin-left: 35vw; margin-top: 10vh; height: 60vh;">
-		
+	<div id="c" >
+		<p>Users in this page</p>
+		<p id="count"></p>
+	</div>
+	<div id="auc" style="margin-left: 35vw; margin-top: 10vh;">
+				
 		<h2 style="display:inline"> Auction Id: </h2>
 		<h3 style="display:inline"><c:out value="${leilao.id_leilao}" /> </h3>
 		<h3 style="display:inline"> <br><br>Auction Owner: </h3>
 		<c:out value="${leilao.username_criador}"/>
 		<h3 style="display:inline"> <br><br>Auction title: </h3>
 		<c:out value="${leilao.titulo}"/>
-		<h3 style="display:inline"> <br><br>Lowest eBay price of this item: </h3>
-		<a href="<c:out value="${ebayLink}"/>"><c:out value="${ebayPrice}"/></a>
 		<h3>Messages: </h3>
 			<c:forEach items="${leilao.mensagens}" var="value">
 				<c:out value="${value}" /><br>

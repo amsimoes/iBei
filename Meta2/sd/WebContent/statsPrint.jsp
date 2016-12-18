@@ -6,33 +6,39 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-
+<link rel="stylesheet" type="text/css" href="css/stats.css">
 </head>
-<body style="text-align: center;">
+<body>
 	
-	<h1>Top 10 Users:</h1>
-	<c:forEach items="${statsLeiloes}" var="u">
-		<c:if test="${u.leiloes > 0}">
-			<h2 style="display:inline" > <c:out value="${u.username}"/> ---- </h2>
-			<h2 style="display:inline">  <c:out value="${u.leiloes}" /> </h2><br>
-		</c:if>
-	</c:forEach>
+		
+		<div id="p">
+			<h1>Top 10 Users:</h1>
+			<c:forEach items="${statsLeiloes}" var="u">
+				<c:if test="${u.leiloes > 0}">
+					<h2 style="display:inline" > <c:out value="${u.username}"/> ---- </h2>
+					<h2 style="display:inline">  <c:out value="${u.leiloes}" /> </h2><br>
+				</c:if>
+			</c:forEach>
+		</div>
+		<div id="p">
+			<h1>Top 10 Victories:</h1>
+			<c:forEach items="${statsVitorias}" var="u">
+			<c:if test="${u.vitorias > 0}">
+				<h2 style="display:inline" > <c:out value="${u.username}"/> ---- </h2>
+				<h2 style="display:inline">  <c:out value="${u.vitorias}" /> </h2><br>
+			</c:if>
+			</c:forEach>
+		</div>
+		<div id="p">
+			<h1>Top 10 Auctions:</h1>
+			<h2>${statsLastWeek}</h2>
+		</div>
 	
-	<h1>Top 10 Victories:</h1>
-	<c:forEach items="${statsVitorias}" var="u">
-	<c:if test="${u.vitorias > 0}">
-		<h2 style="display:inline" > <c:out value="${u.username}"/> ---- </h2>
-		<h2 style="display:inline">  <c:out value="${u.vitorias}" /> </h2><br>
-	</c:if>
-	</c:forEach>
-
-	<h1>Top 10 Auctions:</h1>
-	<h2>${statsLastWeek}</h2>
+		<div style="margin-top: 5vh;">
+			<form action="indexAdmin">
+		    	<input style="width: 5vw;" class="btn" type="submit" value="Voltar" />
+			</form>	
+		</div>
 	
-
-	<form action="indexAdmin">
-	    	<input type="submit" value="Voltar" />
-	</form>
-
 </body>
 </html>

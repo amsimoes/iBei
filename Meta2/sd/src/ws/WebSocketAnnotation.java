@@ -90,8 +90,6 @@ public class WebSocketAnnotation {
 				e.printStackTrace();
 			}
     	}
-    	
-    	
     }
 
     public void sendDetail(String message){

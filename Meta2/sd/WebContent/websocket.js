@@ -2,7 +2,8 @@ var websocket = null;
 
         window.onload = function() {
             //connect('ws://192.168.1.7:8080/sd/ws');
-        	connect('ws://' + window.location.host + '/sd/ws');
+            console.log(window.localStorage);
+        	connect('ws://' + window.location.host +'/ws');
            console.log("conectado");
             //document.getElementById("chat").focus();
         }
@@ -20,9 +21,7 @@ var websocket = null;
             websocket.onopen    = onOpen; // set the event listeners below
             websocket.onclose   = onClose;
             websocket.onmessage = onMessage;
-            websocket.onerror   = onError;
-            
-            
+            websocket.onerror   = onError;s
         }
 
         function onOpen(event) {

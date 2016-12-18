@@ -26,6 +26,11 @@ public class DetailAction extends ActionSupport implements SessionAware {
 		try {
 			System.out.println(this.getBean().getUsername());
 			leilao = this.getBean().detailAuction(Id);
+			if(leilao == null){
+				System.out.println("null returned");
+				message = "Auction not found";
+				return "failure";
+			}
 			System.out.println("TITULO LEILAO = "+leilao.getTitulo().get(0));
 			// Chamar EBAY aqui
 			EbayAPI ebay = new EbayAPI();
@@ -37,11 +42,6 @@ public class DetailAction extends ActionSupport implements SessionAware {
 			} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		if(leilao == null){
-			System.out.println("null returned");
-			message = "Auction not found";
-			return "failure";
 		}
 		this.session.put("detail_id", Integer.parseInt(Id));
 		return SUCCESS;

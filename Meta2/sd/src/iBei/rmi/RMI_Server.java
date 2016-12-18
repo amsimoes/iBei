@@ -1,8 +1,6 @@
 package iBei.rmi;
 
 
-import iBei.aux.FacebookRest;
-import iBei.aux.FicheiroDeObjeto;
 import iBei.aux.Leilao;
 import iBei.aux.User;
 import iBei.server.TCP_Interface;
@@ -1245,32 +1243,6 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         }
 
         releaseConnection(c);
-    }
-
-    // FicheirosObjetos
-
-    private synchronized static void importObjTCPServers(){
-        FicheiroDeObjeto file = new FicheiroDeObjeto();
-        try {
-            file.abreLeitura("iBei"+File.separator+"aux"+File.separator+"tcpServers.ser");
-            tcpServers = (List<TCP_Interface>) file.leObjeto();
-            file.fechaLeitura();
-        } catch (IOException e) {
-            System.out.println("File with TCPServers in users empty.");
-        } catch (ClassNotFoundException e1) {
-            System.out.println("Classe ArrayList/User not found.");
-        }
-    }
-
-    private synchronized void exportObjTCPServers() {
-        FicheiroDeObjeto file = new FicheiroDeObjeto();
-        try {
-            file.abreEscrita("iBei"+File.separator+"aux"+File.separator+"tcpServers.ser");
-            file.escreveObjeto(tcpServers);
-            file.fechaEscrita();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
     
     public ArrayList<ArrayList<Object>> checkBidNotf_clientsWebSockets() throws RemoteException{

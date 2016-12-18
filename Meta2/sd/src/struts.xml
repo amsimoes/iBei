@@ -142,6 +142,11 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
       <result name="failure">/autentication.jsp</result>
     </action>
 
+    <action name="associate" class="sd.action.Associate" method="execute">
+      <result name="success">/menu.jsp</result>
+      <result name="failure">/menu.jsp</result>
+    </action>
+
     <action name="removeFacebook" class="sd.action.FacebookRemove" method="execute">
       <result name="success">/menuAdmin.jsp</result>
       <result name="failure">/menuAdmin.jsp</result>

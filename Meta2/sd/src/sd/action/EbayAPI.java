@@ -40,7 +40,7 @@ public class EbayAPI {
                 url_with_params += word + "%20";
             }
         }
-        
+
         try{
             URL eBayFindingAPI = new URL(url_with_params);
             HttpURLConnection conn = (HttpURLConnection) eBayFindingAPI.openConnection();

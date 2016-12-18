@@ -1,4 +1,12 @@
 
+#c{
+	margin-left: 70vw;
+	width: 17vw; 
+	border: 1px solid black; 
+	border-radius: 5px; 
+	text-align: center; 
+	height: 10vh;
+}
 
 #auc{
 	
@@ -6,7 +14,7 @@
 	border: 2px solid black;
     border-radius: 5px;
     width: 22vw;
-    height: 50vh;
+    
 	display: inline-block;
 	text-align: center;
 	float: left;

@@ -187,13 +187,14 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         PreparedStatement statement;
         String user_id = data.get("user_id");
         String username = data.get("username");
-        String query = "SELECT username FROM user u WHERE u.user_id = ? AND u.logado = true";
+        System.out.println("Username a associar = "+username);
+        String query = "SELECT username FROM user u WHERE u.user_id = ?";
         try {
             statement = connection.prepareStatement(query);
             statement.setString(1, user_id);
             ResultSet response = statement.executeQuery();
-            //users = getArraylistUsers(response, connection);
-            if(response.next()) {   // works: users.size()!=0
+            users = getArraylistUsers(response, connection);
+            if(users.size() != 0) {   // works: users.size()!=0
                 System.out.println("User account already associated with facebook.");
                 releaseConnection(c);
                 return false;
@@ -404,8 +405,8 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
     }
 
     public boolean logoutClient(String username) throws RemoteException {
+        System.out.println("[LOGOUT CLIENT] Username = "+username);
         PreparedStatement statement = null;
-
 
         dbConnection c = getConnection();
         Connection connection = c.connection;

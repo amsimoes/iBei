@@ -26,9 +26,11 @@ public class Callback extends ActionSupport implements SessionAware {
     private static final long serialVersionUID = 4L;
     private Map<String, Object> session;
     public String code;
+    public String username;
 
-    private final String apiId = "1883105131924636";
-    private final String apiSecret = "bfd4694e120a2e380b0135fda678c846";
+
+    private final static String apiId = "1883105131924636";
+    private final static String apiSecret = "bfd4694e120a2e380b0135fda678c846";
     private final String appToken = "b728b07d2b02fff68650133d4d93c515";
     private final String secretState = "secret" + new Random().nextInt(999_999);
     private final String callBack = "http://localhost:8080/callback.jsp";
@@ -37,10 +39,8 @@ public class Callback extends ActionSupport implements SessionAware {
 
     @Override
     public String execute() throws IOException {
-        Boolean loggado = (Boolean) session.get("loggado");
-        System.out.println("LOGGADO DA SESSION="+loggado);
-        String username = (String) session.get("username");
-        System.out.println("USERNAME NA SESSION="+username);
+        String user = (String) this.getBean().getUsername();
+        System.out.println("USERNAME no bean="+user);
         OAuth20Service service = new ServiceBuilder()
                 .apiKey(apiId)
                 .apiSecret(apiSecret)
@@ -50,34 +50,26 @@ public class Callback extends ActionSupport implements SessionAware {
         OAuth2AccessToken access_token = service.getAccessToken(code);
         String user_id = inspectToken(access_token.getAccessToken(), service);
         if(user_id!=null) {
-            System.out.println(user_id);
-            if(loggado==null) {
-                System.out.println("A FAZER LOGIN...");
-                if(this.getBean().loginFacebook(user_id)) {
-                    session.put("service", service);
-                    session.put("access_token", access_token);
-                    session.put("facebook", true);
-                    System.out.println("SUCESSO A FAZER LOGIN FACEBOOK");
-                    return SUCCESS;
-                }
-            } else {
-                System.out.println("A ASSOCIAR...");
-                if(this.getBean().associate(username, user_id)) {
-                    session.put("service", service);
-                    session.put("access_token", access_token);
-                    System.out.println("SUCESSO A ASSOCIAR CONTA");
-                    return SUCCESS;
-                } else {
-                    return "already_associated";
-                }
+            System.out.println("A FAZER LOGIN...");
+            Boolean result = this.getBean().loginFacebook(user_id);
+            if(result) {
+                session.put("service", service);
+                session.put("access_token", access_token);
+                session.put("facebook", true);
+                session.put("loggado", true);
+                this.session.put("detail_id", 0);
+                username = user;
+                System.out.println("SUCESSO A FAZER LOGIN FACEBOOK");
+                return SUCCESS;
             }
         }
-        System.out.println("FAIL");
+        username = "";
+        System.out.println("Failed to login through Facebook.");
         return "failure";
     }
 
-    public String generateAppAccessToken(OAuth20Service service) throws IOException {
-        String req = PROTECTED_RESOURCE_URL+"oauth/access_token?client_id="+this.apiId+
+    public static String generateAppAccessToken(OAuth20Service service) throws IOException {
+        String req = PROTECTED_RESOURCE_URL+"oauth/access_token?client_id="+apiId+
                 "&client_secret="+apiSecret+"&grant_type=client_credentials";
         OAuthRequest request = new OAuthRequest(Verb.GET, req, service.getConfig());
         Response response = request.send();
@@ -94,7 +86,7 @@ public class Callback extends ActionSupport implements SessionAware {
         return null;
     }
 
-    public String inspectToken(String input_token, OAuth20Service service) throws IOException {
+    public static String inspectToken(String input_token, OAuth20Service service) throws IOException {
         String appToken = generateAppAccessToken(service);
         String req = PROTECTED_RESOURCE_URL+"debug_token?input_token="+input_token+
                     "&access_token="+appToken;

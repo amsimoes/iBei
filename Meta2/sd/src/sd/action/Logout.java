@@ -21,8 +21,8 @@ public class Logout extends ActionSupport implements SessionAware {
 		
 		if(!logout)
 			return "failure";
+		session.put("logado", false);
 		return SUCCESS;
-		
 	}
 	
 	public Bean getBean() {

@@ -38,7 +38,7 @@
 	<form action="inputMessage">
 	    	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Write Message" />
 	</form>
-	<a href="https://www.facebook.com/v2.8/dialog/oauth?client_id=1883105131924636&redirect_uri=http://localhost:8080/callback.jsp&response_type=code&scope=publish_actions">
+	<a href="https://www.facebook.com/v2.8/dialog/oauth?client_id=1883105131924636&redirect_uri=http://localhost:8080/associate.jsp&response_type=code&scope=publish_actions">
 		<input class="btn btn-lg btn-primary btn-block" type="submit" value="Associate Facebook" />
 	</a>
 	<form action="logoutAction">

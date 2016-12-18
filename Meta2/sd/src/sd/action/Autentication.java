@@ -44,7 +44,6 @@ public class Autentication extends ActionSupport implements SessionAware {
 		try {
 			result = this.getBean().login(username, password);
 			System.out.println("Bean username: "+this.getBean().getUsername());
-
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

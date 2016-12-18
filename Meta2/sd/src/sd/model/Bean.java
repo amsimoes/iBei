@@ -30,9 +30,11 @@ public ArrayList <Leilao> leiloes;
 			e.printStackTrace(); // what happens *after* we reach this line?
 		}
 	}
+
 	public String LoginMessage(){
 		return this.loginMsg;
 	}
+
 	public boolean register(String username, String password) throws RemoteException {
 		LinkedHashMap<String, String> data = new LinkedHashMap<String, String>();
 		//exemplo de input
@@ -57,13 +59,12 @@ public ArrayList <Leilao> leiloes;
 	public boolean associate(String username, String user_id) throws RemoteException {
 		LinkedHashMap<String, String> data = new LinkedHashMap<>();
 
-		data.put("type", "associate");
 		data.put("username", username);
 		data.put("user_id", user_id);
 		Boolean result = server.associateFacebook(data);
 
 		if(!result){
-			System.out.println("ERROR Associating facebook");
+			System.out.println("ERROR Associating Facebook of username = "+username);
 			return result;
 		}
 
@@ -79,8 +80,9 @@ public ArrayList <Leilao> leiloes;
 			System.out.println("[loginFacebook] Error logging in with facebook.");
 			return false;
 		}
-		//FALTA GUARDAR O USERNAME !!!
+
 		this.username = username;
+		loginMsg="";
 		return true;
 	}
 	
@@ -109,15 +111,17 @@ public ArrayList <Leilao> leiloes;
 	
 	public boolean logout(){
 		LinkedHashMap<String, String> data = new LinkedHashMap<String, String>();
+
 		data.put("type", "logout");
 		boolean result = false;
 		try {
-			result = server.logoutClient(this.username);
+			result = server.logoutClient(this.getUsername());
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
+		this.setUsername("");
 		return result;
 	}
 

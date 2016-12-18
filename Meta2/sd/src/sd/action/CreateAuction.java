@@ -35,12 +35,14 @@ public class CreateAuction extends ActionSupport implements SessionAware {
 			message = "Error creating auction";
 			return "failure";
 		}
-        String link = "http://localhost:8080/detailAuction?Id="+this.leilaoId;
-		OAuth20Service service = (OAuth20Service) session.get("service");
-		if(!postAuction(link, service)) {
-            System.out.println("Error posting auction link to facebook.");
-            message = "Error posting auction link to facebook.";
-			return "failure";
+		if((Boolean) session.get("facebook")) {
+			String link = "http://localhost:8080/detailAuction?Id="+this.leilaoId;
+			OAuth20Service service = (OAuth20Service) session.get("service");
+			if(!postAuction(link, service)) {
+				System.out.println("Error posting auction link to facebook.");
+				message = "Auction created. Error posting auction link to facebook.";
+				return "failure";
+			}
 		}
 		message = "Auction created successfully";
 		return SUCCESS;

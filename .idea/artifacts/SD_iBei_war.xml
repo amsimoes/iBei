@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="SD-iBei:war">
+    <output-path>$PROJECT_DIR$/out/artifacts/SD_iBei_war</output-path>
+    <root id="archive" name="SD-iBei_war.war">
+      <element id="artifact" artifact-name="SD-iBei:war exploded" />
+    </root>
+  </artifact>
+</component>

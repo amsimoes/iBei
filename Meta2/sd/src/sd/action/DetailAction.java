@@ -30,9 +30,11 @@ public class DetailAction extends ActionSupport implements SessionAware {
 			// Chamar EBAY aqui
 			EbayAPI ebay = new EbayAPI();
 			Map.Entry<String, String> response = ebay.getLowestPrice(leilao.getTitulo().get(leilao.getTitulo().size()-1));
-			ebayPrice = response.getKey();
-			ebayLink = response.getValue();
-		} catch (RemoteException e) {
+			if(response.getKey() != null) {
+				ebayPrice = response.getKey();
+				ebayLink = response.getValue();
+			}
+			} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

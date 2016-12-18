@@ -3,8 +3,11 @@
 
 # Requirements
 1.1 Java 7+
+
 1.2 Apache Tomcat 8.5
+
 1.3 MySQL JDBC
+
 1.4 MySQL 5.7 
 
 

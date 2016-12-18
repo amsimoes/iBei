@@ -22,6 +22,8 @@
 		<c:out value="${leilao.username_criador}"/>
 		<h3 style="display:inline"> <br><br>Auction title: </h3>
 		<c:out value="${leilao.titulo}"/>
+		<h3 style="display:inline"> <br><br>Lowest eBay price of this item: </h3>
+		<a href="<c:out value="${ebayLink}"/>"><c:out value="${ebayPrice}"/></a>
 		<h3>Messages: </h3>
 			<c:forEach items="${leilao.mensagens}" var="value">
 				<c:out value="${value}" /><br>

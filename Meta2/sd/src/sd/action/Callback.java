@@ -65,7 +65,6 @@ public class Callback extends ActionSupport implements SessionAware {
                 if(this.getBean().associate(username, user_id)) {
                     session.put("service", service);
                     session.put("access_token", access_token);
-                    session.put("facebook", true);
                     System.out.println("SUCESSO A ASSOCIAR CONTA");
                     return SUCCESS;
                 } else {

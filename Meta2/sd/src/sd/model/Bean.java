@@ -49,6 +49,11 @@ public ArrayList <Leilao> leiloes;
 		return result;
 	}
 
+	public boolean checkFacebook(String username) throws RemoteException {
+		Boolean result = server.checkFacebook(username);
+		return result;
+	}
+
 	public boolean associate(String username, String user_id) throws RemoteException {
 		LinkedHashMap<String, String> data = new LinkedHashMap<>();
 

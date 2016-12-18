@@ -187,7 +187,7 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
         PreparedStatement statement;
         String user_id = data.get("user_id");
         String username = data.get("username");
-        String query = "SELECT user_id FROM user u WHERE u.user_id = ? AND u.logado = true";
+        String query = "SELECT username FROM user u WHERE u.user_id = ? AND u.logado = true";
         try {
             statement = connection.prepareStatement(query);
             statement.setString(1, user_id);
@@ -231,6 +231,38 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
 
         releaseConnection(c);
         return true;
+    }
+
+    public boolean checkFacebook(String username) throws RemoteException {
+        System.out.println("[CHECK FACEBOOK]");
+        ArrayList<User> users = new ArrayList<>();
+
+        dbConnection c = getConnection();
+        Connection connection = c.connection;
+        PreparedStatement statement = null;
+
+        String query = "SELECT user_id FROM user WHERE username = ?";
+        try {
+            statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+            ResultSet response = statement.executeQuery();
+            if(response.next()) {   // works: users.size()!=0
+                System.out.println("User account associated with facebook.");
+                releaseConnection(c);
+                return true;
+            }
+        } catch(SQLException e) {
+            System.out.println("[CHECK FB] ROLLBACK");
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                System.out.println("Error doing rollback!");
+            }
+            e.printStackTrace();
+            releaseConnection(c);
+            return false;
+        }
+        return false;
     }
 
     public String login_facebook(LinkedHashMap<String, String> data) throws RemoteException {

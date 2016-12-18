@@ -44,6 +44,7 @@ public class Autentication extends ActionSupport implements SessionAware {
 		try {
 			result = this.getBean().login(username, password);
 			System.out.println("Bean username: "+this.getBean().getUsername());
+
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -53,11 +54,20 @@ public class Autentication extends ActionSupport implements SessionAware {
 			password="";
 			print="Username or Password wrong";
 			return "failure";
+		} else {
+			try {
+				if(this.getBean().checkFacebook(username)) {
+					session.put("facebook", true);
+				} else {
+					session.put("facebook", false);
+				}
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
 		}
 		if(username.equals("admin"))
 			return "adminUser";
 		session.put("loggado", true);
-		session.put("username", username);
 		this.session.put("detail_id", 0);
 		return SUCCESS;
 	}

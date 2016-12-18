@@ -20,6 +20,13 @@ Compiling and creating jar files:
 Compiling TCPClient:
 * `javac TCPClient.java`  
 
+Creating Database and tables:
+* `$ mysql −u <User> −p`  
+* `mysql> create database <DB_name>;`
+* `mysql> use <DB_name>;`
+* `mysql> source createTables.sql;`
+
+
 # Running
 
 RMI Server   

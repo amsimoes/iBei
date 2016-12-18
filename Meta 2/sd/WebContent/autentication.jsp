@@ -27,12 +27,12 @@
         <input type="password" name="password" class="form-control" placeholder="Password" required>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
       </form>
-      <h2 style="text-align:center;" ><s:property value="print"/></h2>
-
-
-	  	<a href="https://www.facebook.com/v2.8/dialog/oauth?client_id=1883105131924636&redirect_uri=http://localhost:8080/callback.jsp&response_type=code&scope=publish_actions">
-	  	    <input type="submit" value="Facebook" />
+      <h2 style="text-align:center;" ><s:property value="print"/></h2>	  
+	  
+	  	<a href="https://www.facebook.com/v2.8/dialog/oauth?client_id=1883105131924636&redirect_uri=http://localhost:8080/sd/callback.jsp&response_type=code&scope=publish_actions">
+	  		<input type="submit" value="Facebook" />
 	  	</a>
+	  
     </div>
 </body>
 </html>

@@ -2,8 +2,6 @@ package iBei.aux;
 /**
  * Created by bequis on 14/12/16.
  */
-public class FacebookRest {
-	
 
 import java.util.Random;
 import java.util.Scanner;
@@ -99,5 +97,3 @@ public final class FacebookRest {
         return true;
     }
 }
-
-

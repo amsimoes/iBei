@@ -13,21 +13,23 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
   <constant name="struts.devMode" value="true" />
   <constant name="struts.ui.theme" value="simple" />
   <constant name="struts.action.excludePattern" value="/ws"/>
-  <package name="Bean" extends="struts-default">
+  <package name="sd" extends="struts-default">
+
+	<interceptors>
+		<interceptor name="counterInterceptor" class="sd.interceptor.CounterInterceptor" />
+		<interceptor-stack name="counterStack">
+			<interceptor-ref name="counterInterceptor" />
+			<interceptor-ref name="defaultStack" />
+		</interceptor-stack>
+	</interceptors>
+	
 	
 	<default-action-ref name="index" />
-	
-	<global-results>
-		<result name="error">/error.jsp</result>
-	</global-results>
 
-	<!-- all exceptions not caught by the application will lead to error.jsp -->
-	<global-exception-mappings>
-		<exception-mapping exception="java.lang.Exception" result="error" />
-	</global-exception-mappings>
 
 	<!-- 'index' action leads to the view provided by index.jsp -->
     <action name="index">
+    <interceptor-ref name="counterStack"></interceptor-ref>
       <result>/menu.jsp</result>
     </action>
 
@@ -46,6 +48,39 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
       <result name="failure">/autentication.jsp</result>
     </action>
 
+	<action name="inputDetail">
+      <result>/detailAuction.jsp</result>
+    </action>
+    
+    <action name="inputSearch">
+      <result>/searchAuction.jsp</result>
+    </action>
+
+	<action name="inputEdit">
+      <result>/editAuction.jsp</result>
+    </action>
+    
+    <action name="inputCreate">
+      <result>/createAuction.jsp</result>
+    </action>
+    
+    <action name="inputBid">
+      <result>/bidAuction.jsp</result>
+    </action>
+    
+    <action name="inputMessage">
+      <result>/msgAuction.jsp</result>
+    </action>
+    
+    <action name="inputCancel">
+      <result>/cancelAuction.jsp</result>
+    </action>
+    
+    <action name="inputBan">
+      <result>/BanUser.jsp</result>
+    </action>
+    
+
     <action name="detailAuction" class="sd.action.DetailAction" method="execute">
       <result name="success">/printAuction.jsp</result>
       <result name="failure">/menu.jsp</result>
@@ -61,11 +96,6 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
       <result name="failure">/menu.jsp</result>
     </action>
   
-    <action name="OnlineUserAction" class="sd.action.OnlineUsersAction" method="execute">
-      <result name="success">/printUsers.jsp</result>
-      <result name="listar">/menu.jsp</result>
-    </action>
-
     <action name="bidAction" class="sd.action.BidAction" method="execute">
       <result name="success">/menu.jsp</result>
       <result name="failure">/menu.jsp</result>
@@ -109,6 +139,11 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
     <action name = "sign_in_facebook" class="sd.action.facebook" method="execute">
       <result name="success">/statsPrint.jsp</result>
       <result name="failure">/menu.jsp</result>
+    </action>
+    
+    <action name = "callback" class="sd.action.callback" method="execute">
+      <result name="success">/menu.jsp</result>
+      <result name="failure">/autentication.jsp</result>
     </action>
 
 

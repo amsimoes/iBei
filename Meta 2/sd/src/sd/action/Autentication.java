@@ -34,7 +34,6 @@ public class Autentication extends ActionSupport implements SessionAware {
 		else{
 			print="Registered successfully";
 		}
-
 		return SUCCESS;
 	}
 	
@@ -58,6 +57,7 @@ public class Autentication extends ActionSupport implements SessionAware {
 			return "adminUser";
 		session.put("loggado", true);
 		session.put("username", username);
+		this.session.put("detail_id", 0);
 		return SUCCESS;
 	}
 	

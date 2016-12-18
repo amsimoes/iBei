@@ -270,6 +270,18 @@ public ArrayList <Leilao> leiloes;
 		return null;
 	}
 	
+	public ArrayList<ArrayList<Object>> notificationsMsg() throws RemoteException{
+		ArrayList<ArrayList<Object>> data = server.checkMsgNotf_clientsWebSockets();
+		System.out.println("tamanho_array"+data.size());
+		return data;
+	}
+	
+	public ArrayList<ArrayList<Object>> notificationsBid() throws RemoteException{
+		ArrayList<ArrayList<Object>> data = server.checkBidNotf_clientsWebSockets();
+		System.out.println("tamanho_array"+data.size());
+		return data;
+	}
+	
 	public boolean banUser(String username) throws RemoteException {
 		//exemplo de input
 		Boolean result = server.banUser(username);

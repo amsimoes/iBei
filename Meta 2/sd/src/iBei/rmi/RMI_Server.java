@@ -1239,6 +1239,101 @@ public class RMI_Server extends UnicastRemoteObject implements RMI_Interface {
             e.printStackTrace();
         }
     }
+    
+    public ArrayList<ArrayList<Object>> checkBidNotf_clientsWebSockets() throws RemoteException{
+        //QUE CONNECTION DEVEMOS USAR??
+
+        dbConnection c = getConnection();
+        Connection connection = c.connection;
+        ArrayList<ArrayList<Object>> outer = new ArrayList<ArrayList<Object>>();
+        try {
+
+            String query =   "SELECT leilaoid idLeilao, lic.licitacaoid licitacaoId, lic.username username, lic.quantia amount, username_receiver userReceiver  FROM notificacao_licitacao notf, licitacao lic " +
+                    "WHERE notf.licitacaoid = lic.licitacaoid AND username_receiver IN (SELECT user.username FROM user WHERE user.logado = true);";
+
+            PreparedStatement statement = connection.prepareStatement(query);
+            ResultSet response = statement.executeQuery();
+
+
+            while(response.next()){
+
+                String userReceiver = response.getString("userReceiver");
+
+                ArrayList <Object> aux = new ArrayList<>();
+                aux.add(response.getInt("idLeilao"));
+                aux.add(String.valueOf(response.getDouble("amount")));
+                aux.add(response.getString("username"));
+                aux.add(userReceiver);
+                outer.add(aux);
+            }
+
+            query = "DELETE FROM notificacao_licitacao WHERE username_receiver IN (SELECT user.username FROM user WHERE user.logado = true);";
+
+            statement = connection.prepareStatement(query);
+            statement.execute();
+            connection.commit();
+
+        } catch (SQLException e) {
+            System.out.println("Rollback");
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                System.out.println("Error doing rollback!");
+            }
+            e.printStackTrace();
+        }
+        releaseConnection(c);
+        return outer;
+    }
+
+    public ArrayList<ArrayList<Object>> checkMsgNotf_clientsWebSockets() throws RemoteException{
+        //QUE CONNECTION DEVEMOS USAR??
+        ArrayList <Object> result = new ArrayList<>();
+        ArrayList<ArrayList<Object>> outer = new ArrayList<ArrayList<Object>>();
+        dbConnection c = getConnection();
+        Connection connection = c.connection;
+
+        try {
+            String query =  "SELECT msg.leilaoid idLeilao, msg.mensagemid mensagemId, msg.username username, msg.texto text, username_receiver userReceiver FROM notificacao_mensagem notf, mensagem msg " +
+                    "WHERE notf.mensagemid = msg.mensagemid AND username_receiver IN (SELECT user.username FROM user WHERE user.logado = true);";
+
+            PreparedStatement statement = connection.prepareStatement(query);
+            ResultSet response = statement.executeQuery();
+
+            //boolean f = false;
+            while(response.next()){
+                //String username = response.getString("username");
+                //String text = response.getString("text");
+                String userReceiver = response.getString("userReceiver");
+                //int leilaoId = response.getInt("idLeilao");
+
+                ArrayList <Object> aux = new ArrayList<>();
+                aux.add(response.getInt("idLeilao"));
+                aux.add(response.getString("text"));
+                aux.add(response.getString("username"));
+                aux.add(userReceiver);
+                outer.add(aux);
+                //result.add(aux);
+            }
+
+            query = "DELETE FROM notificacao_mensagem WHERE username_receiver IN (SELECT user.username FROM user WHERE user.logado = true);";
+            statement = connection.prepareStatement(query);
+            statement.execute();
+            connection.commit();
+
+        } catch (SQLException e) {
+            System.out.println("Rollback");
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                System.out.println("Error doing rollback!");
+            }
+            e.printStackTrace();
+        }
+
+        releaseConnection(c);
+        return outer;
+    }
 
 
     private void verifica_terminoLeiloes(){

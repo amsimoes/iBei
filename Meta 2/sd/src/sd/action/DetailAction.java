@@ -16,11 +16,13 @@ public class DetailAction extends ActionSupport implements SessionAware {
 	public String Id;
 	public Leilao leilao;
 	public String message;
+	//public String idid;
 	@Override
 	public String execute() {
 		// any username is accepted without confirmation (should check using RMI)
 		try {
 			System.out.println(this.getBean().getUsername());
+		//	System.out.println(idid);
 			leilao = this.getBean().detailAuction(Id);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
@@ -31,6 +33,8 @@ public class DetailAction extends ActionSupport implements SessionAware {
 			message = "Auction not found";
 			return "failure";
 		}
+		
+		this.session.put("detail_id", Integer.parseInt(Id));
 		return SUCCESS;
 	
 	}

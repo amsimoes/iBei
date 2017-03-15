@@ -42,6 +42,6 @@ Admin Client
 Usage: `$ java -jar admin.jar <RMI host ip> <RMI host port>`
 
 WebServer  
-Usage: Copy the iBei.war file into Tomcat’s webapps directory, and startup the Apache Tomcat 
+Usage: Copy the iBeiSD.war file into Tomcat’s webapps directory, and startup the Apache Tomcat 
 
 
